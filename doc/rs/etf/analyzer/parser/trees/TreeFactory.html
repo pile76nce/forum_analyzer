@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class rs.etf.analyzer.parser.trees.TreeFactory</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">rs.etf.analyzer.parser.trees</FONT>
+<BR>Interface TreeFactory</H2>
+<DL>
+<DT>public interface <B>TreeFactory</B>
+</DL>
+<DL><DD><p>Title: SubjectAnalyzer</p> <p>Description: </p> <p>Copyright: Copyright (c) 2009</p> <p>Company: </p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Dejan Prodanovi?</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<A NAME="newLeaf(java.lang.String)"></A>
+
+<H3>newLeaf</H3>
+<PRE>
+public rs.etf.analyzer.parser.trees.Tree <B>newLeaf</B>(java.lang.String&nbsp;word)</PRE>
+<DL><DD>Create a new tree leaf node, where the label is formed from the <code>String</code> passed in.<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>word</CODE> - The word that will go into the tree label.</DD>
+<DT><B>Returns:</B><DD>The new leaf</DD>
+</DL>
+<HR>
+
+<A NAME="newTreeNode(java.lang.String, java.util.List)"></A>
+
+<H3>newTreeNode</H3>
+<PRE>
+public rs.etf.analyzer.parser.trees.Tree <B>newTreeNode</B>(java.lang.String&nbsp;parent,
+                                                     java.util.List&nbsp;children)</PRE>
+<DL><DD>Create a new tree nonleaf node, where the label is formed from the <code>String</code> passed in.<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>parent</CODE> - The string that will go into the parent tree label.</DD>
+<DD><CODE>children</CODE> - The list of daughters of this tree. The children may be a (possibly empty) <code>List</code> of children or <code>null</code></DD>
+<DT><B>Returns:</B><DD>The new interior tree node</DD>
+</DL>
+<HR>
+
+<A NAME="newLeaf(rs.etf.analyzer.parser.ling.Label)"></A>
+
+<H3>newLeaf</H3>
+<PRE>
+public rs.etf.analyzer.parser.trees.Tree <B>newLeaf</B>(rs.etf.analyzer.parser.ling.Label&nbsp;label)</PRE>
+<DL><DD>Create a new tree leaf node, with the given label.<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>label</CODE> - The label for the leaf node</DD>
+<DT><B>Returns:</B><DD>The new leaf</DD>
+</DL>
+<HR>
+
+<A NAME="newTreeNode(rs.etf.analyzer.parser.ling.Label, java.util.List)"></A>
+
+<H3>newTreeNode</H3>
+<PRE>
+public rs.etf.analyzer.parser.trees.Tree <B>newTreeNode</B>(rs.etf.analyzer.parser.ling.Label&nbsp;label,
+                                                     java.util.List&nbsp;children)</PRE>
+<DL><DD>Create a new tree nonleaf node, with the given label.<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>label</CODE> - The label for the parent tree node.</DD>
+<DD><CODE>children</CODE> - The list of daughters of this tree. The children may be a (possibly empty) <code>List</code> of children or <code>null</code></DD>
+<DT><B>Returns:</B><DD>The new interior tree node</DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

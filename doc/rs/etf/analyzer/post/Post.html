@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class rs.etf.analyzer.post.Post</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">rs.etf.analyzer.post</FONT>
+<BR>Interface Post</H2>
+<DL>
+<DT>public interface <B>Post</B>
+</DL>
+<DL><DD>Interfejs <code>Post</code> služi za rad sa postovima. Sadrži metod za poređenje sa drugim postovima.<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Dejan Prodanović</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<A NAME="getPost()"></A>
+
+<H3>getPost</H3>
+<PRE>
+public java.lang.String <B>getPost</B>()</PRE>
+<DL><DD>Sadrzaj posta<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Returns:</B><DD>Sadrzaj posta</DD>
+</DL>
+<HR>
+
+<A NAME="getPostType()"></A>
+
+<H3>getPostType</H3>
+<PRE>
+public rs.etf.analyzer.post.PostType <B>getPostType</B>()</PRE>
+<DL><DD>Vrsta posta<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Returns:</B><DD>PostType</DD>
+</DL>
+<HR>
+
+<A NAME="getTokenDictionary()"></A>
+
+<H3>getTokenDictionary</H3>
+<PRE>
+public rs.etf.analyzer.parser.TokenDictionary <B>getTokenDictionary</B>()</PRE>
+<DL><DD>Recnik sa tokenima<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Returns:</B><DD>Recnik sa tokenima procitanih iz posta</DD>
+</DL>
+<HR>
+
+<A NAME="getConceptDictionary()"></A>
+
+<H3>getConceptDictionary</H3>
+<PRE>
+public rs.etf.analyzer.parser.ConceptDictionary <B>getConceptDictionary</B>()</PRE>
+<DL><DD>Recnik sa konceptima<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Returns:</B><DD>ConceptDictionary</DD>
+</DL>
+<HR>
+
+<A NAME="updateConcept(rs.etf.analyzer.parser.Concept)"></A>
+
+<H3>updateConcept</H3>
+<PRE>
+public void <B>updateConcept</B>(rs.etf.analyzer.parser.Concept&nbsp;aoConcept)</PRE>
+<DL><DD>Izmena odgovarajuceg koncepta u recniku sa konceptima<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>aoConcept</CODE> - Concept</DD>
+</DL>
+<HR>
+
+<A NAME="compareTo(rs.etf.analyzer.post.Post)"></A>
+
+<H3>compareTo</H3>
+<PRE>
+public float <B>compareTo</B>(rs.etf.analyzer.post.Post&nbsp;aoPost)</PRE>
+<DL><DD>Poredjenje posmatranog posta sa odredjenim postom<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>aoPost</CODE> - Post</DD>
+<DT><B>Returns:</B><DD>float</DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

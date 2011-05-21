@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class rs.etf.analyzer.ontology.ClassHierarchy</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">rs.etf.analyzer.ontology</FONT>
+<BR>Class ClassHierarchy</H2>
+<DL>
+<DT>public class <B>ClassHierarchy</B>
+</DL>
+<DL><DD><p> Simple demonstration program to show how to list a hierarchy of classes. This is not a complete solution to the problem (sub-classes of restrictions, for example, are not shown). It is inteded only to be illustrative of the general approach. </p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>CVS $Id: ClassHierarchy.java,v 1.1 2005/10/06 17:49:07 andy_seaborne Exp $</DD>
+<DT><B>Author:</B><DD>Ian Dickinson, HP Labs (<a  href="mailto:Ian.Dickinson@hp.com" >email</a>)</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<A NAME="showHierarchy(java.io.PrintStream, com.hp.hpl.jena.ontology.OntModel)"></A>
+
+<H3>showHierarchy</H3>
+<PRE>
+public void <B>showHierarchy</B>(java.io.PrintStream&nbsp;out,
+                          com.hp.hpl.jena.ontology.OntModel&nbsp;m)</PRE>
+<DL><DD>Show the sub-class hierarchy encoded by the given model<DL><DD></DD></DL></DD>
+</DL>
+<DL></DL>
+<HR>
+
+<A NAME="showClass(java.io.PrintStream, com.hp.hpl.jena.ontology.OntClass, java.util.List, int)"></A>
+
+<H3>showClass</H3>
+<PRE>
+public void <B>showClass</B>(java.io.PrintStream&nbsp;out,
+                      com.hp.hpl.jena.ontology.OntClass&nbsp;cls,
+                      java.util.List&nbsp;occurs,
+                      int&nbsp;depth)</PRE>
+<DL><DD>Present a class, then recurse down to the sub-classes. Use occurs check to prevent getting stuck in a loop<DL><DD></DD></DL></DD>
+</DL>
+<DL></DL>
+<HR>
+
+<A NAME="renderClassDescription(java.io.PrintStream, com.hp.hpl.jena.ontology.OntClass, int)"></A>
+
+<H3>renderClassDescription</H3>
+<PRE>
+public void <B>renderClassDescription</B>(java.io.PrintStream&nbsp;out,
+                                   com.hp.hpl.jena.ontology.OntClass&nbsp;c,
+                                   int&nbsp;depth)</PRE>
+<DL><DD><p>Render a description of the given class to the given output stream.</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>out</CODE> - A print stream to write to</DD>
+<DD><CODE>c</CODE> - The class to render</DD>
+</DL>
+<HR>
+
+<A NAME="renderRestriction(java.io.PrintStream, com.hp.hpl.jena.ontology.Restriction)"></A>
+
+<H3>renderRestriction</H3>
+<PRE>
+protected void <B>renderRestriction</B>(java.io.PrintStream&nbsp;out,
+                                 com.hp.hpl.jena.ontology.Restriction&nbsp;r)</PRE>
+<DL><DD><p>Handle the case of rendering a restriction.</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>out</CODE> - The print stream to write to</DD>
+<DD><CODE>r</CODE> - The restriction to render</DD>
+</DL>
+<HR>
+
+<A NAME="renderURI(java.io.PrintStream, com.hp.hpl.jena.shared.PrefixMapping, java.lang.String)"></A>
+
+<H3>renderURI</H3>
+<PRE>
+protected void <B>renderURI</B>(java.io.PrintStream&nbsp;out,
+                         com.hp.hpl.jena.shared.PrefixMapping&nbsp;prefixes,
+                         java.lang.String&nbsp;uri)</PRE>
+<DL><DD>Render a URI<DL><DD></DD></DL></DD>
+</DL>
+<DL></DL>
+<HR>
+
+<A NAME="renderAnonymous(java.io.PrintStream, com.hp.hpl.jena.rdf.model.Resource, java.lang.String)"></A>
+
+<H3>renderAnonymous</H3>
+<PRE>
+protected void <B>renderAnonymous</B>(java.io.PrintStream&nbsp;out,
+                               com.hp.hpl.jena.rdf.model.Resource&nbsp;anon,
+                               java.lang.String&nbsp;name)</PRE>
+<DL><DD>Render an anonymous class or restriction<DL><DD></DD></DL></DD>
+</DL>
+<DL></DL>
+<HR>
+
+<A NAME="indent(java.io.PrintStream, int)"></A>
+
+<H3>indent</H3>
+<PRE>
+protected void <B>indent</B>(java.io.PrintStream&nbsp;out,
+                      int&nbsp;depth)</PRE>
+<DL><DD>Generate the indentation<DL><DD></DD></DL></DD>
+</DL>
+<DL></DL>
+<HR>
+
+</BODY>
+</HTML>

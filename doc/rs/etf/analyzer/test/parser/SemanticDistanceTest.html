@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class rs.etf.analyzer.test.parser.SemanticDistanceTest</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">rs.etf.analyzer.test.parser</FONT>
+<BR>Class SemanticDistanceTest</H2>
+<DL>
+<DT>public class <B>SemanticDistanceTest</B><DT>extends rs.etf.analyzer.test.BaseTestCase
+</DL>
+<DL><DD>The abstract class <code>Tokenizer</code> serves as a base for tokenizer implementations, which provide streams of tokens, whitespaces, and positions. <p> A tokenizer acts as an iterator over both space and token streams. The next space is returned through <A HREF="#nextWhitespace()">#nextWhitespace()</A>, and the next token through <A HREF="#nextToken()">#nextToken()</A>. Some tokenizers may implement <A HREF="#lastTokenStartPosition()">#lastTokenStartPosition()</A>, which returns the offset of the previous token's first character in an underlying character stream. <p>Tokenizers implement the <A HREF="Iterable">Iterable</A> interface to allow easy iteration over just the tokens using for-each loops. <p> The entire underlying character sequence may be reconstructed by alternating the next whitespace and next token, beginning with the first whitespace, until the end of both are reached. Offsets returned by <A HREF="#lastTokenStartPosition">#lastTokenStartPosition</A> are not guaranteed to be into this sequence of characters. </p> <p> Concrete subclasses must implement <A HREF="#nextToken()">#nextToken()</A> to return the next token. They may override <A HREF="#nextWhitespace()">#nextWhitespace()</A> to return the next space string; it is implemented in this class to return a single space <A HREF="Strings#SINGLE_SPACE_STRING">Strings#SINGLE_SPACE_STRING</A>. Subclasses may also implement <A HREF="#lastTokenStartPosition()">#lastTokenStartPosition()</A>, which otherwise will throw an <code>UnsupportedOperationException</code>. </p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>3.8.1</DD>
+<DT><B>Author:</B><DD>Bob Carpenter</DD>
+<DT><B>Since:</B><DD>LingPipe1.0</DD>
+</DL>
+</BODY>
+</HTML>
