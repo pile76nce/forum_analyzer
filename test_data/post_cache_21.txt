@@ -1,0 +1,7 @@
+The easiest assumption is a write-through cache.
+
+However, you could assume a write-back cache with either a LRU or Random replacement policy.
+
+Just state your assumptions about the cache design and your replacement policy if required.
+
+gj

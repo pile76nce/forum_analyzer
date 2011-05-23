@@ -1,0 +1,7 @@
+Uhh, if you're sure that you didn't enable interrupts in P1.2, then you may have triggered the interrupt another way. 
+Like if you do P1OUT = 0x01, it is possible to change all of the other pins. 
+So make sure everything that modifies your port 1 pins is either OR equal or AND equal. 
+Also I don't think P1SEL actually disables interrupts for P1.2 because from the user manual it 
+says that it just toggles between Timer A1 output and Digital I/O output, i'm not sure though.
+
+Also I found that the buzzer sounds choppy if you set the CCR0 too high (like at 20000), if you set it in the 800 - 1500 range it sounds fine.

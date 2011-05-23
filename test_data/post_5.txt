@@ -1,0 +1,1 @@
+otal number of times memory is referenced (cache or main memory)... basically every lw instruction that this c code would compile down into.

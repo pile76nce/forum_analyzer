@@ -1,0 +1,869 @@
+VERZIJA:7.11.2005. ................................................................................................................................................ 1
+5.
+MEMORIJA...................................................................................................................................................... 2
+5.1.
+KEŠ MEMORIJA
+5.1.1.
+Osnovni pojmovi................................................................................................................................. 2
+5.1.2.
+Tehnike preslikavanja ........................................................................................................................ 4
+5.1.2.1.
+Asocijativno preslikavanje...............................................................................................................................4
+5.1.3.
+Zamena blokova keš memorije........................................................................................................... 7
+5.1.3.1.
+RANDOM........................................................................................................................................................7
+5.1.3.2.
+FIFO.................................................................................................................................................................7
+5.1.3.3.
+LRU..................................................................................................................................................................8
+5.1.3.4.
+PSEUDO LRU ..............................................................................................Error! Bookmark not defined.
+5.1.4.
+Ažuriranje operativne memorije........................................................................................................ 8
+5.1.5.
+Neka razmatranja u vezi realizacije keš memorije............................................................................ 9
+5.2.
+VIRTUELNA MEMORIJA I JEDINICA ZA UBRZAVANJE
+5.2.1.
+Organizacija virtuelne memorije ..................................................................................................... 11
+5.2.1.1.
+Stranicna organizacija ................................................................................................................................... 12
+5.2.2.
+Organizacija jedinica preslikavanja................................................................................................ 15
+5.2.2.1.
+Jedinica sa asocijativnim preslikavanjem..................................................................................................... 15
+
+5.  MEMORIJA
+U  okviru  ove  glave  razmatraju  se  tehnike  kojima  se  relavaju  dva  problema  pri  radu  sa
+memorijom  i  to  vreme  pristupa  i  velicina  adresnog  prostora.  U  okviru  relavanja  problema
+vremena pristupa razmatraju se dve tehnike i to preklapanje pristupa memorijskim modulima i
+kel memorija.  U okviru relavanja problema  velicine  adresnog prostora  korisnika razmatra  se
+virtuelna memorija.
+5.1.  KEŠ MEMORIJA
+U  ovom  poglavlju  se  najpre  daju  osnovni  pojmovi  vezani  za  ubrzavanje  pristupa
+memorijskim  lokacijama  korilsenjem  keš  memorije.  Zatim  se  razmatraju  osnovna  pitanja
+vezana za realizaciju keš memorije, i to tehnika preslikavanja, zamena blokova keš memorije i
+ašuriranje  sadršaja  operativne  memorije.  Na  kraju  se  daju  neka  specificna  relenja  cijim  se
+korilsenjem poboljlava rad keš memorija.
+5.1.1.  Osnovni pojmovi
+Mehanizam  keš memorije  podrazumeva da u procesoru postoji posebna  memorija, koja se
+naziva keš memorija (slika 1). keš memorija se realizuje sa memorijskim komponentama cije
+je  vreme  pristupa  daleko  manje  od  vremena  pristupa  memorijskih  komponenata  operativne
+memorije  i  veoma blisko  vremenu  prenosa  podataka izmeCu  registara.  Zbog  toga  je  cena  po
+bitu  keš memorije  daleko  vesa  od  cene  po bitu operativne  memorije. To ima  za posledicu  da
+je kapacitet keš memorije daleko manji od kapaciteta operativne memorije.
+A D
+PODACI PODACI
+OSTALI
+DELOVI
+KEL
+ADRESA
+ADRESA
+CPU
+CPU MEM
+Slika 1 Asocijativno preslikavanje
+Algoritam  izvrlavanja  instrukcija  u  racunarima  sa  keš  memorijom  je  takav  da  se,  pri
+svakom generisanju adrese operativne memorije od strane nekog dela procesora radi citanja ili
+upisa,  najpre,  vrli  provera  da  li  se  sadržaj  sa  generisane  adrese  nalazi  u  keš  memoriji.  Na
+pocetku  dati  sadršaj  nije  u  keš  memoriji.  Zbog  toga  se  sadršaj  sa  date  i  nekoliko  susednih
+adresa,  koje  cine  blok,  najpre,  prebacuje  iz  operativne  u  keš  memoriju,  pa  se  potom  ili  cita
+sadršaj iz keš memorije i prosleCuje onom delu procesora koji je adresu generisao ili upisuje u
+kel memoriju sadršaj iz onog dela procesora koje je adresu generisao.
+Za  nekoliko  sledesih  generisanih  adresa  operativne  memorije  verovatno  se  se  i  dalje
+utvrCivati  da  se  sadršaji  takoCe  ne  nalaze  u  keš  memoriji,  pa  se  se  odgovarajusi  blokovi
+dovlaciti  iz  operativne  memorije  u  keš  memoriju  i  sa  keš  memorijom  realizovati  citanje  ili
+upis.  Time  se  se  broj  blokova  operativne  memorije  dovucenih  u  keš  memoriju  povesavati.
+Zbog  toga  se  se  od  odredenog  trenutka  za  neke  od  generisanih  adresa  operativne  memorije
+utvrCivati da se sadršaji nalaze u keš memoriji. U svakoj takvoj situaciji sadršaj se se ili citati
+iz  keš  memorije  umesto  iz  operativne  memorije  ili  upisivati  u  keš  memoriju  umesto  u
+operativnu  memoriju.  S  obzirom  na  to  da  je  keš  memorija  daleko  brša  od  operativne
+2
+  
+memorije,  u  svako  takvoj  situaciji  citanje  ili  upis  sadršaja  se  se  realizovati  sa  vremenom
+pristupa keš memorije umesto sa vremenom pristupa operativne memorije.
+Efikasnost  mehanizma keš  memorije  direktno  zavisi  od  toga  koliko  cesto  se se  utvrCivati
+da  se  sadršaj sa generisane adrese  nalazi u keš  memoriji.  Analiza  tragova  generisanih  adresa
+prilikom izvrlavanja tipicnih programa ukazuju na dva efekta koji direktno uticu na efikasnost
+mehanizma  keš  memorije.  Prvi  je  da  se  jedanput  generisana  adresa  obicno  posle  toga  jol
+nekoliko  puta  generile.  Ovaj  efekat  se  naziva  vremenski  lokalitet  programa  i  javlja  se  kod
+generisanja  adresa  instrukcija  i  skalarnih  velicina  u  petlji.  Drugi  je  da  se  posle  neke
+generisane  adrese  veoma  cesto  generilu  adrese  koje  slede  sekvencijalno.  Ovaj  efekat  se
+naziva  prostorni  lokalitet  programa  i  javlja  se  kod  sekvencijalnog  izvrlavanja  instrukcija  i
+sekvencijalnog  pristupa  podacima  koji  predstavljaju  elemente  vektora.  Da  bi  se  iskoristio
+potencijal  prvof  efekta  potrebno je  sadršaje memorijskih  lokacija kojima  se  pristupa  cuvati  u
+kel  memoriji  sa  sledese  pristupe,  a  da  bi  se  iskoristio  potencijal  drugog  efekta  potrebno  je
+dovlaciti  ne  samo  sadršaj  memorijske  lokacije  kojoj  se  pristupa,  ves  blok  od  nekoliko
+susednih memorijskih lokacija.
+Naziv  za  keš  memoriju  odrašava  cinjenicu  da  je  mehanizam  keš  memorije  "skriven"  od
+programera i  da programer  ne  moše  programskim putem da utice  na  ono lto  se  delava u kel
+memoriji.  Provera  da  li  se  sadršaj  sa  generisane  adrese  nalazi  u  keš  memoriji,  eventualno
+dovlacenje  bloka  podataka  iz  operativne  memorije  u  keš  memoriju,  citanje  podatka  iz  kel
+memorije  i  upis  podatka  u  keš  memoriju  realizuju  se  kompletno  hardverski.  Programer  je
+"svestan"  postojanja  mehanizma  keš  memorije  indirektno  na  osnovu  toga  lto  se  se  program
+izvrlavati brše u procesoru sa keš  memorijom nego u procesoru bez  keš memorije. Zbog toga
+mehanizam keš memorije ne pripada arhitekturi ves organizaciji procesora.
+Prilikom  realizacije  keš  memorije  postoje  tri  osnovna  pitanja  koja  treba  reliti.  Kapacitet
+kel  memorije  je  manji  od  kapaciteta  operativne  memorije  i  postoji  potreba  da  se  u  kel
+memoriji vodi evedincija o tome  koji se blokovi  operativne memorije  nalaze u keš memoriji i
+gde  se  nalaze  u  keš  memoriji.  Ovo  voCenje  evidencije  se  naziva  tehnika  preslikavanja.
+Kapacitet keš memorije je manji od kapaciteta operativne memorije, pa  se se posle odreCenog
+vremena  delavati  da  se  generilu  adrese  sa  kojih se  sadršaji  ne  nalaze  u  keš  memoriji,  a  kel
+memorija  je  popunjena.  Tada  postoji  potreba  da  se  odluci  koji  se  se  blok  izbaciti  iz  kel
+memorije  da  bi  se  u  njoj  stvorio  prostor  za  dovlacenje  bloka  iz  operativne  memorije  kome
+pripada generisana  adresa. Ovo odlucivanje se realizuje prema  nekom  od  algoritama zamene.
+Prilikom  operacija  upisa  i  utvrCivanja  da  u  keš  memoriji  postoji  blok  kome  pripada
+generisana  adresa,  upis  se  se  realizovati  u  keš  memoriju.  Time  se  javlja  razlika  u  vrednosti
+kopije  sadršaja  sa  odreCene  adrese  u  keš  memoriji  i  u  operativnoj  memoriji.  Sadršaji
+odreCenih  lokacija  operativne  memorije  se  nalaze  u  keš  memoriji  samo  privremeno  radi
+ubrzanja  pristupa.  Zbog  tog  postoji  potreba  da  se  na  neki  nacin  za  sve  generisane  adrese  za
+koje  je  upis  izvrlen u kopiju  sadršaja  u  keš  memoriji obezbedi  ašuriranje  i kopije  sadršaja  u
+operativnoj  memoriji.  Nacini  realizacije  zavise  od  usvojene  tehnike  ašuriranja  sadršaja
+operativne memorije. Ova tri pitanja su predmet razmatranja u sledesa tri poglavlja.
+3
+  
+5.1.2.  Tehnike preslikavanja
+Tehnika preslikavanja odreCuje nacin voCenja evidencije o  tome koji se blokovi operativne
+memorije  nalaze  u  pojedinim  blokovima  keš  memorije.  Koriste  se  tri tehnike preslikavanja  i
+to: asocijativno, direktno i set-asocijativno.
+5.1.2.1.  Asocijativno preslikavanje
+Kod  tehnike  asocijativnog  preslikavanja,  keš  memorija  se  sastoji  iz  DATA  MEMORIJE  i
+TAG MEMORIJE (slika 2). U DATA MEMORIJU se smeltaju blokovi preneti iz operativne u
+kel  memoriju.  U  TAG  MEMORIJU  se,  za  blokove  prenete  iz  operativne  u  keš  memoriju,
+smeltaju brojevi blokova operativne memorije, koji se nazivaju  tag-ovi.  Za realizaciju DATA
+MEMORIJE  i  TAG  MEMORIJE  koriste  se  RAM  memorija  i  asocijativna  memorija,
+respektivno.  Ukoliko  u  DATA  MEMORIJU  moše  da  se  smesti  2
+n
+blokova,  kaše  se  da  kel
+memorija  ima  2
+n
+ulaza.  Za  svaki  ulaz  DATA  MEMORIJE  postoji  odgovarajusi  ulaz  TAG
+MEMORIJE.
+GENERISANA ADRESA
+blok rec
+h
+l
+2
+reci
+l
+blok 0
+blok 1
+TAG
+DATA
+MEMORIJA
+MEMORIJA
+h bita
+2
+reci
+l
+0
+M M
+M
+2
+-1
+n
+144444424444443
+KEL MEMORIJA
+blok (2
+- 1)
+h
+1442443
+OPERATIVNA MEMORIJA
+Slika 2 Asocijativno preslikavanje
+U  slucaju keš memorije  realizovane  u  tehnici asocijativnog preslikavanja,  zamillja  se  kao
+da  je operativna  memorija podeljena na 2
+blokova.  Ukoliko se uzme da je dimenzija  bloka 2
+h
+l
+reci,  tada generisana adresa  ima sledesu  strukturu: niših  l bitova odreCuju  adresu  reci  unutar
+bloka i vilih h bitova odreCuju broj bloka u operativnoj memoriji.
+U tehnici asocijativnog preslikavanja bilo koji blok operativne memorije moše da se smesti
+u  bilo  koji  ulaz  keš  memorije,  prilikom  dovlacenja  iz  operativne  u  keš  memoriju.  Polto  u
+i-tom  ulazu  DATA  MEMORIJE  moše  da  se  naCe  bilo  koji  od  2
+blokova  operativne
+h
+memorije,  u  i-tom  ulazu  TAG  MEMORIJE  se  cuva  broj  bloka  operativne  memorije  kome
+4
+  
+pripada  dati  blok.  S  obzirom  da  u  operativnoj  memoriji  ima  2
+blokova,  lirina  memorijske
+h
+reci TAG MEMORIJE je h bita.
+Realizacija keš memorije sa asocijativnim preslikavanjem je data na slici 3.
+...
+...
+144424443 123
+...
+...
+14243
+123
+...
+...
+...
+14243
+...
+...
+Slika 3 keš memorija sa asocijativnim preslikavanjem
+5
+  
+S  obzirom  da  je  operativna  memorija  kapaciteta  2
+reci  i  da  je  velicina  bloka  2
+reci,
+h+l
+l
+uzima  se  kao  da  je  operativna  memorija  organizovana  u  2
+blokova  velicine 2
+reci.  Stoga  se
+h
+l
+adresa  operativne  memorije  dušine  h+l  bita  moše  podeliti  na  sledesi  nacin:  vilih  h  bitova
+oznacavaju broj bloka i niših l bitova oznacavaju adresu reci u bloku.
+Pri  generisanju  zahteva  za  citanje  od  strane  procesora,  vilih  h  bitova  generisane  adrese
+vodi  se  na  ulazne linije podataka  TI
+TAG MEMORIJE  da  bi  se,  njihovim  istovremenim
+h-1...0
+uporeCivanjem sa sadršajima svih 2
+ulaza TAG MEMORIJE, utvrdilo da li postoji saglasnost
+n
+sa  sadršajem  nekog  ulaza.  Za  svaki  od  2
+n
+ulaza  TAG  MEMORIJE  postoji  poseban  signal
+saglasnosti  M
+do  M
+,  koji  svojom  aktivnom  vrednolsu  odreCuje  da  je  na  datom  ulazu
+0
+2n-1
+otkrivena saglasnost. Otkrivena saglasnost je vašesa, i jedan od signala vašesih saglasnosti S
+0
+do  S
+n
+je  aktivan,  ukoliko  je  odgovarajusi  indikator  vašesih  ulaza  V  aktivan.  Signal
+2
+-1
+saglasnosti  SGL,  koji  se  dobija  sa  izlaza  W  kodera  CD, ima  aktivnu vrednost,  ukoliko  jedan
+od signala S
+do S
+n
+ima aktivnu vrednost.  Binarna vrednost broja ulaza  u kome je otkrivena
+0
+2
+-1
+saglasnost  je  odreCena  sa  n bita  sa izlaza kodera  CD na  osnovu  signala  S
+do  S
+n
+. Ukoliko
+0
+2
+-1
+postoji  saglasnost, sa n  bitova sa izlaza kodera CD i  l niših bitova generisane adrese, adresira
+se rec DATA MEMORIJE i obavlja citanje.
+Ukoliko saglasnost ne postoji u jedan od  ulaza  keš memorije  treba  iz operativne memorije
+da  se dovuce blok u kome se nalazi šeljeni sadršaj. Ulaz  u koji se dovlaci blok naziva se  ulaz
+za  zamenu.  Broj  ulaza  je  odreCen  vrednolsu  UZ
+do  koje  se  dolazi  na  osnovu  nekog  od
+n-1...0
+algoritama  zamene.  Pre  dovlacenja  šeljenog  bloka  proverava  se  da  li  se  u  ulazu  koji  je
+odabran  za  zamenu  nalazi  blok  koji  je  nekom  od  operacija  upisa  modifikovan.  Ovo  se
+utvrCuje na osnovu sadršaja indikatora D adresiranog vrednolsu UZ
+. Ukoliko je indikator
+n-1...0
+D  ulaza  odabranog  za  zamenu  1,  blok  je  modifikovan,  pa  prvo  treba  dati  blok  vratiti  u
+operativnu memoriju pa tek onda dovusi šeljeni blok. Ukoliko je indikator D ulaza odabranog
+za zamenu 0, blok nije modifikovan, pa se šeljeni blok odmah dovlaci.
+Prilikom  vrasanja  bloka  odabranog  za  zamenu  2
+l
+reci  datog  bloka  se  cita  iz  DATA
+MEMORIJE  sa  adresa  formiranih  od  vrednosti  UZ
+koja  daje  n  starijih  bitova  adrese  i
+n-1...0
+vrednosti  BR
+koja je daje  l  mlaCih  bitova  adrese.  Date  reci  se  upisuju  u  OPERATIVNU
+l-1...0
+MEMORIJU  na  adresama  formiranih  od  vrednosti  na  linijama  TO
+koja  daje  n  starijih
+h-1...0
+bitova  adrese  i  vrednosti  BR
+koja  je  daje  l  mlaCih  bitova  adrese.  Vrednost  na  linijama
+l-1...0
+TO
+procitana je iz TAG MEMORIJE sa adrese odreCene vrdnolsu UZ
+.
+h-1...0
+n-1...0
+Prilikom dovlacenja šeljenog bloka  2
+reci datog bloka se upisuje u DATA MEMORIJU na
+l
+adresama  formiranih  kao  i  u slucaju  vrasanja  bloka  od  vrednosti  UZ
+koja  daje  n  starijih
+n-1...0
+bitova  adrese  i  vrednosti  BR
+koja  je  daje  l  mlaCih  bitova  adrese.  Date  reci  se  citaju  iz
+l-1...0
+OPERATIVNE  MEMORIJE  sa  adresa  formiranih  od  vrednosti  bitova  A
+generisane
+h-1...0
+adrese koja daje n starijih bitova adrese i vrednosti BR
+koja je daje l mlaCih bitova adrese.
+l-1...0
+Pored  toga  bitovi A
+generisane  adrese se upisuju u  ulaz  TAG  MEMORIJE  cija  je  adresa
+h-1...0
+odreCena vrednolsu UZ
+. Indikatori V i  D ulaza adresiranih vrednolsu UZ
+postavljaju
+n-1...0
+n-1...0
+se na 1 i 0, respektivno.
+Po dovlacenju bloka podataka u keš memoriju, utvrCuje se da sada postoji saglasnost, pa se
+na ves opisani nacin adresira rec DATA MEMORIJE i obavlja citanje.
+Pri  generisanju  zahteva  za  upis od strane  procesora, na  isti nacin  se  ispituje  saglasnost  sa
+sadršajem  keš  memorije  kao  u  slucaju  operacije  citanja.  Ukoliko  postoji  saglasnost,  na  isti
+nacin  se  adresira  rec  DATA  MEMORIJE  i  vrli  upis,  pri  cemu  se  sada  indikator
+modifikovanog  ulaza  D,  adresiran  vrednolsu  US
+sa  izlaza  kodera  CD i koja  predstavlja
+n-1...0
+broj ulaza u kome je otkrivena saglasnost, postavlja na 1.
+6
+  
+Ako saglasnost  ne  postoji,  na  identican nacin kao i  za operaciju citanja,  se, najpre,  blok iz
+ulaza  keš  memorije,  odreCenog  vrednolsu  UZ
+,  vrasa  u  operativnu  memoriju,  ukoliko  je
+n-1...0
+modifikovan,  a  zatim,  u  isti  ulaz  keš  memorije,  dovlaci  novi  blok  iz  operativne  memorije.
+Potom  se  ponovo,  na  ves  opisani  nacin,  vrli  provera  da  li  postoji  saglasnost,  utvrCuje  da
+postoji saglasnost i realizuje upis.
+5.1.3.  Zamena blokova keš memorije
+Pri generisanju  zahteva za upis ili citanje od  strane procesora moše se utvrditi da se  blok u
+kome je zahtevana rec ne nalazi u bloku keš  memorije koji je predviCen odabranom tehnikom
+preslikavanja. Tada se jedan blok keš memorije mora vratiti u operativnu memoriju, da bi se u
+kel memoriji napravio prostor za blok iz operativne memorije u kome se zahtevana rec nalazi.
+Ovaj blok  se  odreCuje korilsenjem jednog od algoritama  zamene  koji  se  hardverski  realizuju
+u keš memoriji.
+Kod keš  memorije sa  direktnim  preslikavanjem algoritam  zamene  je  trivijalan  jer  je  blok
+za zamenu odreCen  brojem  bloka generisane adrese. Kod keš memorije sa asocijativnim i set-
+asocijativnim  preslikavanjem  algoritmom  zamene  se  za  zamenu  bira  jedan  od  svih  blokova
+kel memorije sa asocijativnim preslikavanjem i jedan od svih blokova seta, odreCenog brojem
+seta  generisane adrese, keš  memorije  sa set-asocijativnim preslikavanjem. Stoga se algoritam
+zamene  realizuje  za  celu  keš  memoriju  sa  asocijativnim  preslikavanjem,  a  posebno  za  svaki
+set keš memorije sa set-asocijativnim preslikavanjem.
+Pri  izboru  algoritma  zamene  treba  voditi  racuna  o  dva  zahteva.  Prvi  je  da  on  treba  da
+obezbedi  minimalnu  verovatnosu  da  se  blok  koji  je  odabran  za  zamenu  i  vrasen  iz  keš  u
+operativnu memoriju  ubrzo  morati ponovo  da  se dovuce iz  operativne  u  keš memoriju. Drugi
+je  da  cena  hardvera  potrebnog  za  njegovu  realizaciju  bude  lto  je  moguse  niša.  Ova  dva
+zahteva su  kontradiktorna, jer  je cena hardvera algoritama zamene koji bolje ispunjavaju prvi
+zahtev  vila  u  odnosu  na  cenu  hardvera  algoritama  zamene  koji  to  cine  lolije.  Ovde  se
+razmatraju  cetiri  algoritma  zamene  i  to  RANDOM,  FIFO,  LRU  i  PSEUDO  LRU  i  daju
+njihova  mogusa  realizacija.  Razmatranja  se  odnose  na  keš  memoriju  sa  asocijativnim
+preslikavanjem i vaše i za jedan set keš memorije sa set-asocijativnim preslikavanjem.
+5.1.3.1.  RANDOM
+RANDOM  algoritmom  zamene  za  zamenu  se  slucajno  bira  blok  korilsenjem  jednog  od
+postojesih  generatora  slucajnih  brojeva.  Mogusi  nacin  realizacije  je  da  se  koristi  brojac  po
+modulu  2
+,  gde  2
+predstalja  broj  ulaza  keš  memorije  sa  asocijativnim preslikavanjem  i  broj
+n
+n
+ulaza  po  setu  keš  memorije  sa  set-asocijativnim  preslikavanjem.  Moše  se  odabrati  neki
+proizvoljan  signal  i  koristiti  za  inkrementiranje  brojaca.  U  trenutku  kada  nema  saglasnoti  i
+treba odabrati blok  za zamenu, trenutna vrednost brojaca odreCuje ulaz za zamenu. Posle toga
+se  produšava  se  inkrementiranje  brojaca  do  sledeseg  tenutka  kada  nema  saglasnosti  i  kada
+ponovo na osnovu vrednosti brojaca treba odabrati ulaz za zamenu.
+Ovaj algoritam ne vodi racuna o tome da se blok  koji je odabran za zamenu i vrasen iz kel
+u  operativnu  memoriju  mošda  ubrzo  morati  ponovo  da  se  dovuce  iz  operativne  u  kel
+memoriju. MeCutim, hardver za njegovu realizaciju je jedostavan.
+5.1.3.2.  FIFO
+FIFO (first in–first  out) algoritmom zamene za  zamenu se bira blok  koji  je najranije unet
+iz  operativne  memorije  u  keš  memoriju.  Mogusi  nacin  realizacije  je  da  se  koristi  brojac  po
+modulu  2
+n
+,  gde  2
+n
+predstalja  broj  ulaza  keš  memorije  sa  asocijativnim preslikavanjem  i  broj
+7
+  
+ulaza  po  setu  keš  memorije  sa  set-asocijativnim  preslikavanjem.  U  trenutku  kada  nema
+saglasnoti  i  treba  odabrati  blok  za  zamenu,  trenutna  vrednost  brojaca  odreCuje  ulaz  za
+zamenu. Pri tome se i vrli inkrementiranje brojaca.
+Ovaj algoritam ne vodi racuna o tome da se blok  koji je odabran za zamenu i vrasen iz kel
+u  operativnu  memoriju  mošda  ubrzo  morati  ponovo  da  se  dovuce  iz  operativne  u  kel
+memoriju,  ves  za  zamenu  bira  blokove  po  onom  redosledu  po  kome  su  i  dovlaceni  iz
+operativne memorije u keš memoriju. MeCutim, hardver za njegovu realizaciju je jedostavan.
+5.1.3.3.  LRU
+LRU  (least  recently  used)  algoritmom  zamene  za  zamenu  se  bira  blok  kome  se  najduše
+vremena nije pristupalo. Mogusi nacin realizacije je da se koristi 2
+brojaca po modulu 2
+, gde
+n
+n
+2
+predstalja broj ulaza  keš memorije sa asocijativnim preslikavanjem i broj  ulaza  po setu kel
+n
+memorije sa set-asocijativnim preslikavanjem. Svakom od 2
+ulaza keš memorije dodeljuje se
+n
+jedan od 2
+brojaca po  modulu 2
+. Brojaci se tokom rada  tako ašuriraju da  je u njima uvek 2
+n
+n
+n
+razlicitih vrednosti i da brojac ulaza kome se najduše vremena nije pristupalo ima sve jedinice
+i time vrednost 2
+-1. U trenutku kada ima saglasnoti sadršaj brojaca ulaza u kome je otkrivena
+n
+saglasnot se  uporeCuje sa sadršajima  brojaca  svih preostalih ulaza.  Brojaci  koji  imaju manju
+vrednost od brojaca ulaza u kome je otkrivena saglasnost se inkrementiraju, brojaci koji imaju
+vesu vrednost  od brojaca  ulaza  u  kome je  otkrivena  saglasnost se ne menjaju  i brojac  ulaza  u
+kome  je  otkrivena  saglasnost  se  postavlja  na  nulu.  U  trenutku  kada  nema  saglasnosti  za
+zamenu  se  bira  ulaz  ciji  brojac  ima  sve  jedinice  i  time  vrednost  2
+-1,  brojaci  svih  preostalih
+n
+ulaza imaju manju vrednost od brojaca ulaza koji je odabran za zamenu pa se inkrementiraju i
+brojac ulaza koji je odabran za zamenu se postavlja  na nulu.  Na pocetku rada brojaci 2
+ulaza
+n
+treba  tako da  se  inicijalizuju  da  u  njima  bude  2
+razlicitih  vrednosti,  pri  cemu brojace  ulaza
+n
+treba  inicijalizovati  na  vrednosti  2
+-1,  2
+-2,  ...,  1  i  0  saglasno  redosledu  po  kome  se  šeli
+n
+n
+popunjavanje  ulaza.  Time se i za  popunjavanje keš memorije  i za zamenu blokova popunjene
+kel memorije koristi isti mehanizam.
+Ovaj  algoritam  je baziran na  pretpostavci  da  onim  blokovima  kojima  je  vile pristupano  u
+prollosti  verovatno  se  biti  pristupano  i  u  budusnosti,  pa  se  za  zamenu  bira  blok  kome  se
+najmanje skoro pristupalo. MeCutim, hardver za njegovu realizaciju je slošen.
+5.1.4.  Ašuriranje operativne memorije
+Ašuriranje  operativne  memorije  odreCuje  kako  se  kod  operacije  upisa  menja  sadršaj  u
+operativnoj memoriji. Pri tome se, kod zahteva za upis, mogu javiti dve  situacije. Prva je da u
+kel memoriji postoji saglasnost, a druga da nema saglasnosti.
+Za slucaj kada je  u  keš memoriji  otkrivena saglasnost, postoje  dva pristupa i to upili  skroz
+(write through  ili  store through)  i  vrati  nazad  (write back  ili  copy back).  Kod  pristupa  upili
+skroz,  pri  svakom  zahtevu  za  upis  istovremeno  se  vrli  upis  i  u  keš  memoriju  i  u  operativnu
+memoriju.  Kod  pristupa  vrati  nazad,  pri  svakom  zahtevu  za  upis  vrli  se  upis  samo  u  kel
+memoriju,  pa  odgovarajusi sadršaj u operativnoj memoriji nije ašuran.  Zbog  toga se za  svaki
+blok  u  keš  memoriji  vodi  evidencija  o  tome  da  li  je  modifikovan  ili  ne.  Ukoliko  je  kasnije
+potrebno dovusi novi  blok iz  operativne  memorije na mesto nekog bloka  u  keš memoriji  koji
+je nekim od prethodni upisa modifikovan, potrebno je, najpre, dati blok keš memorije vratiti u
+operativnu memoriju i time obezbediti da i sadršaj u operativnoj memoriji bude ašuran. Pored
+toga, kada se nekom procesu oduzima procesor, treba proveriti koji su blokovi u keš memoriji
+modifikovani, pa ih, radi ašuriranja sadršaja u operativnoj memoriji, vratiti iz keš memorije u
+8
+  
+operativnu  memoriju.  Stoga  kod  keš  memorija  koje  koriste  ovaj  pristup  ašuriranja  sadršaja
+operativne  memorije,  pored  zahteva  za  citanje  i  upis,  postoje  i  zahtevi  za  selektivno  i
+kompletno vrasanje blokova iz keš memorije u operativnu memoriju (flush).
+Prednost  pristupa  upili  skroz  je  u  tome  da  je  operativna  memorija  uvek  ašurna  cime  je
+obezbeCena konzistentnost  sadršaja operativne i keš  memorije. Nedostatak ovog pristupa je u
+obrasanju  operativnoj  memoriji  pri  svakom  upisu  u  keš  memoriju,  cime  se  bespotrebno
+opteresuje magistrala upisuivanjem meCurezultata u operativnu memoriju.
+Prednost  pristupa  vrati  nazad  je  u  tome  lto  se  operativnoj  memoriji  i  magistrali  pristupa
+samo  onda kada se blok vrasa iz  keš memorije u operativnu memoriju lto  rezultuje u manjem
+saobrasaju  na  magistrali.  Nedostatak  ovog  pristupa  je  potreba  da  se  blok  koji  se  izbacuje  iz
+kel memorije  mora najpre  vratiti u operativnu  memoriju, pa tek onda  dovusi  novi, lto znatno
+usporava odziv keš memorije u slucaju promalaja.
+Ovde  se  vidi  da  su  sve  prednosti  jednog  pristupa  ujedno  i  nedostaci  drugog.  Stoga  se
+pristup vrati nazad koristi  tamo gde je  magistrala usko  grlo sistema, a pristup upili skroz gde
+magistrala to nije.
+Za slucaj  kada je u keš memoriji nije otkrivena saglasnost, postoje dva  pristupa i to dovuci
+blok  (write allocate) i  ne dovlaci blok (no  write  allocate). Kod  pristupa  dovuci blok, blok  se
+dovlaci iz operativne u  keš memoriju,  cime  se  obezbeCuje  da se  sada  u  keš  memoriji otkriva
+saglasnost.  Dalji  postupak  odgovara  prethodno  opisanoj  situaciji  za  operaciju  upisa  i
+otkrivenu saglasnost, u kojoj  se  upis  vrli u keš  memoriju,  a za  ašuriranje sadršaja  operativne
+memorije  koristi  pristup upili  skroz  ili  vrati  nazad.  Kod  pristupa  ne  dovlaci  blok,  blok  se  ne
+dovlaci iz operativne u keš memoriju, ves se upis vrli samo u operativnu memoriju.
+Obicno  se  uz  pristup  vrati  nazad  (write back  ili  copy back)  koristi  pristup  dovuci  blok
+(write allocate),  dok  se  uz  pristup  upili  skroz  (write through  ili  store through)  koristi  pristup
+ne dovlaci blok (no write allocate).
+5.1.5.  Neka razmatranja u vezi realizacije keš memorije
+U  osnovni  mehanizam  funkcionisanja  keš  memorije  moguse  je  uvesti  neka  poboljlanja
+koja skrasuju vreme citanja iz i upisa u keš memoriju.
+Moguse  poboljlanje  je  u  tome  da  keš  memorija,  ako  se  radi  o  operaciji  upisa,  odmah
+dozvoli procesoru  da  produši sa izvrlavanjem tekuse instrukcije bez obzira  na  to  da  li je  upis
+zaista  izvrlen  ili  nije.  Time  se  paralelno  keš  memorija  obavljati  upis  a  procesor  izvrlavati
+instrukciju.  keš  memorija  nese  mosi  da  prihvati  novi  zahtev  za  upis  ili  citanje  ukoliko  se
+prethodno zapoceti upis nije zavrlio.
+Poboljlanje  je  moguse  uciniti  i  u  slucaju  operacije  citanja  kada  trašeni  blok  nije  u  kel
+memoriji, ves ga treba dovusi iz operativne memorije. Tada procesor  ne  mora da ceka  da  ceo
+blok  bude  prenesen  iz  operativne  u  keš  memoriju  i  da  tek  tada  dobije  trašeni  sadršaj.  Kel
+memorija  moše  procesoru  dostaviti  trašeni  sadršaj  cim  on  stigne  iz  operativne  u  kel
+memoriju.  U tom slucaju procesor  moše  ranije  da  nastavi izvrlavanje  tekuse instrukcije, a  da
+se  paralelno  s  time ostatak  bloka  prenese  iz  operativne  u keš  memoriju. Pri tome dovlacenje
+reci  bloka  treba  zapoceti  od  reci  cije  je  citanje  zahtevano.  Kao  u  prethodnom  slucaju,  kel
+memorija opet ne moše prihvatiti novi zahtev za citanje  ili upis sve dok se prenos prethodnog
+bloka ne obavi do kraja. Ova tehnika naziva se by-pass.
+Sledese  poboljlanje  je  moguse  ostvariti  u  slucajevima  kada  je  potrebno  izvrliti  vrasanje
+modifikovanog  bloka  u  operativnu  memoriju.  Da  bi  se  ubrzao  taj  postupak  moguse  je  u
+9
+  
+poseban bafer  privremeno smestiti  ceo  blok koji se vrasa i  odmah  presi  na  dovlacenje novog
+bloka iz operativne memorije. Tek po zavrletku dovlacenja novog bloka prelazi se na vrasanje
+u  operativnu  memoriju  bloka  koji  se nalazi  u  baferu. I ovde  keš memorija ne moše prihvatiti
+novi zahtev za  citanje ili upis sve dok se cela operacija  ne zavrli do kraja. Ovo poboljlanje se
+naziva baferisanje.
+Sva  navedena  poboljlanja  imaju  za  cilj  da  se  procesor  lto  manje  zadršava  prilikom
+obrasanja keš  memoriji.  Pri tome se pretpostavlja da se procesor  vrlo  verovatno nese  uskoro
+ponovo  obrasati  keš  memoriji,  pa  se  do  sledeseg  obrasanja  procesora  keš  memoriji,  kel
+memorija mosi da obavi prethodno zapocetu operaciju do kraja.
+U  slucaju  operacije  upisa  postoji  vile  nacina  da  se  promene  sadršaja  operativne  i  kel
+memorije  realizuju.  Ako  se  koristi  pristup  vrati  nazad  onda  se  promena  u  operativnoj
+memoriji  ostvaruje  samo  u  slucaju  vrasanja  bloka  u  operativnu  memoriju.  Lto  se  tice  kel
+memorije kod ovog pristupa se promena u keš memoriji ostvaruje uvek i to  i u  slucaju da  ima
+saglasnosti  i u slucaju da nema saglasnosti,  pri  cemu se u drugom slucaju  to  cini tek polto se
+blok prenese iz operativne u keš  memoriju. Ako se koristi pristup upili skroz onda se promena
+u  operativnoj  memoriji  ostvaruje  uvek.  Lto  se  tice  keš  memorije  kod  ovog  pristupa  se  u
+slucaju saglasnosti ili upisuje novi sadršaj u keš memoriju ili se ulaz keš memorije proglalava
+nevašesim.  U  slucaju  da  nema  saglasnosti  u  nekim  situacijama  ašurirani  blok  operativne
+memorije se dovlaci  u  keš memoriju, dok  se u drugim ašurirani  blok operativne memorije  ne
+dovlaci u keš memoriju.
+U  osnovni  mehanizam  funkcionisanja  keš  memorije  je  moguse  uvesti  neka  poboljlanja,
+koja  skrasuju  vreme citanja  iz  i upisa  u  keš  memoriju.  Moguse poboljlanje  je  u  tome  da kel
+memorija, ako se radi o operaciji upisa, upis izvrli u bafer podatka i odmah dozvoli procesoru
+da  produši  sa  izvrlavanjem  tekuse  instrukcije. Time  se  se  paralelno  obavljati  upis  iz  bafera
+podatka  u  operativnu  memoriju  i  izvrlavati  instrukcije  procesora.  Ove  tehnike  se  nazivaju
+baferovanje podatka i rani start procesora. Poboljlanje je moguse uciniti i u slucaju operacije
+citanja  kada  trašeni  blok  nije  u  keš  memoriji,  ves  ga  treba  dovusi  iz  operativne  memorije.
+Tada  procesor  ne  mora  da  ceka  da  ceo  blok  bude  dovucen  iz  operativne  memorije  u  kel
+memoriju i da tek tada  dobije trašeni sadršaj. keš memorija  moše  procesoru dostaviti  trašeni
+sadršaj cim  on  stigne  iz  operativne  u  keš memoriju.  U  tom  slucaju, procesor  moše ranije  da
+nastavi izvrlavanje  tekuse  instrukcije i  da  se  paralelno  ostatak bloka prenosi iz  operativne  u
+kel memoriju. Pri tome,  dovlacenje  reci bloka treba  zapoceti od reci cije je  citanje zahtevano.
+Ove  tehnike  se  nazivaju  prosleCivanje  i  rani  start procesora. Sledese  poboljlanje  je  moguse
+ostvariti u slucajevima  kada  je potrebno izvrliti vrasanje  modifikovanog bloka odabranog za
+zamenu  iz  keš  memorije  u  operativnu  memoriju.  Da  bi  se  ubrzao  taj  postupak,  moguse  je
+postaviti  bafer  bloka,  koji  se  prihvatiti  ceo  blok  koji  se  vrasa,  i  odmah  presi  na  dovlacenje
+bloka  iz  operativne  memorije.  Tek  po  zavrletku  dovlacenja  bloka  iz  operativne  u  kel
+memoriju,  prelazi  se  na  vrasanje  bloka  iz  bafera  bloka  u  operativnu  memoriju.  Ovo
+poboljlanje se naziva baferovanje bloka podataka.
+5.2.  VIRTUELNA MEMORIJA I JEDINICA ZA
+UBRZAVANJE
+Kod  velikog  broja  savremenih  racunara  ne  postoji  jedan  prema  jedan  korespondencija
+izmeCu  adresa  koje  se  generilu  u  programu  i  adresa  operativne  memorije.  Adrese  koje  se
+generilu  u  programu  zovu  se  virtuelne  adrese,  a  adrese  operativne  memorije  realne  adrese.
+10
+  
+Opseg  adresa  koje  se  generilu u  programu  se  zove  virtuelni  adresni  prostor,  a  opseg  adresa
+operativne memorije realni adresni prostor.
+U  ovim  razmatranjima  se  uzima  da  se  kompletan  virtuelni  adresni  prostor  dodeljuje
+svakom  procesu.  Kompletni  programi  i  podaci  svakog  procesa  nalaze  se  na  disku,  a  samo
+njihovi delovi za kojima u odreCenom trenutku postoji potreba  dovlace se  sa diska i smeltaju
+u  neki  deo  operativne  memorije.  Zbog toga kod  ovih racunara  postoji potreba  da  se  za  svaki
+proces  vodi  evidencija  o  tome  koji se  njegovi  delovi  nalaze  u operativnoj  memoriji  i  u kom
+njenom  delu.  To se obicno  realizuje pomosu posebnih  tabela koje se formiraju  u  operativnoj
+memoriji za svaki proces i koje  se nazivaju tabele preslikavanja.  U zavisnosti od toga kako se
+virtuelni  adresni  prostor  radi  dovlacenja  sa  diska  u  operativnu  memoriju  deli  na  delove,
+razlikuju se  tri tipa virtuelnih memorija, i  to virtuelne memorije sa stranicnom, segmentnom i
+segmentno-stranicnom organizacijom.
+Kod virtuelnih  memorija  stranicne organizacije  virtuelni  adresni prostor  se  deli  na delove
+fiksne  velicine  koji  se  nazivaju  stranice,  a  realni  adresni  prostor  se  deli  na  delove  fiksne
+velicine  koji se  nazivaju  blokovi. Velicina  stranice odgovara  velicini  bloka. Pojedine stranice
+svih  procesa se po  potrebi  smeltaju  u raspološive  blokove  operativne  memorije.  Kada se svi
+blokovi  operativne  memorije  popune  stranicama  razlicitih  procesa,  neka  od  tih  stranica  se
+vrasa na disk da bi se oslobodio blok u operativnoj memoriji za neku novu stranicu.
+Kod virtuelnih memorija segmentne organizacije virtuelni adresni prostor se deli na delove
+promenljive  velicine koji se nazivaju segmenti. Pojedini  segmenti  svih procesa se po potrebi
+smeltaju u delove operativne memorije koji po velicini odgovaraju velicinama segmenata koji
+se  u  njih  smeltaju.  Kada je kompletna operativna  memorija  popunjena  segmentima razlicitih
+procesa,  jedan  ili  vile  segmenata  se  vrasa  na disk  da  bi se  u  operativnoj  memoriji  oslobodio
+prostor dovoljan za smeltanje segmenta koji se dovlaci.
+Kod segmentno-stranicne organizacije  virtuelne  memorije  virtuelni  adresni  prostor se  deli
+na  delove  promenljive  velicine koji se nazivaju  segmenti, a  onda se segmenti  dele  na delove
+fiksne  velicine  koji  se  nazivaju  stranice.  Realni  adresni  prostor  se  deli  na  delove  fiksne
+velicine  koji se  nazivaju  blokovi. Velicina  stranice odgovara  velicini  bloka. Pojedine stranice
+pojedinih  segmenata  svih  procesa  se  po  potrebi  smeltaju  u  raspološive  blokove  operativne
+memorije.  Kada  se  svi  blokovi  operativne  memorije  popune  stranicama  segmenata  procesa,
+neka  od  stranica  se  vrasa  na  disk  da  bi  se  oslobodio  blok  za  neku  novu  stranicu  negog
+segmenta nekog procesa.
+Razdvajanjem  virtuelnog  i  realnog  adresnog  prostora  javlja  se  potreba  za  preslikavanjem
+virtuelnih  adresa  u  realne  korilsenjem  tabela  preslikavanja.  S  obzirom  da  se  sve  tabele
+preslikavanja  nalaze  u  operativnoj  memoriji,  preslikavanje  virtuelnih  adresa  u  realne  bi
+drasticno  usporilo vreme  izvrlavanja  instrukcija.  To  je  razlog lto kod  racunara  sa  virtuelnom
+memorijom  postoje  posebne  jedinice,  koje  se  se  u  daljem  tekstu  nazivati  jedinice  za
+preslikavanje, ciji je zadatak da ubrzaju postupak preslikavanja virtuelnih adresa u realne.
+U  daljem  tekstu  se  daju  osnovne  karakteristike  virtuelnih  memorija  i  jedinica  za
+preslikavanje.
+5.2.1.  Organizacija virtuelne memorije
+Postoje tri osnovne vrste organizacije virtuelnih memorija, i to:
+stranicna,
+segmentna i
+segmentno-stranicna.
+11
+  
+U  daljem  tekstu  se  daju  samo  one  osobine  svake  od  navedenih  organizacija  virtuelne
+memorije koje su relevantne za realizaciju jedinica za preslikavanje.
+5.2.1.1.  Stranicna organizacija
+Kod stranicne organizacije virtuelne memorije virtuelna adresa ima dva polja: broj stranice
+(page)  dušine p bita i adresa reci u  stranici (word)  dušine w bita. Kako je  velicina virtuelnog
+adresnog  prostora  2
+reci,  a  stranice  2
+reci,  to  su  velicine  polja  page  i  word  p  i  w  bita,
+p+w
+w
+respektivno.  Kod  stranicne  organizacije  virtuelne memorije realna adresa  ima dva  polja: broj
+bloka  (block)  dušine  b  bita  i  adresa  reci  u  bloku  (word)  dušine  w  bita.  Kako  je  velicina
+realnog  adresnog  prostora  2
+reci,  a  bloka  2
+reci,  to  su  velicine  polja  block  i  word  b  i  w
+b+w
+w
+bita,  respektivno.  Struktura  virtuelne  i  realne  adrese  i  dušine  u  bitovima  delova  virtuelne  i
+realne adrese su prikazani na slici 1.
+Tabela stranica  (PT)  jednog procesa  je data na slici 1. Tabela stranica  ima poseban ulaz za
+svaku  stranicu  procesa.  U  njima  se  nalaze  informacije  neophodne  za  preslikavanje  stranica
+virtuelnog  adresnog  prostora procesa u  blokove fizicke  memorije. Te  informacije se nazivaju
+deskriptori stranica. S obzirom da u  virtuelnom adresnom prostoru procesa ima 2
+stranica,  to
+p
+i tabela  stranica ima 2
+ulaza. Pocetna  adresa  tabele stranica  sadršana  je u posebnom registru
+p
+procesora koji se naziva  ukazivac na  PT (PTP).  Na  osnovu  sadršaja  ukazivaca na  PT i broja
+stranice,  jedinica  za  preslikavanje  virtuelnih  adresa  u  realne  adrese  dolazi  do  deskriptora
+stranice, a time i do informacija neophodnih za preslikavanje.
+U  operativnoj  memoriji  postoji  posebna  tabela  stranica  svakog  procesa.  Pocetne  adrese
+tabela  stranica  svih  procesa  cuva  operativni  sistem.  Prilikom  prebacivanja  procesora  sa
+procesa  na  procesa  operativni  sistem,  najpre,  cuva  kontekst  procesa  kome  se  oduzima
+procesor, a potom, restaurira kontekst  procesa kome se dodeljuje procesor. Tom prilikom se u
+ukazivac  na  PT  upisuje  pocetna  adresa  tabele  stranica  procesa  kome  se  dodeljuje  procesor.
+Time  se  obezbeCuje  da    jedinica  za  preslikavanje  pristupa  tabeli  stranica  procesa  kome  je
+dodeljen procesor.
+12
+  
+virtuelna adresa
+realna adresa
+page word
+block word
+1442443 14243
+1442443 14243
+adresa reci u stranici
+p
+w
+b w
+broj
+adresa reci
+ukazivac
+stranice
+u bloku
+PTP
+0
+na PT
+(broj ulaza
+l
+b + w
+u PT)
+123
+p + l
+b + w
++
+pocetna adresa PT
+PT (tabela stranica)
+2
+reci
+l
+2
+- 1
+p
+b + w
+deskriptor
+stranice
+0
+{ {
+1442443 1442443
+1 1
+b d
+V D
+block
+disk
+Slika 1 Virtuelna adresa, realna adresa i tabela stranica za stranicnu organizaciju virtuelne
+memorije
+Polja deskriptora stranice su:
+V (1 bit)–stranica u memoriji,
+D (1 bit)–stranica modifikovana,
+block (b bita)–broj bloka i
+disk (d bita)–adresa na disku.
+Polje  V  oznacava  da  li  je  data  stranica  u  operativnoj  memoriji.  Postavlja  ga  operativni
+sistem prilikom  dovlacenja date  stranice  sa  diska u  operativnu  memoriju. Koristi ga  jedinica
+za preslikavanje i to ako
+je postavljen, da formira realnu adresu i
+nije postavljen, da genirile prekid.
+Polje D oznacava da li je data stranica modifikovana. Postavlja ga jedinica za preslikavanje
+ako  je  bilo  operacija  upisa  u  datu  stranicu.  Koristi  ga  operativni  sistem  onda  kada  odabere
+datu stranicu za zamenu i to ako
+je postavljen, da datu stranicu vrati na disk
+13
+  
+nije postavljen, da datu stranicu ne vrasa na disk.
+Polje  block  oznacava  broj  bloka  operativne  memorije  u  kome  se  nalazi  data  stranica.
+Vrednost  u  ovom  polju  ima  smisla  jedino  ako  je  polje  V  postavljeno.  Polje  block  postavlja
+operativni sistem prilikom dovlacenja date stranice sa diska u operativnu memoriju. Koristi ga
+jedinica za preslikavanje, i to ako je polje V postavljeno, da formira realnu adresu.
+Polje  disk  oznacava  adresu  date  stranice  na  disku.  Polje  disk  postavlja  operativni  sistem
+prilikom  formiranja tabele  stranice datog  procesa.  Koristi  ga  samo operativni sistem  i to  radi
+lociranja date stranice na disku prilikom
+dovlacenja stranice sa diska u odabrani blok operativne memorije
+vrasanja  modifikovane  stranice  iz  bloka  operativne  memorije  odabranog  za  zamenu  na
+disk.
+Uzeto je da je velicina adrese stranice na disku d bitova.
+Preslikavanje  virtuelne  u  realnu  adresu  za  slucaj  da  je  stranica  u  memoriji  realizuje  se
+kompletno hardverski i  to pomosu  jedinice  za preslikavanje. Ovo preslikavanje  se realizuje  u
+sledesim koracima:
+Polje  page  virtuelne  adrese  predstavlja  broj  ulaza  u  tabelu  stranica  u  kome  se  nalazi
+deskriptor  date  stranice.  S  obzirom  na  to  da  deskriptor  stranice  zauzima  2
+reci  potrebno  je
+l
+broj  ulaza  u  tabelu  stranica  pretvoriti  u  pomeraj  u  odnosu  na  pocetak  tabele  stranica.  To  se
+realizuje pomeranjem ulevo za l mesta sadršaja polja page vitruelne adrese.
+Sadršaj  registra  ukazivac  na  PT  predstavlja  pocetnu  adresu  tabele  stranica.  Pomeraj  u
+odnosu  na  pocetak  tabele  stranica  formiran  u  prethodnom  koraku  se  sabira  sa  sadršajem
+registra  ukazivac  na  PT  i  time  dobija  adresa  deskriptora  date  stranice.  Pocev  od  formirane
+adrese  treba  ocitati  odgovarajusi  broj  reci  da  bi  se  dollo  do  polja  V  i  block  koja  koristi
+jedinica za preslikavanje.
+Polje  V  deskriptora  ukazuje  na  to  da  li  je  data  stranica  u  memoriji.  Stoga  se,  najpre,  sa
+adrese formirane u prethodnom koraku cita prva rec u kojoj se nalazi polje V deskriptora i vrli
+provera  da  li je  ovo polje postavljeno. Za  slucaj  kada je  stranica u memoriji utvrdise se da je
+polje V postavljeno, pa se produšava sa sledesim koracima.
+Polje  block deskriptora sadrši  broj bloka  u kome se  nalazi data stranica. Stoga se  sada cita
+potreban  broj  reci  deskriptora  da  bi  se  do  njega  dollo.  Konkatenacijom  polja  block  iz
+deskriptora stranice i polja word iz virtuelne adrese formira se realna adresa.
+U  slucaju  da  stranica  nije u  memoriji  realizuju  se  samo  prva tri  od  cetiri  koraka za  slucaj
+kada  je  stranica  u  memoriji.  U  koraku  tri  se  u  ovom  slucaju  utvrCuje  da  polje  V  nije
+postavljeno,  pa  se  generile  prekid.  Svi  koraci  do  generisanja  signala  prekida,  ukljucujusi  i
+njegovo generisanje,  realizuju se hardverski  pomosu jedinice za preslikavanje. Sve ostalo, lto
+za ovaj slucaj potom treba uraditi, radi se softverski i to radi poseban deo operativnog sistema.
+Ovo se realizuje u sledesim koracima:
+Oduzima se procesor datom procesu, njegov kontekst cuva i proces stavlja u red blokiranih
+procesa.
+Organizuje se dovlacenje date stranice sa diska u neki od blokova operativne memorije.
+Dodeljuje  se  procesor  nekom  od  radnosposobnih  procesa.  Tada  se  restaurira  njegov
+kontekst. U  okviru toga se  u  programski  brojac upisuje nova vrednost i time kontrola predaje
+tom novom procesu.
+14
+  
+Dovlacenje  stranice  sa  diska  u  neki  od  blokova  operativne  memorije  se  realizuje  u
+sledesim koracima:
+Traši  se  blok u koji se  se smestiti data stranica.  Pri tome se izvrlava jedan  od  sledesa dva
+koraka:
+Ukoliko  ima  slobodnih  blokova  po  nekom  algoritmu  se  odlucuje  koji  blok  treba  dodeliti
+datoj stranici.
+Ukoliko  nema  slobodnih  blokova  po  nekom  algoritmu  se  odlucuje  koju  stranicu  treba
+izbaciti  iz operativne  memorije da  bi se blok  u kome  se  ona  nalazi oslobodio  i dodelio  datoj
+stranici. Ukoliko je stranica odabrana za  izbacivanje modifikovana mora se vratiti na disk pre
+nego lto  se  blok  u  kome  se  ona  nalazi koristi  da  se  u njega dovuce  nova stranica. Adresa  na
+disku  stranice  odabrane  za  izbacivanje  dobija  se  iz  polja  disk  deskriptora  date  stranice.  Po
+zavrlenom  vrasanju  date  stranice  na  disk,  u  polje  V    deskriptora  stranice  koja  je  vrasena  na
+disk upisuje se nula.
+Dovlaci se data stranica sa diska u odabrani blok operativne memorije. Adresa date stranice
+na disku dobija se  iz polja disk deskriptora  stranice. Po zavrlenom dovlacenju date stranice sa
+diska u polje block deskriptora stranice upisuje se broj bloka, a u polje V  jedinica.
+Proces za koji je dovucena stranica prevodi se u red radnosposobnih procesa.
+U nekom trenutku dati proces  ponovo  dobija procesor. Dati proces ponovo generile adresu
+za koju je  bilo utvrCeno da  je iz stranice koja nije  bila u  memoriji. Polto je sada data stranica
+u memoriji ponavljaju se koraci za slucaj kada je stranica u memoriji.
+5.2.2.  Organizacija jedinica preslikavanja
+Postoje tri osnovne vrste jedinica za preslikavanje i to:
+jedinica sa asocijativnim preslikavanjem,
+jedinica sa direktnim preslikavanjem i
+jedinica sa set-asocijativnim preslikavanjem.
+Bilo  koja  vrsta  jedinice  moše  da  se  koristi  sa  bilo  kojom  vrstom  virtuelne  memorije.
+MeCutim,  jedinica  sa  asocijativnim  preslikavanjem,  prikazana  u  odeljku  Error!  Reference
+source  not  found.,  je  realizovana  sa  virtuelnom  memorijom  stranicne  organizacije,  jedinica
+sa  direktnim  preslikavanjem,  prikazana  u  odeljku  Error!  Reference  source  not  found.,  je
+realizovana  sa  virtuelnom  memorijom  segmentne  organizacije  i jedinica  sa  set-asocijativnim
+preslikavanjem,  prikazana  u  odeljku  Error! Reference  source  not  found., je  realizovana  sa
+virtuelnom  memorijom  segmentno-stranicne  organizacije.  Stoga  su  oplti  principi  realizacije
+tri  tipa  jedinica  za  preslikavanje  dati  za  tri  razlicita  tipa  virtuelnih  memorija,  saglasno
+navedenim realizacijama.
+5.2.2.1.  Jedinica sa asocijativnim preslikavanjem
+S obzirom:
+da u adresnom prostoru procesa ima 2
+stranica,
+p
+da je broj procesa 2
+i
+k
+da  se  u  jedinici  za  preslikavanje  mogu  istovremeno  cuvati  deskriptori  stranica  razlicitih
+procesa,
+15
+  
+zakljucuje  se  da  je,  kao  lto je prikazano  na slici  2, tag  dušine  k + p  bita  i  da  je  formiran
+tako da:
+k najstarijih bitova predstavljaju broj procesa (user) i
+p najmlaCih bitova predstavljaju broj stranice (page) iz virtuelne adrese.
+123
+Slika 2 Jedinica sa asocijativnim preslikavanjem za virtuelnu memoriju stranicne organizacije
+Na  osnovu  zadatih  karakteristika  virtuelne  memorije  i jedinice  za  preslikavanje  dolazi  se
+do strukture jedinice za preslikavanje prikazane na istoj slici.
+16
+  
+Jedinica za preslikavanje se sastoji iz sledesih delova:
+D
+(dirty bitovi)–2
+flip-flopova,
+n
+0…2
+œ 1
+n
+V
+(valid bitovi)–2
+flip-flopova,
+n
+0…2
+n
+œ 1
+TAG MEMORIJA–asocijativna memorija kapaciteta 2
+reci lirine k + p bitova,
+n
+CD–koder i
+DATA MEMORIJA–RAM memorija kapaciteta 2
+reci lirine b bita.
+n
+Dirty bitovi oznacavaju  za svaki od 2
+ulaza jedinice  za preslikavanje  da  li  je bilo upisa  u
+n
+neku od lokacija date stranice.
+Valid bitovi  oznacavaju za  svaki  od 2
+n
+ulaza  jedinice za  preslikavanje da li je odgovarajusi
+ulaz TAG MEMORIJE vašesi.
+TAG MEMORIJA sluši za cuvanje 2
+TAG polja stranica ciji se delovi deskriptora nalaze u
+n
+odgovarajusim  ulazima  DATA  MEMORIJE  i  generisanje  aktivnih  vrednosti  signala
+saglasnosti  M
+ukoliko  postoji  saglasnost  TAG  polja  generisane  adrese  i  sadršaja
+0…2
+œ  1
+n
+odgovarajuseg ulaza TAG MEMORIJE.
+CD sluši za  generisanje aktivne vrednosti  signala saglasnosti HIT i  broja  ulaza  u jedinicu
+za preslikavanje za koji je otkrivena saglasnost.
+DATA MEMORIJA sluši za cuvanje 2
+deskriptora stranica.
+n
+TAG  bitovi  (k  +  p)  iz  generisane  adrese  se  porede  sa  sadršajima  svih  2
+ulaza  u  TAG
+n
+MEMORIJI.  Ako  se  sadršaj  bilo  kojeg  ulaza  slaše  sa  TAG  bitovima  generisane  adrese  i
+odgovarajusi V bit je postavljen, signal saglasnosti HIT postaje aktivan.
+Bitovi  (n)  koji  oznacavaju  broj  ulaza  u  jedinicu  za  preslikavanje  gde  je  otkrivena
+saglasnost dobijeni sa izlaza kodera se koriste kao adresa u DATA MEMORIJI i deskriptor se
+cita.
+Ocitano  polje  block  daje  b  najstarijih  bitova  a  polje  word  iz  virtuelne adrese  w  najmlaCih
+bitova realne adrese.
+Sve ove aktivnosti se realizuju hardverski.
+Da  bi  se  stranice  razlicitih  procesa  koje  imaju  isti  broj  preslikale  svaka  u  svoj  blok,  u
+formiranju  tag  polja  ucestvuje ne  samo polje  page generisane adrese,  ves  i  vrednost  registra
+user procesora. Kod prebacivanja procesora sa procesa na proces  u  ovaj  registar  procesora se
+upisuje broj procesa kome se dodeljuje procesor.
+Ukoliko  se  utvrdi  da  se  relevantni  deskriptor  ne  nalazi  u  hardveru,  ide  se  hardverski  u
+tabelu  stranica  i  cita  deskriptor  na nacin  prikazan u  odeljku  5.2.1.1. Ukoliko  se  utvrdi da  se
+stranica  nalazi  u  operativnoj  memoriji,  polje  block  deskriptora  se  dovlaci  u  hardver.
+Korilsenjem  FIFO ili  LRU algoritma  zamene bira se ulaz  jedinice za  preslikavanje  u  koji  se
+smelta  deskriptor.  U  dati  ulaz  DATA  MEMORIJE  se  upisuje  polje  block  deskriptora.  U  isti
+ulaz  TAG  MEMORIJE  se  upisuje  polje  tag  generisane  adrese.  U  isti  ulaz  V  flip-flopova  se
+upisuje 1, a u isti ulaz D flip-flopova se upisuje 0. Sve ovo se realizuje hardverski. Ukoliko se
+utvrdi da  se  stranica  ne  nalazi u  operativnoj  memoriji,  generile  se  prekid. Operativni  sistem
+dovlaci datu stranicu sa diska na nacin prikazan u odeljku 5.2.1.1.
+17

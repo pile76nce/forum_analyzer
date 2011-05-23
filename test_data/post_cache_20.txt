@@ -1,0 +1,1 @@
+Greg, even if we use a write through cache, don't we have to have a replacement policy still, and thus still require the use of some sort of management bits?

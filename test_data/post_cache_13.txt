@@ -1,0 +1,3 @@
+Is there an outline of what will, won't and might be covered on the final?
+I know the final will emphasize the second part of the class, including Multicycle CPU, Pipeline, Cache, Virtual Memory, and AMAT.
+I know Andrea mentioned that there will be no Booth's algorithm or division problem.

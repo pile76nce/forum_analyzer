@@ -1,0 +1,415 @@
+I'm going to go ahead and assume for these two problems (2 & 3), that we're dealing with a write back cache. I'm curious though, what replacement policy are we using? If we use LRU, how many bits should we allocate for a 4-way set associative cache (SAC)? We haven't talked about this in class yet really, as it seems like it should be different from the 2-way SAC.
+
+I don't think we have to worry about LRU for problems 2 and 3 since problem 4 is where it is first mentioned.
+The LRU for 4 and 8 way set associative was briefly mentioned in class, the implementation would be a queue and I don't think we're responsible for knowing that... at least not yet.
+This brings up another question, for problem 4 are we starting with a cold cache? I will assume yes since we weren't given an initial cache state table.
+
+I don't think LRU is taken into account in problems 2&3.
+And in problem 4, that cache is cold, since he didn't give us values for it.
+
+So you're suggesting we don't allocate any bits for management of our replacement policy in question 2 or 3? I feel like that's not correct.
+
+On second thought, you're probably right, we should take LRU into account since it has been covered in class.
+A 4 way set associative cache needs each set to keep track of four entries. How many bits do you need for four entries?
+
+The easiest assumption is a write-through cache.
+However, you could assume a write-back cache with either a LRU or Random replacement policy.
+Just state your assumptions about the cache design and your replacement policy if required.
+gj
+
+Greg, even if we use a write through cache, don't we have to have a replacement policy still, and thus still require the use of some sort of management bits?
+
+I thought a block was always one word and a word can be defined as any number of bytes, but HW8#2 has a block of 4 words.
+I would appreciate some clarification on the relationship between blocks, words and bytes. Thank you!
+
+Blocks are made up of words.
+For example if you have a 16 word block, thats 16 words, and if your word is 4 bytes, you have 64 bytes in a block!
+
+Sorry, just realized it was a 4-way. I am assuming it is a block of 4 words/sets, each word with a set index. Then in each word is the 4-way part, so a set of 4 bytes?
+
+
+Blocks can be any number of words, and words can be any number of bytes.
+Pay attention to the information given. There is no concrete relationship, it's all system dependent.
+In a 4-way set associative cache, all of the lines are divided into sets of 4. every 4 lines is a set. each lines contains one block of information. So in one set, there would be 4 blocks. Lines are not indexed in a set, they are indexed by their set. Once you determine which set the information is in, you must check every element of the set for a match. That's why set associative caches are slower than non-associative caches.
+
+
+A block has no specific size. It is machine dependent. This means it can be any number of words or bytes, really. I.E. The homework has the block as 4 words. Each cache line has as its data a cache block. This means (assuming as in problem 2 - 32bit words) that each cache line has 128 bits of data. Remember that it is not only data that makes up the number of bits in a cache line, so each cache line will have 128 bits of data plus some number of management bits.
+In a 4-way SAC each index has four cache lines associated with it. Essentially, you can store 4 blocks per index in a 4-way SAC. In the case of our system for problem 2, we can store 16 words per cache line, or 64 words to an index.
+
+
+I thought a block was always one word
+incorrect
+and a word can be defined as any number of bytes
+correct.
+
+i think you're confusing yourself cause of the number 4.
+it's possible to have a 4-way set associative cache with 2 words per block and 3 bytes per word.
+sure, 3 byte words are uncommon, if used at all, but it's possible and we should understand what the cache would look like.
+2 words per block, 3 bytes per word means we have 6 data bytes per cache line. 4-way set associative means there are 4 lines per set.
+if you have anything more than one way associative, you have to have a replacement policy. even if it's most recently used, it's still a policy. LRU just requires a queue and flip-flops.
+How many bits do you need for four entries?
+How many bits do you need to keep track of four anythings?
+
+Structural Hazards
+When a processor is pipelined, the overlapped execution of instructions requires
+pipelining of functional units and duplication of resources to allow all possible
+combinations of instructions in the pipeline. If some combination of instructions
+cannot be accommodated because of resource conflicts, the processor is said to
+have a structural hazard.
+The most common instances of structural hazards arise when some functional
+unit is not fully pipelined. Then a sequence of instructions using that unpipelined
+unit cannot proceed at the rate of one per clock cycle. Another common way that
+structural hazards appear is when some resource has not been duplicated enough
+to allow all combinations of instructions in the pipeline to execute. For example,
+a processor may have only one register-file write port, but under certain circumstances,
+the pipeline might want to perform two writes in a clock cycle. This will generate a structural hazard.
+When a sequence of instructions encounters this hazard, the pipeline will stall
+one of the instructions until the required unit is available. Such stalls will increase
+the CPI from its usual ideal value of 1.
+Some pipelined processors have shared a single-memory pipeline for data
+and instructions. As a result, when an instruction contains a data memory reference,
+it will conflict with the instruction reference for a later instruction, as
+shown in Figure A.4. To resolve this hazard, we stall the pipeline for 1 clock
+cycle when the data memory access occurs. A stall is commonly called a
+pipeline bubble or just bubble, since it floats through the pipeline taking space but
+carrying no useful work. We will see another type of stall when we talk about
+data hazards.
+Designers often indicate stall behavior using a simple diagram with only the
+pipe stage names, as in Figure A.5. The form of Figure A.5 shows the stall by
+indicating the cycle when no action occurs and simply shifting instruction 3 to
+the right (which delays its execution start and finish by 1 cycle). The effect of the
+pipeline bubble is actually to occupy the resources for that instruction slot as it
+travels through the pipeline.
+
+Example
+Let’s see how much the load structural hazard might cost. Suppose that data references
+constitute 40% of the mix, and that the ideal CPI of the pipelined processor,
+ignoring the structural hazard, is 1. Assume that the processor with the
+structural hazard has a clock rate that is 1.05 times higher than the clock rate of
+the processor without the hazard. Disregarding any other performance losses, is
+the pipeline with or without the structural hazard faster, and by how much?
+Answer
+There are several ways we could solve this problem. Perhaps the simplest is to
+compute the average instruction time on the two processors:
+Average instruction time =
+Since it has no stalls, the average instruction time for the ideal processor is simply
+the Clock cycle time ideal. The average instruction time for the processor with the structural hazard is
+Average instruction time = CPI × Clock cycle time
+(1 + 0.4 × 1)
+Clock cycle timeideal
+1.05
+= × ---------------------------------------------------
+= 1.3 × Clock cycle timeideal
+
+Clearly, the processor without the structural hazard is faster; we can use the ratio
+of the average instruction times to conclude that the processor without the hazard
+is 1.3 times faster.
+As an alternative to this structural hazard, the designer could provide a separate
+memory access for instructions, either by splitting the cache into separate
+instruction and data caches, or by using a set of buffers, usually called instruction
+buffers, to hold instructions. Chapter 5 discusses both the split cache and instruction
+buffer ideas.
+If all other factors are equal, a processor without structural hazards will
+always have a lower CPI. Why, then, would a designer allow structural hazards?
+The primary reason is to reduce cost of the unit, since pipelining all the functional
+units, or duplicating them, may be too costly. For example, processors that
+support both an instruction and a data cache access every cycle (to prevent the
+structural hazard of the above example) require twice as much total memory
+bandwidth and often have higher bandwidth at the pins. Likewise, fully pipelining
+a floating-point multiplier consumes lots of gates. If the structural hazard is
+rare, it may not be worth the cost to avoid it.
+
+Data Hazards
+A major effect of pipelining is to change the relative timing of instructions by
+overlapping their execution. This overlap introduces data and control hazards.
+Clock cycle number
+Instruction 1 2 3 4 5 6 7 8 9 10
+Load instruction IF ID EX MEM WB
+Instruction i + 1 IF ID EX MEM WB
+Instruction i + 2 IF ID EX MEM WB
+Instruction i + 3 stall IF ID EX MEM WB
+Instruction i + 4 IF ID EX MEM WB
+Instruction i + 5 IF ID EX MEM
+Instruction i + 6 IF ID EX
+Figure A.5 A pipeline stalled for a structural hazard—a load with one memory port. As shown here, the load
+instruction effectively steals an instruction-fetch cycle, causing the pipeline to stall—no instruction is initiated on
+clock cycle 4 (which normally would initiate instruction i + 3). Because the instruction being fetched is stalled, all
+other instructions in the pipeline before the stalled instruction can proceed normally. The stall cycle will continue to
+pass through the pipeline, so that no instruction completes on clock cycle 8. Sometimes these pipeline diagrams are
+drawn with the stall occupying an entire horizontal row and instruction 3 being moved to the next row; in either
+case, the effect is the same, since instruction i + 3 does not begin execution until cycle 5. We use the form above,
+since it takes less space in the figure. Note that this figure assumes that instruction i + 1 and i + 2 are not memory
+references.
+A-16  Appendix A Pipelining: Basic and Intermediate Concepts
+Data hazards occur when the pipeline changes the order of read/write accesses to
+operands so that the order differs from the order seen by sequentially executing
+instructions on an unpipelined processor. Consider the pipelined execution of
+these instructions:
+DADD R1,R2,R3
+DSUB R4,R1,R5
+AND R6,R1,R7
+OR R8,R1,R9
+XOR R10,R1,R11
+All the instructions after the DADD use the result of the DADD instruction. As shown
+in Figure A.6, the DADD instruction writes the value of R1 in the WB pipe stage,
+but the DSUB instruction reads the value during its ID stage. This problem is
+called a data hazard. Unless precautions are taken to prevent it, the DSUB instruction
+will read the wrong value and try to use it. In fact, the value used by the DSUB
+
+instruction is not even deterministic: Though we might think it logical to assume
+that DSUB would always use the value of R1 that was assigned by an instruction
+prior to DADD, this is not always the case. If an interrupt should occur between the
+DADD and DSUB instructions, the WB stage of the DADD will complete, and the
+value of R1 at that point will be the result of the DADD. This unpredictable
+behavior is obviously unacceptable.
+The AND instruction is also affected by this hazard. As we can see from
+Figure A.6, the write of R1 does not complete until the end of clock cycle 5.
+Thus, the AND instruction that reads the registers during clock cycle 4 will receive
+the wrong results.
+The XOR instruction operates properly because its register read occurs in
+clock cycle 6, after the register write. The OR instruction also operates without
+incurring a hazard because we perform the register file reads in the second half of
+the cycle and the writes in the first half.
+The next subsection discusses a technique to eliminate the stalls for the hazard
+involving the DSUB and AND instructions.
+Minimizing Data Hazard Stalls by Forwarding
+The problem posed in Figure A.6 can be solved with a simple hardware technique
+called forwarding (also called bypassing and sometimes short-circuiting).
+The key insight in forwarding is that the result is not really needed by the DSUB
+until after the DADD actually produces it. If the result can be moved from the pipeline
+register where the DADD stores it to where the DSUB needs it, then the need for
+a stall can be avoided. Using this observation, forwarding works as follows:
+1. The ALU result from both the EX/MEM and MEM/WB pipeline registers is
+always fed back to the ALU inputs.
+2. If the forwarding hardware detects that the previous ALU operation has written
+the register corresponding to a source for the current ALU operation, control
+logic selects the forwarded result as the ALU input rather than the value
+read from the register file.
+Notice that with forwarding, if the DSUB is stalled, the DADD will be completed
+and the bypass will not be activated. This relationship is also true for the case of
+an interrupt between the two instructions.
+As the example in Figure A.6 shows, we need to forward results not only
+from the immediately previous instruction, but possibly from an instruction that
+started 2 cycles earlier. Figure A.7 shows our example with the bypass paths in
+place and highlighting the timing of the register read and writes. This code
+sequence can be executed without stalls.
+Forwarding can be generalized to include passing a result directly to the functional
+unit that requires it: A result is forwarded from the pipeline register corresponding
+to the output of one unit to the input of another, rather than just from
+
+the result of a unit to the input of the same unit. Take, for example, the following
+sequence:
+DADD R1,R2,R3
+LD R4,0(R1)
+SD R4,12(R1)
+To prevent a stall in this sequence, we would need to forward the values of the
+ALU output and memory unit output from the pipeline registers to the ALU and
+data memory inputs. Figure A.8 shows all the forwarding paths for this example.
+
+Data Hazards Requiring Stalls
+Unfortunately, not all potential data hazards can be handled by bypassing.
+Consider the following sequence of instructions:
+LD R1,0(R2)
+DSUB R4,R1,R5
+AND R6,R1,R7
+OR R8,R1,R9
+The pipelined data path with the bypass paths for this example is shown in
+Figure A.9. This case is different from the situation with back-to-back ALU
+operations. The LD instruction does not have the data until the end of clock cycle
+4 (its MEM cycle), while the DSUB instruction needs to have the data by the
+beginning of that clock cycle. Thus, the data hazard from using the result of a
+load instruction cannot be completely eliminated with simple hardware. As Figure
+A.9 shows, such a forwarding path would have to operate backward in
+time—a capability not yet available to computer designers! We can forward the
+result immediately to the ALU from the pipeline registers for use in the AND operation,
+which begins 2 clock cycles after the load. Likewise, the OR instruction has
+no problem, since it receives the value through the register file. For the DSUB
+
+instruction, the forwarded result arrives too late—at the end of a clock cycle,
+when it is needed at the beginning.
+The load instruction has a delay or latency that cannot be eliminated by forwarding
+alone. Instead, we need to add hardware, called a pipeline interlock, to
+preserve the correct execution pattern. In general, a pipeline interlock detects a
+hazard and stalls the pipeline until the hazard is cleared. In this case, the interlock
+stalls the pipeline, beginning with the instruction that wants to use the data until
+the source instruction produces it. This pipeline interlock introduces a stall or
+bubble, just as it did for the structural hazard. The CPI for the stalled instruction
+increases by the length of the stall (1 clock cycle in this case).
+Figure A.10 shows the pipeline before and after the stall using the names of the
+pipeline stages. Because the stall causes the instructions starting with the DSUB to
+move 1 cycle later in time, the forwarding to the AND instruction now goes
+through the register file, and no forwarding at all is needed for the OR instruction.
+The insertion of the bubble causes the number of cycles to complete this
+sequence to grow by one. No instruction is started during clock cycle 4 (and none
+finishes during cycle 6).
+
+Branch Hazards
+Control hazards can cause a greater performance loss for our MIPS pipeline than
+do data hazards. When a branch is executed, it may or may not change the PC to
+something other than its current value plus 4. Recall that if a branch changes the
+PC to its target address, it is a taken branch; if it falls through, it is not taken, or
+untaken. If instruction i is a taken branch, then the PC is normally not changed
+until the end of ID, after the completion of the address calculation and comparison.
+Figure A.11 shows that the simplest method of dealing with branches is to
+redo the fetch of the instruction following a branch, once we detect the branch
+during ID (when instructions are decoded). The first IF cycle is essentially a stall,
+because it never performs useful work. You may have noticed that if the branch is
+untaken, then the repetition of the IF stage is unnecessary since the correct instruction
+was indeed fetched. We will develop several schemes to take advantage of this
+fact shortly.
+One stall cycle for every branch will yield a performance loss of 10% to 30%
+depending on the branch frequency, so we will examine some techniques to deal
+with this loss.
+
+Reducing Pipeline Branch Penalties
+There are many methods for dealing with the pipeline stalls caused by branch
+delay; we discuss four simple compile time schemes in this subsection. In these
+four schemes the actions for a branch are static—they are fixed for each branch
+during the entire execution. The software can try to minimize the branch penalty
+using knowledge of the hardware scheme and of branch behavior. Chapters 2 and
+3 look at more powerful hardware and software techniques for both static and
+dynamic branch prediction.
+The simplest scheme to handle branches is to freeze or flush the pipeline,
+holding or deleting any instructions after the branch until the branch destination
+is known. The attractiveness of this solution lies primarily in its simplicity both
+for hardware and software. It is the solution used earlier in the pipeline shown in
+Figure A.11. In this case the branch penalty is fixed and cannot be reduced by
+software.
+A higher-performance, and only slightly more complex, scheme is to treat
+every branch as not taken, simply allowing the hardware to continue as if the
+branch were not executed. Here, care must be taken not to change the processor
+state until the branch outcome is definitely known. The complexity of this
+scheme arises from having to know when the state might be changed by an
+instruction and how to “back out” such a change.
+In the simple five-stage pipeline, this predicted-not-taken or predicteduntaken
+scheme is implemented by continuing to fetch instructions as if the
+branch were a normal instruction. The pipeline looks as if nothing out of the ordinary
+is happening. If the branch is taken, however, we need to turn the fetched
+instruction into a no-op and restart the fetch at the target address. Figure A.12
+shows both situations.
+
+An alternative scheme is to treat every branch as taken. As soon as the branch
+is decoded and the target address is computed, we assume the branch to be taken
+and begin fetching and executing at the target. Because in our five-stage pipeline
+we don’t know the target address any earlier than we know the branch outcome,
+there is no advantage in this approach for this pipeline. In some processors—
+especially those with implicitly set condition codes or more powerful (and hence
+slower) branch conditions—the branch target is known before the branch outcome,
+and a predicted-taken scheme might make sense. In either a predictedtaken
+or predicted-not-taken scheme, the compiler can improve performance by
+organizing the code so that the most frequent path matches the hardware’s
+choice. Our fourth scheme provides more opportunities for the compiler to
+improve performance.
+A fourth scheme in use in some processors is called delayed branch. This
+technique was heavily used in early RISC processors and works reasonably well
+in the five-stage pipeline. In a delayed branch, the execution cycle with a branch
+delay of one is
+branch instruction
+sequential successor1
+branch target if taken
+The sequential successor is in the branch delay slot. This instruction is executed
+whether or not the branch is taken. The pipeline behavior of the five-stage pipeline
+with a branch delay is shown in Figure A.13. Although it is possible to have
+a branch delay longer than one, in practice, almost all processors with delayed
+branch have a single instruction delay; other techniques are used if the pipeline
+has a longer potential branch penalty.
+
+The job of the compiler is to make the successor instructions valid and useful.
+A number of optimizations are used. Figure A.14 shows the three ways in which
+the branch delay can be scheduled.
+The limitations on delayed-branch scheduling arise from (1) the restrictions on
+the instructions that are scheduled into the delay slots and (2) our ability to predict
+at compile time whether a branch is likely to be taken or not. To improve the ability
+of the compiler to fill branch delay slots, most processors with conditional branches
+have introduced a canceling or nullifying branch. In a canceling branch, the instruction
+includes the direction that the branch was predicted. When the branch behaves
+as predicted, the instruction in the branch delay slot is simply executed as it would
+
+normally be with a delayed branch. When the branch is incorrectly predicted, the
+instruction in the branch delay slot is simply turned into a no-op.
+Performance of Branch Schemes
+What is the effective performance of each of these schemes? The effective pipeline
+speedup with branch penalties, assuming an ideal CPI of 1, is
+Because of the following:
+Pipeline stall cycles from branches = Branch frequency × Branch penalty
+we obtain
+The branch frequency and branch penalty can have a component from both
+unconditional and conditional branches. However, the latter dominate since they
+are more frequent.
+Example For a deeper pipeline, such as that in a MIPS R4000, it takes at least three pipeline
+stages before the branch-target address is known and an additional cycle
+before the branch condition is evaluated, assuming no stalls on the registers in the
+conditional comparison. A three-stage delay leads to the branch penalties for the
+three simplest prediction schemes listed in Figure A.15.
+Find the effective addition to the CPI arising from branches for this pipeline,
+assuming the following frequencies:
+Unconditional branch 4%
+Conditional branch, untaken 6%
+Conditional branch, taken 10%
+Branch scheme Penalty unconditional Penalty untaken Penalty taken
+Flush pipeline 2 3 3
+Predicted taken 2 3 2
+Predicted untaken 2 0 3
+Figure A.15 Branch penalties for the three simplest prediction schemes for a deeper pipeline.
+Pipeline speedup Pipeline depth
+1 + Pipeline stall cycles from branches
+= --------------------------------------------------------------------------------------------
+Pipeline speedup Pipeline depth
+1 + Branch frequency × Branch penalty
+= -------------------------------------------------------------------------------------------
+
+The branch frequency and branch penalty can have a component from both
+unconditional and conditional branches. However, the latter dominate since they
+are more frequent.
+Example For a deeper pipeline, such as that in a MIPS R4000, it takes at least three pipeline
+stages before the branch-target address is known and an additional cycle
+before the branch condition is evaluated, assuming no stalls on the registers in the
+conditional comparison. A three-stage delay leads to the branch penalties for the
+three simplest prediction schemes listed in Figure A.15.
+Find the effective addition to the CPI arising from branches for this pipeline,
+assuming the following frequencies:
+Unconditional branch 4%
+Conditional branch, untaken 6%
+Conditional branch, taken 10%
+
+Answer We find the CPIs by multiplying the relative frequency of unconditional, conditional
+untaken, and conditional taken branches by the respective penalties. The
+results are shown in Figure A.16.
+The differences among the schemes are substantially increased with this
+longer delay. If the base CPI were 1 and branches were the only source of stalls,
+the ideal pipeline would be 1.56 times faster than a pipeline that used the stall pipeline
+scheme. The predicted-untaken scheme would be 1.13 times better than
+the stall-pipeline scheme under the same assumptions.
+
+Hey,
+I am currently having a problem that P1.2 is causing an interrupt, even though it is not selected as an interrupt and it should also be disabled by nature, becuase when P1SEL is high for a bit, its Interrupt should be disabled.
+
+Has anyone else seen this. You might not realize it until you step through your code, or if your piezo sounds "choppy", I know I heard others sound the same way.
+
+
+Anyone have any idea why this might be happening?
+
+Thanks,
+Matt
+
+Uhh, if you're sure that you didn't enable interrupts in P1.2, then you may have triggered the interrupt another way. 
+Like if you do P1OUT = 0x01, it is possible to change all of the other pins. 
+So make sure everything that modifies your port 1 pins is either OR equal or AND equal. 
+Also I don't think P1SEL actually disables interrupts for P1.2 because from the user manual it 
+says that it just toggles between Timer A1 output and Digital I/O output, i'm not sure though.
+
+Also I found that the buzzer sounds choppy if you set the CCR0 too high (like at 20000), if you set it in the 800 - 1500 range it sounds fine.
+
+From The User Man, there is a note that says if PxSEL is enabled, it disables interrupts on that port.
+
+
+My P1out is not the cause, I have check it, it is CCR0 which is outputing to P1.2. I'll break down what Is going on.
+
+
+If I start my switches low, the code runs fine, no interrupt is processed.
+But if I start with any switches High or switch a switch High, then interrupts are continuous. It is only found when the code is run, since single stepping takes too long for the pwm cycle to go through one cycle.
+It is interrupting when bit 3, P1.2, is switched high. Now that bit is not selected as an Interrupt from this line, P1IE = 0xFA, nor is P1.0. But P1IN is changing bit 3 when the piezo goes high. Either way, that change should not enable an interrupt, but it does.
+
+when it asks for the total number of memory references is that total times we read from Matrix (even if its already in cache) or total times we read and miss therefore having to go and fetch from main memory?
+
+otal number of times memory is referenced (cache or main memory)... basically every lw instruction that this c code would compile down into.

@@ -1,0 +1,1 @@
+when it asks for the total number of memory references is that total times we read from Matrix (even if its already in cache) or total times we read and miss therefore having to go and fetch from main memory?

@@ -1,0 +1,1149 @@
+PREDGOVOR
+Ova knjiga je napisana kao osnovni udžbenik iz arhitekture i organizacije racunara i
+pokriva osnovne koncepte iz arhitekture i organizacije procesora, memorije, ulaza/izlaza i
+magistrale.
+Sistemi.
+Autor
+Beograd
+avgusta 2005.
+
+1 MAGISTRALA
+U ovoj glavi se razmatraju neki elementi realizacije magistrale. U okviru toga se daju
+osnovni pojmovi, arbitracija, ciklusi na magistrali i sistemi sa više magistrala.
+1.1 OSNOVNI POJMOVI
+Magistrala je uredena grupa linija koja služi za povezivanje modula racunarskog sistema i
+to procesora, memorije i ulazno/izlaznih uredaja. Preko magistrale se prenose sadržaji izmedu
+registara procesora, memorijskih lokacija i registara ulazno/izlaznih uredaja. Ceo tok prenosa
+nekog sadržaja izmedu dva modula, naziva se ciklus na magistrali. Modul koji zapocinje
+ciklus na magistrali, naziva se gazda (master), a modul sa kojim gazda realizuje ciklus, naziva
+se sluga (slave). Gazda može da bude procesor i uredaji sa direktnim pristupom memoriji.
+Sluga može da bude memorija i uredaji bez i sa direktnim pristupom memoriji. Procesor cita
+sadržaje memorijskih lokacija i upisuje sadržaje u memorijske lokacije prilikom citanja
+instrukcija i operanada i upisa rezultata, kao sastavnog dela izvršavanja instrukcija kojima se
+vrše odredena racunanja. Procesor cita sadržaje registara uredaja i upisuje sadržaje u registre
+uredaja prilikom izvršavanja instrukcija kojima se dobija status uredaja, vrši inicijalizacija
+uredaja, zadaje režim rada, realizuje startovanje i zaustavljanje uredaja, i vrši prenos podataka
+izmedu procesora i uredaja i obratno. Procesor prihvata brojeve ulaza u tabelu sa adresama
+prekidnih rutina iz registara uredaja u okviru opsluživanja zahteva za prekid. Uredaji sa
+direktnim pristupom memoriji citaju sadržaje memorijskih lokacija i upisuju sadržaje u
+memorijske lokacije u okviru prenosa podataka iz memorije u izlazni uredaj, iz ulaznog
+uredaja u memoriju i iz memorije u memoriju.
+Magistralu cine tri grupe linija i to adresne linije, linije podataka i upravljacke linije. Po
+adresnim linijama gazda šalje adresu memorijske lokacije ili registra uredaja prilikom citanja
+sadržaja ili upisa sadržaja. Po linijama podataka gazda šalje sadržaj koji treba da se upiše u
+memorijsku lokaciju ili registar uredaja cija adresa se nalazi na adresnim linijama. Po linijama
+podataka sluga šalje ocitani sadržaj memorijske lokacije ili registra uredaja cija adresa se
+nalazi na adresnim linijama. Po upravljackim linijama gazda šalje signale kojima odreduje da
+li treba da se realizuje citanje ili upis sadržaja. U nekim realizacijama magistrale po
+upravljackim linijama i sluga šalje signale kojima signalizira gazdi da li su citanje ili upis
+sadržaja uspešno ili bezuspešno realizovani.
+Slanje adrese memorijske lokacije ili registra uredaja po adresnim linijama od strane gazde
+prilikom citanja ili upisa sadržaja na strani sluge naziva se adresiranje lokacija u slugi. Adresa
+lokacije se šalje od strane gazde po adresnim linijama svim slugama. Zadatak svih sluga je da
+izvrše proveru da li dati sadržaj predstavlja adresu neke od lokacije unutar datog sluge.
+Upravljacki signal za citanje ili upis gazda šalje svim slugama onoliko kasnije u odnosu na
+trenutak slanja adrese po adresnim linijama koliko je dovoljno svim slugama da utvrde da li
+sadržaj na adresnim linijama predstavlja adresu neke od lokacija unutar datog sluge ili ne.
+Ukoliko je sistem korektno realizovan samo jedan sluga bi trebalo da prepozna sadržaj na
+adresnim linijama kao adresu neke od svojih lokacija i da po pojavljivanju upravljackog
+signala za citanje ili upis realizuje citanje ili upis.
+Adresiranje lokacija u slugi i citanje ili upis na strani sluge su prikazani na slici 1.
+2
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+...
+MAR
+procesor
+UPRAVLJACKA
+JEDINICA
+MDR
+HIT
+stWR
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stRD
+u/i uredaj sa DMA
+LOKACIJE
+RD WR
+MAR MDR
+HIT
+stWR
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stRD
+u/i uredaj sa DMA
+LOKACIJE
+RD WR
+MAR MDR
+HIT
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+memorija
+LOKACIJE
+RD WR
+HIT
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+u/i uredaj bez DMA
+LOKACIJE
+RD WR
+HIT
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+LOKACIJE
+RD WR
+...
+u/i uredaj bez DMA
+Slika 1 Adresiranje na magistrali sa memorijski preslikanim ulazno/izlaznim adresnim
+prostorom
+3
+Adresu lokacije u nekom od modula gazda šalje po adresnim linijama ABUS magistrale i u
+slucaju citanja i u slucaju upisa. Sadržaj sa adresnih linija magistrale ABUS primaju svi
+moduli i proveravaju u okviru kombinacionih mreža nazvanih dekoder adresa da li dati
+sadržaj predstavlja adresu neke od lokacija u okviru datog modula. Signal HIT na izlazu
+kombinacione mreže dekoder adresa ima vrednost jedan samo kod onog modula u kome se
+nalazi adresirana lokacija, dok u slucaju svih ostalih modula ima vrednost nula. Modul sa
+vrednošcu jedan signala HIT postaje sluga sa kojim ce gazda realizovati citanje ili upis.
+U slucaju citanja upravljacka jedinica gazde generiše i šalje po upravljackoj liniji RDBUS
+upravljacki signal citanja. Signal RDBUS primaju svi moduli, ali se na osnovu signala
+RDBUS samo u slugi u kome je signala HIT jedinica formira signal stRD i njime samo
+upravljacka jedinica sluge startuje da realizuje citanje. Upravljacka jedinica sluge generiše
+signal RD cime se iz lokacije adresirane sadržajem na adresnim linijama magistrale ABUS
+cita sadržaj i šalje po linijama podataka magistrale DBUS svim modulima vezanim na
+magistralu. Istovremeno upravljacka jedinica sluge generiše i šalje po upravljackoj liniji
+FCBUS upravljacki signal završetka citanja. Signal FCBUS primaju svi moduli vezani na
+magistralu, ali na njega reaguje samo gazda koji je generisao signal RDBUS tako što upisuje
+sadržaj sa linija DBUS u svoj prihvatni registar podatka MDR i završava citanje.
+U slucaju upisa upravljacka jedinica gazde generiše i šalje po linijama podataka magistrale
+DBUS sadržaj koji treba upisati u slugi i po upravljackoj liniji WRBUS upravljacki signal
+upisa. Sadržaj sa linija DBUS i signal WRBUS primaju svi moduli, ali se na osnovu signala
+WRBUS samo u slugi u kome je signala HIT jedinica formira signal stWR i njime samo
+upravljacka jedinica sluge startuje da realizuje upis. Upravljacka jedinica sluge generiše signal
+WR cime se u lokacije adresiranu sadržajem na adresnim linijama magistrale ABUS upisuje
+sadržaj sa linija podataka magistrale DBUS. Istovremeno upravljacka jedinica sluge generiše i
+šalje po upravljackoj liniji FCBUS upravljacki signal završetka upisa. Signal FCBUS primaju
+svi moduli vezani na magistralu, ali na njega reaguje samo gazda koji je generisao signal
+WRBUS, tako što završava upis.
+Opseg adresa koje mogu da se koriste za adresiranje memorijskoh lokacija se naziva
+memorijski adresni proster, dok se opseg adresa koje mogu da se koriste za adresiranje
+registara uredaja naziva ulazno izlazni adresni prostor. Ukoliko se registrima uredaja pristupa
+istim instrukcijama kao i memorijskim lokacijama, kaže se da je ulazno/izlazni adresni prostor
+memorijski preslikan. Ukoliko postoje posebne instrukcije za pristup registrima uredaja i
+postoje posebne instrukcije za pristup memorijskim lokacijama, kaže se da su ulazno/izlazni i
+memorijski adresni prostori razdvojeni.
+Adresiranje memorijskih lokacija i registara uredaja za slucaj kada je ulazno/izlazni adresni
+prostor memorijski preslikan je prikazano na slici 1. Ovde se samo vrednošcu adrese
+generisane od strane gazde odreduje da li se citanje ili upis realizuje sa memorijskim
+lokacijama ili registrima uredaja. Adresiranje memorijskih lokacija i registara uredaja za
+slucaj kada su ulazno/izlazni adresni prostor i memorijski adresni prostor razdvojeni je
+prikazano na slici 2. Ovde se vrednošcu posebnog signala M / IO generisanim od strane
+gazde odreduje da li se citanje ili upis realizuje sa memorijskim lokacijama ili registrima
+uredaja. Ukoliko se usvoji da gazda postavlja signal M / IO na vrednost jedan kada citanje ili
+upis treba da se realizuje sa memorijskim lokacijama i na vrednost nula kada citanje ili upis
+treba da se realizuje sa registrima uredaja, memorija treba da reaguje i realizuje citanje ili upis
+kada signal M / IO ima vrednost jedan a jedan od ulazno/izlaznih uredaja kada signal M / IO
+ima vrednost nula.
+4
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+HIT ...
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+memorija
+LOKACIJE
+RD WR
+HIT
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+u/i uredaj bez DMA
+LOKACIJE
+RD WR
+HIT
+stRD
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stWR
+LOKACIJE
+RD WR
+u/i uredaj bez DMA
+MAR MDR
+HIT
+stWR
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stRD
+u/i uredaj sa DMA
+LOKACIJE
+RD WR
+MAR MDR
+procesor
+UPRAVLJACKA
+JEDINICA HIT
+stWR
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stRD
+u/i uredaj sa DMA
+LOKACIJE
+RD WR
+MAR MDR
+...
+M/IO
+Slika 2 Adresiranje na magistrali sa razdvojenim memorijskim i ulazno/izlaznim adresnim
+prostorima
+5
+1.2 ARBITRACIJA
+Arbitracija je odlucivanje o tome ko može da realizuje ciklus na magistrali. U zavisnosti od
+toga kako se realizuje arbitracija razlikuju se sistemi kod kojih je to funkcija procesora i
+sistemi kod kojih je to funkcija arbitratora.
+1.2.1 PROCESOR
+Kod ovih sistema magistrala je uvek u posedu procesora, pa ulazno/izlazni uredaj koji
+treba da realizuje ciklus na magistrali mora najpre da uputi procesoru zahtev za korišcenje
+magistrale i da tek po dobijanju dozvole korišcenja magistrale od procesora realizacije ciklus
+na magistrali. S toga izmedu ulazno/izlaznog uredaja i procesora postoji par linija hreq i
+hack. Po liniju hreq uredaj šalje zahtev za korišcenje magistrale, a po liniji hack procesor
+šalju uredaju dozvolu korišcenja magistrale. Uredaj postavlja signal hreq na aktivnu i ceka da
+dobije aktivnu vrednost signala hack. Po dobijanju aktivne vrednosti signala hack uredaj
+realizacije ciklusa na magistrali pri cemu drži aktivnu vrednost signala hreq sve vreme
+trajanja ciklusa na magistrali. Tek po završetku ciklusa na magistrali uredaj postavlja signal
+hreq na neaktivnu vrednost, na šta mu procesor, postavljanjem signala hack na neaktivnu
+vrednost, ukidu dozvolu korišcenja magistrale. Karakteristicne situacije koje mogu da nastanu
+prilikom razmene signala hreq i hack izmedu uredaja i procesora su prikazane na slikama 3,
+4 i 5.
+procesor
+hreq
+hack
+uredaj
+Slika 3 Uredaj i procesor ne cekaju
+Na slici 3 je prikazana situacija u kojoj ni uredaj ni procesor ne moraju da cekaju da bi
+realizovali ciklus na magistrali. Na pocetku procesor izvesno vreme koristi magistralu (signal
+procesor je najpre aktivan pa zatim neaktivan). U trenutku kada uredaj upucuje procesoru
+zahtev za korišcenje magistrale (signal hreq aktivan) procesor ne koristi magistralu (signal
+procesor neaktivan). S toga procesor odmah daje uredaju dozvolu korišcenja magistrale
+(signal hack aktivan), pa uredaj krece sa realizacijom ciklusa na magistrali (signal uredaj
+aktivan). Po završetku ciklusa na magistrali (signal uredaj neaktivan) uredaj ukida procesoru
+zahtev korišcenja magistrale (signal hreq neaktiva), pa procesor ukida uredaju dozvolu
+korišcenja magistrale (signal hack neaktivan). Kada nešto kasnije procesoru ponovo zatreba
+magistrala (signal procesor aktivan), procesor može odmah da krene sa realizacijom cklusa
+na magistrali. Ovo je idealna situacija sa aspekta iskorišcenja magistrale jer uredaj i procesor
+ne cekaju, vec kada im je magistrala potrebna odmah krecu sa realizacijom ciklusa ma
+magistrali.
+procesor
+hreq
+hack
+uredaj
+Slika 4 Uredaj ceka procesor
+Na slici 4 je prikazana situacija u kojoj uredaj tek pošto saceka da procesor završi ciklus na
+magistrali krece sa realizacijom svog ciklusa na magistrali. Na pocetku procesor izvesno
+vreme koristi magistralu (signal procesor je aktivan). U trenutku kada uredaj upucuje
+procesoru zahtev za korišcenje magistrale (signal hreq aktivan) procesor još uvek koristi
+magistralu (signal procesor aktivan), pa procesor ne daje odmah uredaju dozvolu korišcenja
+magistrale (signal hack neaktivan). S toga procesor tek kada završi svoj ciklus na magistrali
+6
+(signal procesor neaktivan) daje uredaju dozvolu korišcenja magistrale (signal hack aktivan),
+pa uredaj krece sa realizacijom ciklusa na magistrali (signal uredaj aktivan). Po završetku
+ciklusa na magistrali (signal uredaj neaktivan) uredaj ukida procesoru zahtev korišcenja
+magistrale (signal hreq neaktivan), pa procesor ukida uredaju dozvolu korišcenja magistrale
+(signal hack neaktivan). Kada nešto kasnije procesoru ponovo zatreba magistrala (signal
+procesor aktivan), procesor može odmah da krene sa realizacijom cklusa na magistrali. Ovo
+je konfliktna situacija koja se rešava time što uredaj ceka da procesor završi zapoceti ciklus na
+magistrali.
+procesor
+hreq
+hack
+uredaj
+Slika 5 Procesor ceka uredaj
+Na slici 5 je prikazana situacija u kojoj procesor tek pošto saceka da uredaj završi ciklus na
+magistrali krece sa realizacijom svog ciklusa na magistrali.. Na pocetku procesor izvesno
+vreme koristi magistralu (signal procesor je najpre aktivan pa zatim neaktivan). U trenutku
+kada uredaj upucuje procesoru zahtev za korišcenje magistrale (signal hreq aktivan) procesor
+ne koristi magistralu (signal procesor neaktivan). S toga procesor odmah daje uredaju
+dozvolu korišcenja magistrale (signal hack aktivan), pa uredaj krece sa realizacijom ciklusa
+na magistrali (signal uredaj aktivan). U toku trajanja ciklusa na magistrali (signal uredaj
+aktivan) procesoru je potrebna magistrala (isprekidane linije za signal procesor aktivan), ali
+ne može da je koristi sve dok uredaj ne završi tekuci ciklus. Po završetku ciklusa na magistrali
+(signal uredaj neaktivan) uredaj ukida procesoru zahtev korišcenja magistrale (signal hreq
+neaktivan), pa procesor ukida uredaju dozvolu korišcenja magistrale (signal hack neaktivan).
+Tek sada procesor može da krene sa realizacijom svog sledeceg ciklusa na magistrali (signal
+procesor aktivan). Ovo je konfliktna situacija koja se rešava time što procesor ceka da uredaj
+završi zapoceti ciklus na magistrali.
+1.2.2 ARBITRATOR
+Kod ovih sistema svi moduli koji žele da realizuju neki ciklus na magistrali, a to su
+procesor i ulazno/izlazni uredaj sa direktnim pristupom memoriji, moraju najpre da ucestvuju
+u arbitraciji, pa tek potom modul koji dobije dozvolu korišcenja magistrale može da realizuje
+ciklus na magistrali. U zavisnosti od toga kako se utvrduje koji od modula dobija dozvolu
+korišcenja magistrale razlikuju se paralelna i serijska arbitracija.
+U slucaju paralelne arbitracije postoji poseban uredaj koji se naziva arbitrator i koji se
+sastoji od kodera prioriteta CD i dekodera DC (slika 6). Izmedu modula koji žele da realizuju
+neki ciklus na magistrali i arbitratora postoji par linija BR i BG_IN. Po liniju BR modul šalje
+zahtev za korišcenje magistrale, a po liniji BG_IN arbitrator šalju modulu dozvolu korišcenja
+magistrale. Uzeto je da arbitrator ima n linija ulaza i izlaza, pri cemu je n=2m, i da je linija 0
+najvišeg a linija (n-1) najnižeg prioriteta. U zavisnosti od toga na koju od n linija arbitratora
+su povezane linije BR i BG_IN modula odreduje se prioritet modula. S toga je modul koji je
+povezan na liniju 0 najvišeg a modul koji je povezan na liniju (n-1) najnižeg prioriteta.
+Ukoliko zahtevi za korišcenje magistrale stignu po više linija BR istovremeno, dozvola se
+daju samo po jednog liniji BG_IN i to po onoj koja odgovara liniji BR najvišeg prioriteta po
+kojoj je upucen zahtev za korišcenje magistrale.
+7
+...
+BCLK
+modul
+0
+BUSYBUS
+BG_OUT
+BR BG_IN
+modul
+1
+BG_OUT
+BR BG_IN
+modul
+(n-1)
+BG_OUT
+BR BG_IN
+CD
+1 n-1
+W
+1 E
+0 m-1
+0
+DC
+E
+0 1 7
+0
+...
+...
+m-1
+...
+...
+...
+...
+...
+ARBITRATOR
+Slika 6 Paralelna arbitracija
+U slucaju serijske arbitracije moduli su povezani u lanac linijama BG_IN i BG_OUT (slika
+7). Po liniji BG_IN koja je povezana na liniju BG_OUT modula višeg prioriteta se dobija
+dozvola korišcenja magistrale od modula višeg prioriteta, a po liniji po liniji BG_OUT koja je
+povezana na liniju BG_IN modula nižeg prioriteta se prosleduje dozvola korišcenja magistrale
+modulu nižeg prioriteta. U zavisnosti od toga kako su povezane linije BG_OUT i BG_IN
+modula u lancu odreduje se prioritet modula. Modul koji je prvi u lancu je najvišeg, a modul
+koji je zadnji u lancu je najnižeg prioriteta. Na liniji BG_IN modula prvog u lancu je 1, cime
+se obezbeduje da on ima dozvolu korišcenja magistrale. Ovaj modul, kao i svaki drugi modul
+u lancu koji na liniji BG_IN ima dozvolu korišcenja magistrale, vrši proveru da li on ima
+zahtev korišcenja magistrale. Ako da, onda ce on realizovati ciklus na magistrali, a preko
+svoje linije BG_OUT na liniju BG_IN sledeceg modula u lancu poslati vrednost 0 kao
+indikaciju da nema prosledivanja dozvole korišcenja magistrale. Vrednost 0 na liniji BG_IN
+modula daje vrednost 0 na liniji BG_OUT. U ovom slucaju svi preostali moduli u lancu na
+svojim linijama BG_IN imaju vrednost 0 i time nemaju dozvole korišcenja magistrale. Ako
+ne, onda on nece realizovati ciklus na magistrali, a preko svoje linije BG_OUT na liniju
+BG_IN sledeceg modula u lancu šalje vrednost 1 kao indikaciju da on prosleduje dozvolu
+korišcenja magistrale sledecem modulu u lancu. Ovaj modul se po dobijanju vrednosti 1 na
+svom ulazu BG_IN ponaša na identican naci kao prethodni modul. Ovaj modul vrši proveru
+da li on ima zahtev korišcenja magistrale. Ako da, onda ce on realizovati ciklus na magistrali,
+a preko svoje linije BG_OUT na liniju BG_IN sledeceg modula u lancu poslati vrednost 0 kao
+indikaciju da nema prosledivanja dozvole korišcenja magistrale. Ako ne, onda on nece
+realizovati ciklus na magistrali, a preko svoje linije BG_OUT na liniju BG_IN sledeceg
+modula u lancu šalje vrednost 1 kao indikaciju da on prosleduje dozvolu korišcenja magistrale
+sledecem modulu u lancu. Na ovaj nacin se dozvola korišcenja magistrale prosleduje od
+modula višeg prioriteta koji nemaju zahteve korišcenja magistrale ka modulima nižeg
+8
+prioriteta sve dok dozvola korišcenja magistrale ne stigne do modula koji ima zahtev
+korišcenja magistrale. Dati modul realizuje ciklus na magistrali, a dozvolu više ne prosleduje.
+...
+BCLK
+modul
+0
+BUSYBUS
+BG_IN BG_OUT
+BR
+modul
+1
+BG_IN BG_OUT
+BR
+modul
+(n-1)
+BG_IN BG_OUT
+BR
+...
+1
+Slika 7 Serijska arbitracija
+Zahtevi korišcenja magistrale BR predstavljaju interno generisane zahteve korišcenja
+magistrale sinhronizovane na signal takta magistrale BCLK. Ovo se namece kao posledica
+pretpostavke da svaki modul radi sa svojom internom periodom signala takta, pa interno
+generisani zahtevi korišcenja magistrale dobijaju vrednosti 1 i 0 u trenucima signala takta
+modula. Tako generisani zahtevi su vremenski nesinhronizovani pa bi, ukoliko bi se oni
+koristili u arbitraciji, mogli da stvore probleme i u slucaju paralelne i u slucaju serijske
+arbitracije. Sinhronizovanjem tih interno generisanih zahteva na signal takta magistrale BCLK
+obezbeduje se da signali zahteva BR svih modula dobijaju vrednosti 1 i 0 u trenucima signala
+takta magistrale BCLK. Pri tome perioda signala takta magistrale BCLK mora da bude veca
+od propagacije kroz arbitrator u slucaju paralelne arbitracije (slika 6) i od kompletne
+propagacije u lancu u slucaju serijske arbitracije (slika 7).
+Dok modul koji je gazda realizuje ciklus na magistrali u trajanju više perioda signala takta
+modula, u drugim modulima mogu da se jave zahtevi za korišcenje magistrale. S toga se
+paralelno sa ciklusom na magistrali odvija arbitracija i u toku trajanja ciklusa neki modul
+može da dobije dozvolu korišcenja magistrale. Taj modul ne sme da krene sa realizacijom
+svog ciklusa na magistrali dok modul koji je zapoceo ciklus na magistrali ne kompletira
+ciklus. Da bi se to osiguralo uvodi se i signal zauzeca magistrale BUSBUSY . Vrednost 0
+ovog signala oznacava da je magistrala zauzeta, a stanje visoke impedanse da je slobodna.
+Modul koji kao gazda realizuje ciklus na magistrali na pocetku ciklusa postavlja ovaj signal
+na 0, a po završetka ciklusa u stanje visoke ompedanse. Modul koji dobije dozvolu korišcenja
+magistrale pre nego što krene sa realizacijom ciklusa na magistrali mora da proveri vrednost
+signala BUSBUSY . Ukoliko signal BUSBUSY ima vrednost 0 magistrala je zauzeta i
+modul koji je dobio dozvolu ne sme da krene sa realizacijom ciklusa na magistrali, vec mora
+da saceka da signal BUSBUSY prede u stanje visoke impedanse. Ukoliko je signal
+BUSBUSY u stanju visoke impedanse magistrala nije zauzeta i modul koji je dobio
+dozvolu najpre postavlja signal BUSBUSY na vrednost nula pa tek onda krece sa
+realizacijom ciklusa na magistrali. Po završetku ciklusa na magistrali dati modul postavlja
+signal BUSBUSY u staanje visoke impedanse. Time se omogucuje da modul koji je u
+meduvremenu dobio dozvolu korišcenja magistrale ali nije mogao da krene da realizuje
+cikilus na magistrali jer je magistrala bila zauzeta, sada može, postavljanjem signala
+BUSBUSY na 0, da zauzme magistralu i krene sa realizacijom svog ciklusa na magistrali.
+Najjednostavnije rešenje je da se signal BUSBUSY postavlja u stanje visoke impedanse i
+na vrednost 0 na signal takta magistrale BCLK.
+9
+U zavisnosti od toga kada se dozvoljava modulima da ucestvuju u arbitraciji razlikuju se
+sistemi sa pracenjem zahteva i sistemi sa pamcenjem zahteva. U slucaju sistema sa pracenjem
+zahteva svi moduli koji imaju zahteve korišcenja magistrale uvek ucestvuju u arbitraciji. S
+toga kad god je magistrala slobodna i signal BUSBUSY u stanju visoke impedanse, modul
+najvišeg prioriteta koji je uputio zahtev korišcenja magistrale dobija dozvolu korišcenja
+magistrale. Ovim pristupom forsiraju se zahtevi od modula višeg prioriteta. Ovo ima za
+posledicu da zahtevi od modula nižeg pririteta mogu veoma dugo da cekaju. Može se desiti da
+modul niskog prioriteta postavi zahtev i ne dobija dozvolu dok u meduvremenu nekoliko
+modula višeg priorieta mogu više puta da postavljaju zahteve i dobijaju dozvole.
+U slucaju sistema sa pamcenjem zahteva u odredenim trenucima se za arbitraciju pamte
+zahtevi koji su do tog trenutka upuceni i u arbitraciji dalje ucestvuju samo upamceni zahtevi.
+S toga kad god je magistrala slobodna i signal BUSBUSY u stanju visoke impedanse,
+modul najvišeg prioriteta ciji je zahtev korišcenja magistrale u listi upamcenih zahteva dobija
+dozvolu korišcenja magistrale. Svaki sledeci put kada magistrala postane slobodna i signal
+BUSBUSY u stanju visoke impedanse, modul najvišeg prioriteta ciji je zahtev korišcenja
+magistrale u listi upamcenih zahteva dobija dozvolu korišcenja magistrale. U meduvremenu
+mogu da se pojave zahtevi i od modula višeg prioriteta od onih koji su u listi upamcenih
+zahteva, ali oni ne ucestvuju u arbitraciji sve dok svi zahtevi koji su u listi upamcenih zahteva
+ne dobiju dozvole korišcenja magistrale i realizuju cikluse na amagistrali. Tek kada svi
+zahtevi koji su u listi upamcenih zahteva dobiju dozvole korišcenja magistrale i realizuju
+cikluse na magistrali ponovo se za arbitraciju pamte zahtevi koji su do tog trenutka upuceni i
+u arbitraciji dalje ucestvuju samo upamceni zahtevi. Ovim pristupom se omogucuje da i
+zahtevi od modula nižeg pririteta mogu posle manjeg cekanja da dobijaju dozvole korišcenja
+magistrale i realizuju cikluse na magistrali. Za razliku od sistema sa pracenjem zahteva
+upuceni zahtevi od modula nižeg prioriteta pamte se prilikom prvog pamcenja zahteva i treba
+samo da sacekaju da zahtevi od modula višeg prioriteta medu upamcenim zahtevima budu
+realizovani.
+Da bi arbitracija mogla da se realizuje svaki modul koji može da bude gazda na magistrali
+mora da ima odredenu logike. Struktura i funkcionisanje te logike za paralelnu i serijsku
+arbitraciju sa pracenjem zahteva i arbitraciju sa pamcenjem zahteva se daje u daljem tekstu.
+Deo modula za realizaciju paralelne i serijske arbitracije sa pracenjem zahteva je dat na
+slici 8.
+CLK
+Q
+Q
+BCLK
+Rd
+mr
+BR
+BR
+brqstart S
+BR BG_IN BG_OUT
+brqstop R brqstop
+busybus
+BCLK
+bgr
+setbusy S
+CLK
+Q
+R Q d
+mr
+busy
+R
+1
+BUSYBUS
+Slika 8 Deo modula za realizaciju arbitracije sa pracenjem zahteva
+Signal brqstart je interno generisani zahtev korišcenja magistrale modula koji se postavlja
+na vrednosti 1 i 0 na signal takta modula. Signal brqstart ima vrednost 1 nešto duže od
+periode signala takta magistrale BCLK da bi flip-flop BR mogao na signal takta magistrale
+BCLK da se postavi na vrednost 1. Signal BR je registrovani zahtev korišcenja magistrale i
+10
+predstavlja interno generisani zahtev korišcenja magistrale brqstart sinhronizovan na signal
+takta magistrale BCLK. U paralelnoj i serijskoj arbitraciji ucestvuje registrovani zahtev
+korišcenja magistrale BR. Flip-flop BR ostaje postavljen na vrednost 1 najpre dok se ne
+dobije dozvola korišcenja magistrale i zatim dok se ne obavi kompletan ciklus na magistrali.
+Po završetku cuklusa na magistrali interno se generiše signal završetka korišcenja magistrale
+brqstop koji se postavlja na vrednosti 1 i 0 na signal takta modula. Signal brqstop ima
+vrednost 1 nešto duže od periode signala takta magistrale BCLK da bi flip-flop BR mogao na
+signal takta magistrale BCLK da se postavi na vrednost 0.
+Modul krece sa realizacijom ciklusa na magistrali kao gazda tek kada se flip-flop busy
+postavi na vrednost 1. Flip-flop busy se postavlja na vrednost 1 na signala takta magistrale
+BCLK onda kada signal setbusy ima vrednost 1. Signal setbusy ima vrednost 1 onda kada i
+signal bgr i signal busybus imaju vrednosti 1. Signal bgr ima vrednost 1 kada postoji
+registrovani zahtev korišcenja magistrale (signali BR ima vrednost 1) i kada je dobijena
+dozvola korišcenja magistrale (signal BG_IN ima vrednost 1). Signal busybus ima vrednost
+1 onda kada magistrala nije zauzeta i kada je signal BUSBUSY u stanju visoke imipedanse
+(signali busy svih modula su 0). Signal dozvole korišcenja magistrale se dobija po liniji
+BG_IN i u slucaju paralelne i u slucaju serijske arbitracije. U slucaju paralelne arbitracije
+signal dozvole se dobija od arbitratora (slika 6), a u slucaju serijske arbitracije od modula
+prethodnika u lancu (slika 7). U slucaju paralelne arbitracije linija sa signalom zahteva BR se
+povezuje na arbitrator (slika 6) dok se linija sa signalom BG_OUT ne koristi, a u slucaju
+serijske arbitracije linija sa signalom zahteva BR se ne koristi van modula, dok se linija sa
+signalom BG_OUT povezuje na liniju BG_IN modula sledbenika u lancu (slika 7). Signal
+BG_OUT, koji se koristi samo u serijskoj arbitraciji, postaje 1 samo kada signali BR i
+BG_IN imaju vrednost 1. To se dešava kada u datom modulu ne postoji zahtev korišcenja
+magistrale (signal BR je 0) i kada je u serijskoj arbitraciji dobijena dozvola korišcenja
+magistrale (signal BG_IN je 1). U svim ostalim slucajevima signal BG_OUT je 0.
+Flip-flop BR se u svim modulima koji ucestvuju u aribitraciji postavlja na vrednosti 1 i 0
+na signal takta BCLK. Ukoliko se u nekom modulu na i-ti signal takta BCLK flip-flop BR
+postavi na 1, u datom modulu se flip-flop busy može postaviti na vrednost 1 na (i+1)-vi signal
+takta BCLK jedino ukoliko se u vremenskom periodu izmedu i-tog i (i+1)-vog signala takta
+BCLK dobije dozvola korišcenja magistrale (signal BG_IN ima vrednost 1) i ukoliko je
+zadnji gazda magistrale na neki raniji ili najkasnije na i-ti signal takta BCLK oslobodio
+magistralu (signal busybus postavljen na 1). Modul koji je najvišeg prioriteta medu
+modulima koji na i-ti signal takta magistrale BCLK postavljaju flip-flopove BR na 1, dobija
+dozvolu korišcenja magistrale BG_IN, pa pošto samo u njemu signali bgr i setbusy dobijaju
+vrednost 1, na (i+1)-vi signal takta BCLK u njemu se flip-flop busy postavlja na vrednost 1.
+Time se signal zauzeca magistrale BUSBUSY postavlja na vrednost 0 i krece sa
+realizacijom ciklusa na magistrali. Po završetku ciklusa na magistrali interno se generiše
+signal završetka korišcenja magistrale brqstop koji se postavlja na vrednosti 1 i 0 na signal
+takta modula. Signal brqstop ima vrednost 1 nešto duže od periode signala takta magistrale
+BCLK da bi flip-flop busy zajedno sa flip-flopom BR mogao na signal takta magistrale
+BCLK da se postavi na vrednost 0.
+Paralelna arbitracija sa pracenjem zahteva, koja se realizuje prema šemi sa slike 6 i sa
+modulima realizovanim kao na slici 8, je ilustrovana vremenskim oblicima signala koji se
+formiraju u modulima i, j i k i razmenjuju izmedu modula i, j i k i arbitratora (slika 9).
+11
+BCLK
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+brstarti
+brstopi
+BRi
+brstartj
+brstopj
+BRj
+brstartk
+brstopk
+BRk
+16 17 18 19 20
+setbusyi
+busyi
+setbusyj
+busyj
+setbusyk
+busyk
+BUSYBUS
+busybus
+BG_INi
+BG_INj
+BG_INk
+bgri
+bgrj
+bgrk
+Slika 9 Vremenski oblici signala pri paralelnoj arbitraciji sa pracenjem
+Signali brstarti, brstartj i brstartk su interno generisani signali zahteva, signali BRi, BRj i
+BRk su registrovani signali zahteva i signali brstopi, brstopj i brstopk su interno generisani
+signali završetka korišcenja magistrale u modulima i, j i k, pri cemu modul i ima najviši, a
+modul k najniži prioritet. Signali BG_INi, BG_INj i BG_INk su sugnali dozvola koje
+arbitrator šalje gazdama i, j i k, pri cemu se na svaki signal takta BCLK jedan od signala
+dozvola BG_INi, BG_INj i BG_INk postavlja na vrednost 1, ukoliko postoji bar jedan
+registrovani zahtev BRi, BRj i BRk sa vrednošcu 1. Vrednost 1 jednog od signala bgri, bgrj ili
+bgrk ukazuje da je odgovarajuci modul i, j ili k modul najvišeg prioriteta koji u vremenskom
+intervalu izmadu i-tog i (i+1)-vog signala takta BCLK ima vrednosti 1 registrovanog signala
+zahteva BR i signala dozvole korišcenja magistrale BG_IN. Dati modul ce na (i+1)-vi signal
+takta BCLK postati gazda ukoliko je u vremenskom intervalu izmedu i-tog i (i+1)-vog signala
+takta BCLK magistrala slobodna, na šta ukazuje vrednost 1 signala zauzeca magistrale
+busybus . Vrednost 1 jednog od signala setbusyi, setbusyj i setbusyk ukazuje da su se u
+vremenskom intervalu izmedu i-tog i (i+1)-vog signala takta BCLK u odgovarajucem modulu
+i, j ili k stekli uslovi da dati modul na (i+1)-vi signal takta BCLK postane gazda. Vrednost 1
+jednog od signala busyi, busyj i busyk ukazuje da je odgovarajuci modul i, j ili k na (i+1)-vi
+signal takta BCLK postao gazda, cime signali zauzeca magistrale BUSBUSY i busybus
+dobijaju vrednost 0.
+Modul koji je postao gazda zatim realizuje ciklus na magistrali i sve to vreme drži signale
+zauzeca magistrale BUSBUSY i busybus na vrednosti 0. Za to vreme se u preostalim
+modulima na svaki signal takta BCLK vrši postavljanje signala registrovanih zahteva BR, pa
+se saglasno tome i menjaju vrednosti signala BG_IN i bgr. Medutim, kako sve to vreme
+12
+signal busybus imma vrednost 0, signali setbusy modula ostaju 0, pa ni jedan od tih modula
+na može da postane gazda. Tek kada gazda završi ciklus na magistrali i generiše signal
+brstop, na i-ti signal takta BCLK njegovi signali BR i busy postaju 0, signal BUSBUSY
+prelazi u stanje visoke impedanse i signal busybus postaje 1. Onaj modul u kome u
+vremenskom intervalu izmedu i-tog i (i+1)-vog signala takta BCLK signal setbusy postane 1,
+na (i+1)-vi signal takta BCLK postavlja svoj signal busy na 1, cime signali BUSBUSY i
+busybus postaju 0. Time dati modul postaje sledeci gazda.
+Na vremenskim oblicima signala koji se posmatraju, prva arbitracija koja je bitna se
+realizuje u vremenskom intervalu izmedu signala takta 2 i 3, i u njoj ucestvuje samo gazda j,
+jer je, na signal takta 2, samo signal BRj postavljen na vrednost 1. S toga tada najpre signal
+BG_INj pa zatim signal bgrj i nakraju signal setbusyj postaju 1, a kako tada i signal
+busybus ima vrednost 1, i signal setbusyj postaje 1. Na signal takta 3, signal busyj postaje 1,
+a signal busybus 0. Treba uociti da su na signal takta 3 najpre signal BRi, zatim signal
+BG_INi i na kraju signal bgri postali 1. Medutim, kako je na signal takta 3 signal busybus
+postao 0, signal setbusyi ostaje 0 sve dok modul j koji je gazda ne završi ciklus na magistrali i
+postavi signal busybus na 1. Na signal takta 8 i signal BRk postaje 1, ali se situacija sa
+signalima dozvola BG_INi, BG_INj i BG_INk ne menja.
+Sledeca arbitracija koja je bitna se realizuje u vremenskom intervalu izmedu signala takta 9
+i 10, jer na signal takta 9 signali BRj i busyj postaju 0, a signal busybus 1. U arbitraciji
+ucestvuju moduli i i k, jer su tada aktivni signali BRi i BRk. S obzirom da je modul i višeg
+prioriteta od modula k signali BG_INi i bgri su i dalje 1. Medutim, kako sada signal busybus
+ima vrednost 1, to i signal setbusyi postaje 1. Stoga na signal takta 10 signal busyi postaje 1, a
+signal busybus 0.
+Zadnja arbitracija koja je bitna se realizuje u vremenskom intervalu izmedu signala takta
+13 i 14, jer na signal takta 13 signali BRi i busyi postaju 0, a signal busybus 1. U arbitraciji
+ucestvuje samo modul k, jer je tada aktivan samo signal BRk. S toga tada najpre signal
+BG_INk pa zatim signal bgrk i nakraju signal setbusyk postaju 1, a kako tada i signal
+busybus ima vrednost 1, i signal setbusyk postaje 1. Na signal takta 14, signal busyk postaje
+1, a signal busybus 0.
+Prva sledeca arbitracija bi bila bitna se realizuje posle signala takta 18, jer tada signali BRk
+i busyk postaju 0, a signal busybus 1.
+Serijska arbitracija sa pracenjem zahteva, koja se realizuje prema šemi sa slike 7 i sa
+modulima realizovanim kao na slici 8, je ilustrovana vremenskim oblicima signala koji se
+formiraju u modulima i, j i k i razmenjuju izmedu modula i, j i k (slika 10).
+13
+BCLK
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+brstarti
+brstopi
+BRi
+brstartj
+brstopj
+BRj
+brstartk
+brstopk
+BRk
+16 17 18 19 20
+setbusyi
+busyi
+setbusyj
+busyj
+setbusyk
+busyk
+BUSYBUS
+busybus
+BG_INi
+BG_INj
+BG_INk
+bgri
+bgrj
+bgrk
+Slika 10 Vremenski oblici signala pri paralelnoj arbitraciji sa pracenjem
+Vremenski oblici signala u slucaju serijske i paralelne arbitracije se razlikuju samo za
+signale BG_INi, BG_INj i BG_INk. Signal BG_INi je sve vreme 1 jer nema zahteva od
+modula višeg prioriteta i modul i prosledivanjem uvek dobija dozvolu. Do signala takta 2 i
+signali BG_INj i BG_INk su 1 jer do tada i signali registrovanih zahteva BRi, BRj i BRk.
+imaju vrednost 0. Pošto na signal takta 2 signal BRj postaje 1 modul j ne prosleduje dalje
+dozvolu, pa signal BG_INk. ima vrednost 0. Medutim na signal takta 3 signal BRi postaje 1,
+pa modul i ne prosleduje dalje dozvolu modulu j, a modul j ne prosleduje dozvolu modulu k.
+Stoga od signala takta 3 do signala takta 13 kada signal BRi postaje 0, signali BG_INj i
+BG_INk ima vrednost 0. Medutim na signal takta 13 signal BRi postaje 0, pa modul i
+prosleduje dalje dozvolu modulu j. Tada i BRj ima vrednost 0, pa modul j prosleduje dozvolu
+modulu k. Zbog toga od signala takta 13 i signali BRj i BRk. imaju vrednost 0.
+Deo modula za realizaciju paralelne i serijske arbitracije sa pamcenjem zahteva je dat na
+slici 11.
+Slika 11 Deo modula za realizaciju arbitracije sa pamcenjem zahteva
+1.3 CIKLUSI NA MAGISTRALI
+U zavisnosti od toga koliko je zauzeta magistrala prilikom ciklusa, razlikuju se magistrale
+sa atomskim ciklusima i magistrale sa podeljenim ciklusima.
+14
+1.3.1 MAGISTRALE SA ATOMSKIM CIKLUSIMA
+U slucaju magistrale sa atomskim ciklusima postoje ciklus citanja, ciklus upisa i ciklus
+prihvatanja broja ulaza, a magistrala je zauzeta sve vreme dok se realizuje prenos podatka
+izmedu gazde i sluge. U zavisnosti od toga kako se utvrduje šta i kada gazda i sluga treba da
+urade prilikom realizacije ciklusa na magistrali, razlikuju se asinhrone i sinhrone magistrale.
+1.3.1.1 ASINHRONA MAGISTRALA
+Moduli magistrale obicno rade asinhrono svaki na svoj signal takta i trajanje svakog
+ciklusa je odredeno vremenom pristupa modula sluge. Pri ciklusu citanja, gazda šalje adresu
+na adresne linije ABUS i signalom na upravljackoj liniji RDBUS startuje citanje u slugi. Po
+završenom citanju, sluga šalje ocitani podatak na linije podataka DBUS i signalom na
+upravljackoj liniji FCBUS gazdi signalizira da je podatak raspoloživ. Pri ciklusu upisa, gazda
+šalje adresu na adresne linije ABUS, podatak na linije podataka DBUS i signalom na
+upravljackoj liniji WRBUS startuje upis u slugi. Po završenom upisu, sluga signalom na
+upravljackoj liniji FCBUS gazdi signalizira da mu adresa i podatak nisu više potrebni. Pri
+ciklusu prihvatanje broja ulaza, procesor, signalom potvrde prekida inta na jednoj od linija,
+startuje citanje sadržaja registra broja ulaza u jednom od ulazno/izlaznih uredaja. Po
+završenom citanju, uredaj šalje ocitani sadržaj na linije podataka DBUS i signalom na
+upravljackoj liniji FCBUS procesoru signalizira da je broj ulaza raspoloživ.
+Svi moduli su preko bafera sa tri stanja povezani na adresne linije, linije podataka i
+upravljacke linije magistrale. Pri tome na linije magistrale odgovarajuce sadržaje mogu preko
+bafera sa tri stanja da propuštaju samo modul koji je trenutno gazda i modul koji kao sluga sa
+njim realizuje ciklus na magistrali. Svi ostali uredaji svoje bafere sa tri stanja drže u stanju
+visoke impedanse i ne opterecuju linije magistrale.
+Vremenski oblici signala ABUS, DBUS, RDBUS i FCBUS , koje na magistrali
+razmenjuju gazda i sluga prilikom realizacije ciklusa citanja, dati su na slici 12.
+ABUS
+DBUS
+L
+L
+LL
+LL
+L
+RDBUS
+FCBUS
+Slika 12 Vremenski oblici signala za ciklus citanja na asinhronoj magistrali
+Dok ne krene sa realizicijom ciklusa citanja gazda drži adresne linije ABUS i upravljacku
+liniju citanja RDBUS u stanju visoke. To isto cini i modul koji ce postati sluga sa linijama
+podataka DBUS i upravljackom linijom završetka ciklusa FCBUS . Gazda krece sa
+realizacijom ciklusa citanja tako što otvara bafere sa tri stanja za adresne linije ABUS i
+upravljacku liniju citanja RDBUS . Na linijama ABUS je adresa lokacije, a na liniji RDBUS
+neaktivna vrednost signala citanja. Sadržaj sa linija ABUS primaju svi moduli (slika 1) i na
+svojim dekoderima adresa proveravaju da li dati sadržaj predstavlja adresu neke od lokacija u
+datom modulu. Posle vremena dovoljnog da se u svim modulima ova provera završi i samo u
+jednom od njih formira aktivna a u ostalima neaktivne vrednosti signala HIT, gazda postavlja
+liniju RDBUS na aktivnu vrednost. Signal sa linije RDBUS primaju svi moduli (slika 1), ali
+na njega reaguje i za dati ciklus postaje sluga samo onaj modul u kome je signal HIT aktivan.
+Sluga zapocinje citanje i otvara bafere sa tri stanja za linije podataka DBUS i upravljacku
+liniju citanja FCBUS . Na linijama DBUS je dok traje citanje nedefinisani sadržaj, a na liniji
+15
+FCBUS neaktivna vrednost signala. Kada se u slugi završi citanje na linijama DBUS se
+pojavljuje ocitani sadržaj, a na liniji FCBUS aktivna vrednost. Na aktivnu vrednost signala
+FCBUS reaguje gazda i upisuje sadržaj sa linija DBUS u neki svoj prihvatni registar
+podatka. Po završetku upisa gazda postavlja liniju RDBUS na neaktivnu vrednost, što je
+indikacija slugi da gazdi sadržaj sa linija DBUS nije više potreban. Na neaktivnu vrednost
+signala RDBUS reaguje sluga tako što ukida sadržaj sa linija podataka DBUS i prebacuje
+ove linije u stanje visoke impedanse, i postavlja liniju FCBUS najpre na neaktivnu vrednost
+a zatim i u stanje visoke impedanse. Na neaktivnu vrednost signala FCBUS reaguje sluga
+tako što ukida sadržaj sa adresnih linija ABUS i prebacuje ove linije u stanje visoke
+impedanse. Time je ciklus citanja kompletiran.
+Vremenski oblici signala ABUS, DBUS, WRBUS i FCBUS , koje na magistrali
+razmenjuju gazda i sluga prilikom realizacije ciklusa upisa, dati su na slici 13. Razmena
+signala izmedu gazde i sluge je veoma slicna kao i za slucaj ciklusa citanja. Jedina razlika je
+da sadržaj po linijama podataka DBUS sada šalje gazda i da umesto signala citanja RDBUS
+gazda šalje signal upisa WRBUS .
+ABUS
+DBUS
+L
+L
+LL
+L
+L
+L
+WRBUS
+FCBUS
+Slika 13 Vremenski oblici signala za ciklus upisa na asinhronoj magistrali
+Vremenski oblici signala DBUS i FCBUS , koje na magistrali razmenjuju procesor kao
+gazda i uredaj kao sluga, i signala potvrde inta, koji po posebnoj liniji koja ne pripada
+magistrali procesor šalje ulazno/izlaznom uredaju prilikom realizacije ciklusa prihvatanje
+broja ulaza, dati su na slici 14.
+DBUS
+inta
+LL
+L
+L
+L
+FCBUS
+Slika 14 Vremenski oblici signala za ciklus prihvatanje broja ulaza na asinhronoj magistrali
+Razmena signala izmedu procesora kao gazde i nekog od uredaja kao sluge je veoma slicna
+kao i za slucaj ciklusa citanja. Razlika je u tome da procesor kao gazda ne koristi adresne
+linije ABUS i upravljacku liniju RDBUS za realizaciju ciklusa prihvatanje broja ulaza.
+Umesto toga postavljanjem signala inta na aktivnu i neaktivnu vrednost procesor kao gazda
+zapocinje i završava ciklus prihvatanje broja ulaza na isti nacin kao što to cini postavljanjem
+signala RDBUS na aktivnu i neaktivnu vrednost u slucaju ciklusa citanja. Ulazno/izlazni
+uredaj na koji je linija inta povezana kao sluga reaguje na aktivnu i neaktivnu vrednost
+signala inta na isti nacin na koji reaguje na aktivnu i neaktivnu vrednost signala RDBUS u
+slucaju ciklusa citanja. Sluga po linijama DBUS šalje broj ulaza i postavljanjem signala
+FCBUS na aktivnu i neaktivnu vrednost ukazuje kada je sadržaja na linijama važeci i
+nevažeci.
+Dobra strane asinhrone magistrale je da se signali izmedu gazde i sluge razmenjuju na
+identican nacin bez obzira na to koliko je vreme pristupa sluge, pa se na magistralu mogu
+povezivati moduli sa razlicitim vremenima pristupa i svakom od njih pristupati sa njegovim
+16
+vremenom pristupa. Loša strana asinhrone magistrale je da se u situacijama kada gazda i sluga
+rade sa posebnim signalima takta gubi vreme prilikom razmene upravljackih signala
+RDBUS , WRBUS i FCBUS .
+1.3.1.2 SINHRONA MAGISTRALA
+Moduli magistrale rade sinhrono na isti signal takta MCLK i trajanje ciklusa je fiksno. Pri
+ciklusu citanja, gazda šalje adresu na adresne linije ABUS i aktivnom vrednošcu signala na
+upravljackoj liniji RDBUS odreduje da citanje treba da se realizuje u slugi. U ovom slucaju
+je vreme citanja fiksno, tako da gazda pretpostalja da je po isteku tog vremena podatak
+raspoloživ na linijama podataka DBUS pa ga upisuje u neki svoj prihvatni registar podatka i
+uklanja adresu sa adresnih linija ABUS. Pri ciklusu upisa, gazda šalje adresu na adresne linije
+ABUS, podatak na linije podataka DBUS i aktivnom vrednošcu signala na upravljackoj liniji
+WRBUS odreduje da upis treba da se realizuje u slugi. U ovom slucaju je vreme upisa
+fiksno, tako da gazda pretpostalja da je po isteku tog vremena podatak upisan u slugi i uklanja
+adresu sa linija ABUS i podatak sa linija DBUS. Pri ciklusu prihvatanje broja ulaza, procesor,
+signalom potvrde prekida inta na jednoj od linija, odreduje da citanje sadržaja registra broja
+ulaza u jednom od ulazno/izlaznih uredaja kao slugi treba da se realizuje. U ovom slucaju je
+vreme citanja broja ulaza fiksno, tako da gazda pretpostalja da je po isteku tog vremena
+podatak raspoloživ na linijama podataka DBUS pa ga upisuje u neki svoj prihvatni registar
+podatka.
+Svi moduli su kao i u slucaju asinhrone magistrale, preko bafera sa tri stanja, povezani na
+adresne linije, linije podataka i upravljacke linije magistrale. Pri tome, na linije magistrale
+odgovarajuce sadržaje mogu, preko bafera sa tri stanja, da propuštaju samo modul koji je
+trenutno gazda i modul koji kao sluga sa njim realizuje ciklus na magistrali. Svi ostali uredaji
+svoje bafere sa tri stanja drže u stanju visoke impedanse i ne opterecuju linije magistrale.
+I ovde sa kao i u slucaju asinhrone magistrale adresa po linijama ABUS šalje svim
+modulima (slika 1) koji na svojim dekoderima adresa proveravaju da li dati sadržaj
+predstavlja adresu neke od lokacija u datom modulu. Posle vremena dovoljnog da se u svim
+modulima ova provera završi, samo u jednom od njih se formira aktivna a u ostalima
+neaktivne vrednosti signala HIT. I ovde signal sa linije RDBUS primaju svi moduli (slika 1),
+ali na njega reaguje i za dati ciklus postaje sluga samo onaj modul u kome je signal HIT
+aktivan.
+Vremenski oblici signala ABUS, DBUS i RDBUS , koje na magistrali razmenjuju gazda i
+sluga prilikom realizacije ciklusa citanja, dati su na slici 15 .
+MCLK
+ABUS
+DBUS
+tcitanje
+L
+i i+1 j j+1
+L
+L
+LLL
+L RDBUS
+Slika 15 Vremenski oblici signala za ciklus citanja na sinhronoj magistrali
+Dok ne krene sa realizicijom ciklusa citanja gazda drži adresne linije ABUS i upravljacku
+liniju citanja RDBUS u stanju visoke impedanse. To isto cini i modul koji ce postati sluga sa
+linijama podataka DBUS. Vreme trajanje ciklusa citanja tcitanje je fiksno i zapocinje na i-ti
+signal takta MCLK i završava se na (j+1)-vi signal takta MCLK. Izmedu ova dva signala
+takta MCLK i gazda i sluga znaju šta ko na koji signal takta MCLK treba da uradi. Gazda
+uvek na i-ti signal takta otvara bafere sa tri stanja i pušta adresu na adresne linije ABUS i
+17
+liniju RDBUS postavlja na aktivnu vrednost, na (i+1)-vi signal takta liniju RDBUS
+postavlja na neaktivnu vrednost, na j-ti signal takta upisuje sadržaj sa linija podataka DBUS u
+neki svoj prihvatni registar podatka i na (j+1)-vi signal takta završava ciklus na magistrali
+tako što adresne linije ABUS i upravljacku liniju citanja RDBUS postavlja u stanju visoke
+impedanse. Svi moduli pocev od i-tog signala takta primaju adresu i do pojave (i+1)-vog
+signala takta se u jednom od njih formira aktivna vrednost signala HIT. Modul sa aktivnom
+vrednošcu signala na HIT na (i+1)-vi signal takta utvrduje da je signal RDBUS aktivan i kao
+sluga krece sa citanjem, najkasnije do (i+1)-og signala takta pušta procitani sadržaja na linije
+podataka DBUS i na (j+1)-vi signal takta završava ciklus na magistrali tako što linije
+podataka DBUS postavlja u stanju visoke impedanse.
+Vremenski oblici signala ABUS, DBUS i WRBUS , koje na magistrali razmenjuju gazda i
+sluga prilikom realizacije ciklusa upisa, dati su na slici 16. Razmena signala izmedu gazde i
+sluge je veoma slicna kao i za slucaj ciklusa citanja. Jedina razlika je da sadržaj po linijama
+podataka DBUS sada šalje gazda i da umesto signala citanja RDBUS gazda šalje signal upisa
+WRBUS .
+MCLK
+ABUS
+DBUS
+tupis
+L
+i i+1 j j+1
+L
+LL
+LL
+L WRBUS
+Slika 16 Vremenski oblici signala za ciklus upisa na sinhronoj magistrali
+Vremenski oblici signala DBUS koje na magistrali razmenjuju procesor kao gazda i uredaj
+kao sluga i signala potvrde inta, koji po posebnoj liniji koja ne pripada magistrali, procesor
+šalje ulazno/izlaznom uredaju prilikom realizacije ciklusa prihvatanje broja ulaza, dati su na
+slici 17.
+MCLK
+ABUS
+DBUS
+tulaz
+L
+i i+1 j j+1
+L
+L
+LL
+L inta
+Slika 17 Vremenski oblici signala za ciklus prihvatanje broja ulaza na sinhronoj magistrali
+Razmena signala izmedu procesora kao gazde i nekog od uredaja kao sluge je veoma slicna
+kao i za slucaj ciklusa citanja. Razlika je u tome da procesor kao gazda ne koristi adresne
+linije ABUS i upravljacku liniju RDBUS za realizaciju ciklusa prihvatanje broja ulaza, vec
+samo liniju inta, dok sluga kao i u slucaju ciklusa citanja šalje broj ulaza po linijama DBUS.
+Dobra strana sinhrone magistrale je da se zbog toga što gazda i sluga rade sinhrono sa istim
+signalom takta i što je fiksirano šta gazda i šta sluga rade na odredene signale takta, ne gubi
+vreme za razmenu upravljackih signala izmedu gazde i sluge. Loša strana sinhrone magistrale
+može da bude fiksno trajanje ciklusa, jer se moduli kod kojih je vreme pristupa duže od onog
+za koje je magistrala projektovana ne mogu dodavati, dok se sa modulima kod kojih je vreme
+pristupa krace od projektovanog vremena pristupa magistrale ciklusi realizuju sa
+projektovanim vremenom pristupa magistrali.
+18
+1.3.2 MAGISTRALE SA PODELJENIM CIKLUSIMA
+U slucaju magistrale sa podeljenim ciklusima magistrala je zauzeta samo onoliko vremena
+koliko je neophodno da se informacije neophodne za realizaciju citanja ili upisa u nekom
+modulu kao slugi prenesu iz gazde u slugu. Dok traje samo citanje ili upis u datom modulu
+magistrala je slobodna. To omogucuje da se za to vreme iskoristi magistrala da se informacije
+neophodne za realizaciju citanja ili upisa u nekom modulu kao slugi prenesu iz nekog drugog
+gazde u slugu Na ovaj nacin je moguce ostvariti da se u više modula paralelno realizuje
+citanje i/ili upis. Medutim, kod ovih magistrala postoji potreba i da modul po završenom
+citanju u posebnom ciklusu na magistrali u kome je sada on gazda vrati ocitani podatak.
+Da bi citanje i upis moglo da se realizuju na ovakav nacin u memorijskim modulima koji
+mogu da budu sluge mora sada da postoje registri u koje ce se upisivati informacije
+neophodne za realizaciju citanja ili upisa. Pored toga svaki modul koji može da bude gazda
+mora da dobije neki broj koji ce predstavljati njegov identifikator i koji ce se prenositi zajedno
+sa drugim informacijama u poseban registar modula koji kao sluga treba da realizuje citanje.
+Dati modul po završenom citanju u posebnom ciklusu na magistrali u kome je sada on gazda
+koristi dobijeni identifikator da bi identifikovao modul kome treba da vrati ocitani podatak.
+Zbog toga svaki modul mora da ima adresni registar, registar podatka i registar identifikatora.
+Sami ciklusi na magistrali predstavljaju slanje relevantnih informacija iz registara gazde u
+registre sluge i svode se na slanje zahteva za izvršenje odgovarajuce operacije i vracanje
+podatka. Stoga na magistrali sa podeljenim ciklusima mogu da se realizuju ciklus slanje
+zahteva za citanje, ciklus slanje zahteva za upis, ciklus slanje zahteva za dobijanje broja ulaza
+i ciklus vracanje podatka.
+Magistrala može da se realizuje i kao asinhrona i kao sinhrona i u oba slucaja ima adresne
+linije ABUS, linije podataka DBUS i upravljacke linije RDBUS , WRBUS , DABUS i
+ACKBUS. U slucaj asinhrone magistrale postoji i linija FCBUS . Pored toga postoji i
+posebna linija inta izmedu procesora i nekog ulazno/izlaznog uredaja koja ne pripada
+magistrali. Po linijama ABUS i DBUS gazda šalje slugi informacije relevantne za ciklus koji
+treba da se realizuje. Signalom na liniji RDBUS gazda odreduje da se radi o ciklusu slanje
+zahteva za citanje, signalom na liniji WRBUS o ciklusu slanje zahteva za upis, signalom na
+liniji inta o ciklusu slanje zahteva za citanje broja ulaza i signalom na liniji DABUS o ciklusu
+vracanje podatka. Ciklus može da bude realizovan uspešno ili bezuspešno u zavisnosti od toga
+da li je modul slobodan ili zauzet, na šta ukazuje aktivna i neaktivna vrednost signala
+ACKBUS koji sluga šalje gazdi. Gazda proverava vrednost signala ACKBUS u trenutku kada
+signal FCBUS postaje aktivan u slucaju asinhrone magistrale ili na j-ti signal takta BCLK u
+slucaju sinhrone magistrale. U slucaju da se utvrdi da je signal ACKBUS neaktivan ciklus
+nije uspešno realizovan jer je modul zauzet. Stoga se ponovo pokušava sa realizacijom datog
+ciklusa sve dok se ne dobije aktivna vrednost signala ACKBUS kao indikacija da je modul
+slobodan i da je ciklus uspešno realizovan.
+U slucaju ciklusa slanje zahteva za citanje gazda šalje adresu po adresnim linijama ABUS,
+identifikator po linijama podataka DBUS i generiše signal RDBUS na nacina dat na slikama
+18 i 19 u zavisnosti od toga da li se radi o asinhronoj ili sinhronoj magistrali.
+19
+ABUS L
+L
+LL
+L
+RDBUS
+FCBUS
+DBUS
+ACKBUS L
+L
+L
+MCLK
+ABUS
+DBUS
+tcitanje
+i i+1 j j+1
+L
+RDBUS
+ACKBUS
+Slika 18 Vremenski oblici signala za ciklus
+slanje zahteva za citanje na asinhronoj
+magistrali
+Slika 19 Vremenski oblici signala za ciklus
+slanje zahteva za citanje na sinhronoj
+magistrali
+U slucaju asinhrone magistrale (slika 18) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 12. Modul koji prepozna sadržaj na linijama ABUS kao
+adresu neke od svojih lokacija postaje sluga. Ukoliko je slobodan sluga koristi aktivnu
+vrednost signala RDBUS da najpre upiše sadržaj sa linija ABUS u svoj adresni registar i
+sadržaj sa linija DBUS u svoj registar identifikatora i zatim postavi signale ACKBUS i
+FCBUS na aktivnu vrednost. Na aktivnu vrednost signala FCBUS gazda proverava signal
+ACKBUS i postavlja signal RDBUS na neaktivnu vrednost. Ostatak ciklusa je kao na slici
+12. Ukoliko nije slobodan sluga radi sve kao i kada je slobodan jedino ne upisuje sadržaje sa
+linija ABUS i DBUS u svoj adresni registar i registar identifikatora i signal ACKBUS
+postavlja na neaktivnu vrednost.
+U slucaju sinhrone magistrale (slika 19) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 15 . Modul koji prepozna sadržaj na linijama ABUS kao
+adresu neke od svojih lokacija postaje sluga. Ukoliko je slobodan sluga koristi aktivnu
+vrednost signala RDBUS da na (i+1)-vi signal takta MCLK upiše sadržaj sa linija ABUS u
+svoj adresni registar i sadržaj sa linija DBUS u svoj registar identifikatora i postavi signal
+ACKBUS na aktivnu vrednost. Na j-ti signal takta MCLK gazda proverava signal ACKBUS.
+Ostatak ciklusa je kao na slici 15 . Ukoliko nije slobodan sluga radi sve kao i kada je slobodan
+jedino ne upisuje sadržaje sa linija ABUS i DBUS u svoj adresni registar i registar
+identifikatora i signal ACKBUS postavlja na neaktivnu vrednost.
+U slucaju ciklusa slanje zahteva za upis gazda šalje adresu po adresnim linijama ABUS,
+podatak po linijama podataka DBUS i generiše signal WRBUS na nacina dat na slikama 20 i
+21 u zavisnosti od toga da li se radi o asinhronoj ili sinhronoj magistrali.
+ABUS L
+L
+LL
+L
+WRBUS
+FCBUS
+DBUS
+ACKBUS L
+L
+L
+MCLK
+ABUS
+DBUS
+tupis
+i i+1 j j+1
+L
+WRBUS
+ACKBUS
+Slika 20 Vremenski oblici signala za ciklus
+slanje zahteva za upis na asinhronoj
+magistrali
+Slika 21 Vremenski oblici signala za ciklus
+slanje zahteva za upis na sinhronoj
+magistrali
+U slucaju asinhrone magistrale (slika 20) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 13. Modul koji prepozna sadržaj na linijama ABUS kao
+adresu neke od svojih lokacija postaje sluga. Ukoliko je slobodan sluga koristi aktivnu
+vrednost signala WRBUS da najpre upiše sadržaj sa linija ABUS u svoj adresni registar i
+20
+sadržaj sa linija DBUS u svoj registar podatka i zatim postavi signale ACKBUS i FCBUS na
+aktivnu vrednost. Na aktivnu vrednost signala FCBUS gazda proverava signal ACKBUS i
+postavlja signal WRBUS na neaktivnu vrednost. Ostatak ciklusa je kao na slici 13. Ukoliko
+nije slobodan, sluga radi sve kao i kada je slobodan, jedino ne upisuje sadržaje sa linija ABUS
+i DBUS u svoj adresni registar i registar podatka i signal ACKBUS postavlja na neaktivnu
+vrednost.
+U slucaju sinhrone magistrale (slika 21) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 16. Modul koji prepozna sadržaj na linijama ABUS kao
+adresu neke od svojih lokacija postaje sluga. Ukoliko je slobodan, sluga koristi aktivnu
+vrednost signala WRBUS da na (i+1)-vi signal takta MCLK upiše sadržaj sa linija ABUS u
+svoj adresni registar i sadržaj sa linija DBUS u svoj registar podatka i postavi signal
+ACKBUS na aktivnu vrednost. Na j-ti signal takta MCLK gazda proverava signal ACKBUS.
+Ostatak ciklusa je kao na slici 16. Ukoliko nije slobodan, sluga radi sve kao i kada je
+slobodan, jedino ne upisuje sadržaje sa linija ABUS i DBUS u svoj adresni registar i registar
+podatka i signal ACKBUS postavlja na neaktivnu vrednost.
+U slucaju ciklusa slanje zahteva za dobijanje broja ulaza gazda šalje identifikator po
+linijama podataka DBUS i generiše signal inta na nacina dat na slikama 22 i 23 u zavisnosti
+od toga da li se radi o asinhronoj ili sinhronoj magistrali.
+LL
+L
+inta
+FCBUS
+DBUS
+ACKBUS L
+L
+L
+DBUS
+inta
+ACKBUS
+MCLK
+tulaz
+i i+1 j j+1
+Slika 22 Vremenski oblici signala za ciklus
+slanje zahteva za dobijanje broja ulaza na
+asinhronoj magistrali
+Slika 23 Vremenski oblici signala za ciklus
+slanje zahteva za dobijanje broja ulaza na
+sinhronoj magistrali
+U slucaju asinhrone magistrale (slika 22) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 14. Modul koji prima signal inta postaje sluga. Ukoliko
+je slobodan, sluga koristi aktivnu vrednost signala inta da najpre upiše sadržaj sa linija DBUS
+u svoj registar identifikatora i zatim postavi signale ACKBUS i FCBUS na aktivnu vrednost.
+Na aktivnu vrednost signala FCBUS gazda proverava signal ACKBUS i postavlja signal
+inta na neaktivnu vrednost. Ostatak ciklusa je kao na slici 14. Ukoliko nije slobodan sluga
+radi sve kao i kada je slobodan jedino ne upisuje sadržaje sa linija DBUS u svoj registar
+identifikatora i signal ACKBUS postavlja na neaktivnu vrednost.
+U slucaju sinhrone magistrale (slika 23) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 17. Modul koji prima signal inta postaje sluga. Ukoliko
+je slobodan, sluga koristi aktivnu vrednost signala inta da na (i+1)-vi signal takta MCLK
+upiše sadržaj sa linija DBUS u svoj registar identifikatora i postavi signal ACKBUS na
+aktivnu vrednost. Na j-ti signal takta MCLK gazda proverava signal ACKBUS. Ostatak
+ciklusa je kao na slici 17. Ukoliko nije slobodan, sluga radi sve kao i kada je slobodan, jedino
+ne upisuje sadržaje sa linija DBUS u svoj registar identifikatora i signal ACKBUS postavlja
+na neaktivnu vrednost.
+U slucaju ciklusa vracanje podatka gazda šalje identifikator po adresnim linijama ABUS,
+podatak po linijama podataka DBUS i generiše signal DABUS na nacina dat na slikama 24 i
+25 u zavisnosti od toga da li se radi o asinhronoj ili sinhronoj magistrali.
+21
+ABUS L
+L
+LL
+L
+DABUS
+FCBUS
+DBUS
+ACKBUS L
+L
+L
+MCLK
+ABUS
+DBUS
+tvracanje
+i i+1 j j+1
+L
+DABUS
+ACKBUS
+Slika 24 Vremenski oblici signala za ciklus
+vracanje podatka na asinhronoj magistrali
+Slika 25 Vremenski oblici signala za ciklus
+vracanje podatka na sinhronoj magistrali
+U slucaju asinhrone magistrale (slika 24) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 20. Modul koji prepozna sadržaj na linijama ABUS kao
+svoj identifikator postaje sluga. Ukoliko je slobodan, sluga koristi aktivnu vrednost signala
+DABUS da najpre upiše sadržaj sa linija DBUS u svoj registar podatka i zatim postavi
+signale ACKBUS i FCBUS na aktivnu vrednost. Na aktivnu vrednost signala FCBUS
+gazda proverava signal ACKBUS i postavlja signal DABUS na neaktivnu vrednost. Ostatak
+ciklusa je kao na slici 20. Ukoliko nije slobodan, sluga radi sve kao i kada je slobodan, jedino
+ne upisuje sadržaje sa linija DBUS u svoj registar podatka i signal ACKBUS postavlja na
+neaktivnu vrednost.
+U slucaju sinhrone magistrale (slika 25) vremenski oblici signala su veoma slicni
+vremenskim oblicima signala sa slike 21. Modul koji prepozna sadržaj na linijama ABUS kao
+svoj identifikator postaje sluga. Ukoliko je slobodan, sluga koristi aktivnu vrednost signala
+DABUS da na (i+1)-vi signal takta MCLK upiše sadržaj sa linija DBUS u svoj registar
+podatka i postavi signal ACKBUS na aktivnu vrednost. Na j-ti signal takta MCLK gazda
+proverava signal ACKBUS. Ostatak ciklusa je kao na slici 21. Ukoliko nije slobodan, sluga
+radi sve kao i kada je slobodan, jedino ne upisuje sadržaje sa linija DBUS u svoj registar
+podatka i signal ACKBUS postavlja na neaktivnu vrednost.
+1.4 SISTEMI SA VIŠE MAGISTRALA
+Sistemi se veoma cesto projektuju tako da sadrže više od jedne magistrale. To se cini sa
+ciljem da se smanje cekanja modula koji kao gazde realizuju cikluse na magistrali i da se
+kombinuju dobre strane sinhrone i asinhrone magistrale.
+Na slici 26 je dato povezivanje procesora, memorije, u/i uredaja bez DMA i u/i uredaja sa
+DMA preko dve magistrale koje se nazivaju sistemska magistrala i lokalna magistrala. Jedan
+modul memorije i više modula u/i uredaja bez DMA i u/i uredaja sa DMA povezani su na
+sistemsku magistralu, a drugi modul memorije i više drugih modula u/i uredaja bez DMA i u/i
+uredaja sa DMA povezani su na lokalnu magistralu. Procesor je vezan i na sistemsku i na
+lokalnu magistralu. Prilikom konfigurisanja sistema adresni prostor korisnika se deli na dva
+dela. Adrese iz jednog dela se koriste za adresiranje lokacija modula koji su povezani na
+sistemsku magistralu, a drugi opseg adresa za adresiranje lokacija modula koji su povezani na
+lokalnu magistralu. Prilikom realizaciju ciklusa na magistrali procesor, na osnovu vrednosti
+generisane adrese, utvrduje da li dati ciklus treba da realizuje preko sistemske ili preko
+lokalne magistrale. U ovakvim sistemima se obe magistrale obicno realizuju kao asinhrone
+magistrale.
+22
+SISTEMSKA
+MAGISTRALA
+memorija u/i uredaj bez DMA ... u/i uredaj sa DMA
+LOKALNA
+MAGISTRALA
+memorija u/i uredaj bez DMA ... u/i uredaj sa DMA
+procesor
+...
+...
+Slika 26 Sistem sa sistemskom i lokalnom magistralom
+Na slici 27 je dato povezivanje procesora, memorije, u/i uredaja bez DMA i u/i uredaja sa
+DMA preko dve magistrale koje se nazivaju sinhrona magistrala i aasinhrona magistrala.
+Moduli procesor i memorija povezani su na sinhronu magistralu, a moduli u/i uredaja bez
+DMA i u/i uredaja sa DMA povezani su na asinhronu magistralu. Modul adapter je vezan i na
+sinhronu i na asinhronu magistralu. Prilikom konfigurisanja sistema adresni prostor korisnika
+se deli na dva dela. Adrese iz jednog dela se koriste za adresiranje lokacija modula memorije
+koji je povezana na sinhronu magistralu, a drugi opseg adresa za adresiranje lokacija modula
+u/i uredaja bez DMA i u/i uredaja sa DMA koji su povezani na asinhronu magistralu.
+Procesor sve cikluse realizuje na sinhronoj magistrali. Pri tome na adrese iz opsega adresa
+dodeljenih modulu memorije reaguje modul memorije, a na adrese iz opsega adresa
+dodeljenih modulima u/i uredaja bez DMA i u/i uredaja sa DMA reaguje modul adapter.
+Ciklus sa samim u/i uredajem bez i sa DMA realizuje modul adapter. U ovakvim sistemima se
+sinhrona magistrala obicno realizuju sa podeljenim ciklusima.
+memorija
+procesor adapter
+u/i uredaj bez DMA ... u/i uredaj sa DMA
+SINHRONA
+MAGISTRALA
+ASINHRONA
+MAGISTRALA
+...
+Slika 27 Sistem sa sinhronom i asinhronom magistralom
+23
+2
+
+25
+3

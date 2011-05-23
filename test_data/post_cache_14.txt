@@ -1,0 +1,2 @@
+is it safe to assume that "1K cache" is referring to bytes and not bits?
+i.e. 1KB rather than 1Kb?

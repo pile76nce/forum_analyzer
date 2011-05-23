@@ -1,0 +1,3 @@
+On second thought, you're probably right, we should take LRU into account since it has been covered in class.
+
+A 4 way set associative cache needs each set to keep track of four entries. How many bits do you need for four entries?

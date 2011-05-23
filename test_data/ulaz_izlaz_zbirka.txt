@@ -1,0 +1,1495 @@
+1 ULAZ/IZLAZ
+1.1 ZADATAK
+Zadata je neka spora izlazna jedinica koja je preko svog kontrolera vezana na magistralu. Na istu magistralu su vezani i procesor i memorija racunara. Adresiranje je bajtovsko, sa razdvojenim memorijskim i ulazno/izlaznim adresnim prostorima. Procesor je dvoadresni, a od registara ima: 8 16-bitnih registara opšte namene R0 do R7, programski brojac PC, programsku statusnu rec PSW i pokazivac steka SP. Pri prekidu, na steku se hardverski cuvaju samo registri PC i PSW. Kod dvoadresnih instrukcija jedan operand (i eventualno odredište) je obavezno u jednom od registara R0 do R7, a jedina naredba koja koristi operand u memoriji je naredba MOV za prenos podataka iz/ka memoriji. Naredbe mogu operisati podacima dužine bajta ili reci, što se oznacava sufiksom u asemblerskoj naredbi: B za bajt i W za rec (npr. MOVB prenosi bajt, a MOVW rec). Kontroler periferije ima tri registra dužine 1 bajt: registar podatka cija je adresa 41h, upravljacki registar cija je adresa 42h i statusni registar cija je adresa 43h (slika 4.1).
+Registar podataka
+Upravljacki registar
+Statusni registar
+7
+0
+7
+5
+1
+0
+7
+4
+0
+??
+Start
+??
+Enable
+??
+Ready
+Slika 4.1.
+Kontroler periferije ce svaki podatak upisan u registar podataka od strane procesora prosledivati u samu periferiju jedino ako je bit Start u upravljackom registru postavljen na 1. Prilikom upisa bajta podatka od strane procesora u registar podatka kontrolera periferije bit Ready u statusnom registru se postavlja na 0. Po prosledivanju tog podatka iz registra podataka u periferiju bit Ready u statusnom registru se postavlja na 1 i generiše signal prekida ako je bit Enable u upravljackom registru postavljen na 1. Korišcenjem tehnika programiranog izlaza napisati program za slanje 20h bajtova iz memorije u datu periferiju pocev od memorijske lokacije 1000h:
+a) sa ispitivanjem bita Ready u statusnom registru,
+b) uz korišcenje mehanizma prekida. Kako se obezbeduje da se u glavnom programu ne zapocne nova izlazna operacija dok se prethodna ne završi?
+Rešenje:
+a) Program koji obavlja traženi prenos ispitivanjem bita Ready prikazan je na slici 4.2.
+MOVW #20H, R0 ;dužina bloka u R0
+MOVW #1000H, R1 ;adresa bloka u R1
+MOVB #00100000B, R3 ;Start=1
+OUTB R3, 42H ;pokretanje kontrolera
+LOOP: INB 43H, R3 ;ispitivanje bita Ready
+ANDB #00010000B, R3
+JZ LOOP ;ako nije 1, cekaj
+MOVB (R1), R3 ;prenos podatka na izlaz
+OUTB R3, 41H
+INCW R1 ;sledeca adresa u bloku
+DECW R0 ;smanji brojac
+JNZ LOOP ;ako nije kraj, ponovi
+MOVB #0, R3 ;Start=0
+OUTB R3, 42H ;zaustavljanje kontrolera
+Slika 4.2.
+Indirektno adresiranje (registarsko ili memorijsko) oznaceno je u zagradama, a neposredno znakom # ispred konstante.
+Prvi deo programa predstavlja inicijalizaciju: broj bajtova za prenos smešta se u registar R0, kako bi se posle svakog prenesenog podatka odbrojalo. Adresa pocetka bloka za prenos smešta se u R1. Zatim se pokrece kontroler upisom 1 u bit Start. Bit Enable treba da bude 0, kako kontroler ne bi generisao prekid. Pošto su memorijski i ulazno/izlazni adresni prostori razdvojeni, registrima kontrolera pristupa se instrukcijama IN i OUT, a prenos podataka prema i iz memorije instrukcijama MOV.
+Petlja LOOP predstavlja cekanje na spremnost kontrolera da prihvati podatak. Procesor ucitava instrukcijom IN statusni registar, maskira bit Ready instrukcijom AND i, ako je rezultat nula (bit RAEDY je bio 0), ponavlja se ispitivanje. Inace, ako je bit Ready bio 1, procesor prenosi podatak u registar podatka kontrolera instrukcijom OUT. Zatim se ažuriraju R0 i R1 i, ako nije obavljen ceo prenos, prelazi na prenos sledeceg podatka. Ako je prenos završen, kontroler se zaustavlja upisom 0 u bit Start upravljackog registra.
+Diskusija:
+Kako jedan operand u dvoadresnim instrukcijama mora biti u registru, nije bilo moguce direktno poslati konstantu u registar periferije (OUT #00100000b, 42h) i slicno.
+Kako su registri kontrolera 8-bitni, instrukcije koje operišu njihovim vrednostima imaju sufiks B, a ostale instrukcije imaju sufiks W. Adresa bloka i dužina bloka su 16-bitne velicine, pa na to treba obratiti pažnju.
+b) Glavni program koji inicijalizuje dati prenos prikazan je na slici Error! Reference source not found..3.
+;Glavni program
+MOVW #20, R0 ;brojac u MemCnt
+MOVW R0, MemCnt
+MOVW #1000H, R0 ;pokazivac u MemSrc
+MOVW R0, MemSrc
+MOVW #0, R0 ;semafor na 0
+MOVW R0, MemSem
+MOVB #00100010B, R0 ;Start=1, Enable=1
+OUTB R0, 42H ;pokretanje kontrolera
+…. ;program koji ne upisuje u blok
+LOOP: MOVW MemSem, R0 ;cekanje na završetak prenosa
+CMPW R0, #1 ;ako semafor nije 1, cekaj
+JNZ LOOP
+…. ;može da se upisuje u blok
+Slika Error! Reference source not found..3.
+Glavni program sada inicijalizuje brojac bajtova za prenos u memorijskoj lokaciji MemCnt, kako bi registri u toku prenosa bili slobodni za druge potrebe. Isto važi i za pokazivac bajta u bloku za prenos u memorijskoj lokaciji MemSrc. Semafor koji ce oznaciti kraj prenosa podataka i koji ce postaviti prekidna rutina, postavlja se inicijalno na 0. Na kraju se pokrece kontroler, postavljanjem bita Start na 1, a bit Enable se postavlja na 1 kako bi kontroler generisao prekid svaki put kada je spreman da prihvati podatak.
+Kada je prenos pokrenut, glavni program može da obavlja druge poslove, pri cemu ne sme da upisuje u blok podataka koji se prenosi. Glavni program može da koristi sve registre, jer ce ih prekidna rutina sacuvati na ulazu i restaurirati na povratku. Kada je to potrebno, glavni program ispituje da li je prenos gotov. Na to ukazuje postavljen semafor. Posle toga, glavni program može upisivati ponovo u blok koji je prenesen.
+Prekidna rutina je prikazana na slici Error! Reference source not found..4.
+;Prekidna rutina
+INTH: PUSHW R0 ;sacuvaj registre
+PUSHW R1
+MOVW MemSrc, R0 ;pokazivac u R0
+MOVB (R0), R1 ;prenesi podatak u R1
+OUTB R1, 41H ;pa u kontroler periferije
+INCW R0 ;povecaj pokazivac
+MOVW R0, MemSrc ;i vrati ga u MemSrc
+MOVW MemCnt, R0 ;brojac u R0
+DECW R0 ;smanji brojac
+MOVW R0, MemCnt ;i vrati ga u MemCnt
+JNZ BACK ;ako nije poslednji, povratak
+MOVB #0, R0 ;zaustavi kontroler
+OUTB R0, 42H
+MOVW #1, R0 ;i postavi semafor
+MOVW R0, MemSem
+BACK: POPW R1 ;restauriraj registre
+POPW R0
+RTI ;i vrati se
+Slika Error! Reference source not found..4.
+Prekidna rutina najpre cuva na steku registre koje ce koristiti i koje ce na kraju restaurirati. To su R0 i R1. Prekidna rutina se poziva onda kada stigne zahtev za prekidom od kontrolera periferije. Kontroler periferije generiše prekid onda kada je spreman za prenos. Prekidna rutina, dakle, može odmah obaviti prenos, nema potrebe za ispitivanjem bita Ready.
+Prenos se obavlja na uobicajen nacin. Zatim se pokazivac MemSrc pripremi za prenos sledeceg bajta, kao i brojac MemCnt. Ako je prenesen poslednji bajt, prekidna rutina treba da
+zaustavi kontroler i da postavi semafor MemSem na 1, kako bi glavni program znao da je prenos završen. Ako to nije slucaj, samo se vraca iz prekidne rutine, uz restauraciju registara.
+Diskusija:
+Kako je jedina instrukcija koja operiše sa memorijom instrukcija MOV, nije bilo moguce direktno dekrementirati MemCnt, vec je bilo neophodno preneti ga u registar. Podrazumeva se da instrukcija MOV ne deluje na indikator Z u PSW, ili da ga postavlja u skladu sa prenesenim podatkom. Inace instrukcija JNZ BACK ne bi funkcionisala ispravno.
+Iako je izvodljivo, nije potpuno dosledno koristiti samo registre za pokazivac i brojac. U tom slucaju glavni program ne bi mogao da koristi te registre dok se vrši prenos. Pošto su pokazivac i brojac vec u memoriji, a potrebno ih je preneti u registre u prekidnoj urutini, prekidna rutina mora da sacuva registre koje koristi.
+Najzad, umesto semafora se može koristiti i sâm MemCnt kao indikator završetka prenosa. Prenos je završen kada je MemCnt = 0.
+1.2 ZADATAK
+Adresne linije i linije podataka magistrale posmatranog racunara su široke po 16 bita. Procesor je jednoadresni i operiše samo nad 16-bitnim podacima. Ulazno-izlazni i memorijski adresni prostori su razdvojeni. Periferije PER0 i PER1 imaju upravljacke, statusne i registre podataka redom na sledecim adresama: FF00h, FF01h, FF02h (PER0) i FF10h, FF11h, FF12h (PER1). U upravljackim registrima najmladi bit je bit Enable Interrupt kojim se dozvoljava prekid, najstariji je bit Start kojim se dozvoljava pocetak operacije, a bit 1 je bit smera operacije (0—ulaz, 1—izlaz). U statusnim registrima najmladi bit je bit spremnosti Ready. Napisati program kojim se blok od 200h podataka ucitava sa PER0, smešta u memoriju od lokacije F000h, obraduje procedurom Obrada, i rezultat šalje na PER1. Operacije ulaza i izlaza realizovati ispitivanjem bita spremnosti. Procedura Obrada ne menja mesto ni dužinu bloka podataka. Ovu proceduru ne treba realizovati, vec je samo pozvati na odgovarajucem mestu u programu pomocu naredbe CALL Obrada.
+Rešenje:
+Traženi program je prikazan na slici Error! Reference source not found..5.
+LOAD #200H ;brojac u MemCnt
+STORE MemCnt
+LOAD #F000H ;adresa u MemDst
+STORE MemDst
+LOAD #8000H ;Start=1, Enable=0, Direction=0
+OUT FF00H ;pokreni kontroler
+LOOP1: IN FF01H ;ispitivanje bita spremnosti
+AND #1
+JZ LOOP1 ;ako nije spreman, cekaj
+IN FF02H ;ulaz podatka
+STORE (MemDst) ;i smeštanje u memoriju
+LOAD MemDst ;ažuriranje pokazivaca
+INC
+STORE MemDst
+LOAD MemCnt ;i brojaca
+DEC
+STORE MemCnt
+JNZ LOOP1 ;ako nije poslednji, ponovi
+LOAD #0 ;zaustavi kontroler
+OUT FF00H ;Stop PER0
+CALL Obrada ;obrada
+LOAD #200H ;brojac u MemCnt
+STORE MemCnt
+LOAD #F000H ;pokazivac u MemSrc
+STORE MemSrc
+LOAD #8002H ;Start=1, Enable=0, Direction=1
+OUT FF10H ;pokretanje kontrolera
+LOOP2: IN FF11H ;ispitivanje bita spremnosti
+AND #1
+JZ LOOP2 ;ako nije spreman, cekaj
+LOAD (MemSrc) ;podatak na izlaz
+OUT FF12H
+LOAD MemSrc ;ažuriranje pokazivaca
+INC
+STORE MemSrc
+LOAD MemCnt ;i brojaca
+DEC
+STORE MemCnt
+JNZ LOOP2 ;ako nije poslednji, ponovi
+LOAD #0 ;zaustavi kontroler
+OUT FF10H ;Stop PER1
+Slika Error! Reference source not found..5.
+Program se sastoji iz tri faze. Prva faza je ucitavanje niza podataka, druga je poziv procedure Obrada, a treca je slanje niza na izlaz. Faze ulaza i izlaza niza podataka realizovane su na uobicajen nacin, tehnikom ispitivanja bita spremnosti.
+Procesor je jednoadresni, operiše sa 16 bitnim velicinama, a adresni prostori su razdvojeni, pa o svemu tome treba voditi racuna pri pisanju programa.
+Diskusija:
+Nije potpuno dosledno, a u opštem slucaju ni ispravno, koristiti instrukciju CMP (Compare, poredenje) ucitane vrednosti statusnog registra sa konstantom koja predstavlja bit spremnosti, umesto instrukcije AND. Naime, statusni registar ima i druge bite sa svojim znacenjem, pa oni mogu biti i razliciti od nule. Zato rezultat poredenja sa konstantom ne mora dati jednakost cak ni kada je bit spremnosti postavljen.
+Kako ništa nije receno o dozvoljenim nacinima adresiranja, moguce je bilo i direktno inkrementirati i dekrementirati operande u memoriji (INC MemSrc, DEC MemCnt). Ovakve instrukcije još uvek cuvaju jednoadresni format.
+Najzad, bilo je moguce odmah na pocetku pokrenuti oba kontrolera, iako se time ne dobija skoro ništa.
+1.3 ZADATAK
+Jednoadresni racunar sa 16-bitnim adresama i podacima poseduje razdvojen memorijski i ulazno/izlazni adresni prostor. Pri prekidu hardverski se cuvaju jedino PC i PSW. Periferije PER0 i PER1 imaju upravljacke, statusne i registre podataka redom na sledecim adresama: FF00h, FF01h, FF02h (PER0) i FF10h, FF11h, FF12h (PER1). U upravljackim registrima najmladi bit je bit Enable Interrupt kojim se dozvoljava prekid, najstariji je bit Start kojim se dozvoljava pocetak operacije, a bit 1 je bit smera operacije (0—ulaz, 1—izlaz). U statusnim registrima najstariji bit je bit spremnosti Ready. Napisati program kojim se:
+blok od 200h podataka ucitava sa PER0, smešta u memoriju od lokacije F000h, zatim
+vrši obrada ovih podataka procedurom OBRADA (poziv procedure je CALL OBRADA) i potom
+vrši prenos obradenog bloka (dužina i pocetna adresa su iste) iz memorije na PER1.
+Ulaz realizovati uz korišcenje mehanizma prekida, a izlaz uz ispitivanje bita spremnosti.
+Rešenje:
+Glavni program je prikazan na slici Error! Reference source not found..6.
+INTD ;onemogucavanje prekida
+LOAD #200H ;brojac u MemCnt
+STORE MemCnt
+LOAD #F000H ;adresa u MemDst
+STORE MemDst
+LOAD #0H
+STORE MemSem ;inicijalizacija semafora
+LOAD #8001H ;Start=1, Smer=0, Enable=1
+OUT FF00H ;pokreni kontroler
+INTE ;omogucavanje prekida
+LOOP1: LOAD MemSem ;ispitivanje vrednosti semafora
+AND #1
+JZ LOOP1 ;ako nije kraj prenosa, cekaj
+CALL Obrada ;obrada unetih podataka
+LOAD #200H ;brojac u MemCnt
+STORE MemCnt
+LOAD #F000H ;pokazivac u MemSrc
+STORE MemSrc
+LOAD #8002H ;Start=1, Smer=1, Enable=0
+OUT FF10H ;pokretanje kontrolera
+LOOP2: IN FF11H ;ispitivanje bita spremnosti
+AND #8000H
+JZ LOOP2 ;ako nije spreman, cekaj
+LOAD (MemSrc) ;podatak na izlaz
+OUT FF12H
+LOAD MemSrc ;ažuriranje pokazivaca
+INC
+STORE MemSrc
+LOAD MemCnt ;i brojaca
+DEC
+STORE MemCnt
+JNZ LOOP2 ;ako nije poslednji, ponovi
+LOAD #0 ;zaustavi kontroler
+OUT FF10H ;Stop PER1
+Slika Error! Reference source not found..6.
+Prekidna rutina je prikazana na slici Error! Reference source not found..7.
+PUSHA ;akumulator na stek
+IN FF02H ;ulaz podatka
+STORE (MemDst) ;i smeštanje u memoriju
+LOAD MemDst ;ažuriranje pokazivaca
+INC
+STORE MemDst
+LOAD MemCnt ;i brojaca
+DEC
+STORE MemCnt
+JNZ BACK ;ako nije poslednji, kraj
+LOAD #0 ;zaustavi kontroler
+OUT FF00H ;Stop PER0
+LOAD #1H
+STORE MemSem ;ažuriranje semafora
+BACK: POPA ;restauracija akumulatora
+RTI ;povratak iz prekidne rutine
+Slika Error! Reference source not found..7.
+Glavni program ostvaruje inicijalizaciju memorijskih promenljivih MemCnt, MemDst i MemSem potrebnih za ostvarivanje ulaza i pokrece kontroler PER0. Maskiranje prekida za vreme ovih operacija omogucava njihovo obavljanje proizvoljnim redosledom (u suprotnom slucaju pokretanje kontrolera periferije mora da bude poslednja operacija). Posle inicijalizacije, glavni program se vrti u petlji ispitujuci MemSem dok se ne obavi prenos celokupnog bloka u memoriju. Nakon toga sledi obrada unetih podataka procedurom OBRADA i realizacija izlaza sa ispitivanjem Ready bita i zaustavljanjem kontrolera PER1 na kraju programa.
+Prekidna rutina na ulazu cuva akumulator na steku (to je obavezno jer se hardverski cuvaju jedino PC i PSW, a glavni program koristi registar A pri ispitivanju semafora MemSem). Zatim sledi ucitavanje podatka iz registra podataka PER1, ažuriranje memorijskih promenljivih MemDst i MemCnt. Ukoliko nije prenet poslednji bajt, akumulator se restaurira sa steka i kontrola vraca glavnom programu. U suprotnom slucaju, pre povratka u glavni program zaustavlja se kontroler PER0 i signalizuje kraj prenosa glavnom programu preko semafora MemSem.
+Diskusija:
+Prikazano je samo jedno od mogucih korektnih rešenja. Neke modifikacije zaslužuju da budu pomenute:
+u prikazanoj prekidnoj rutini nije vršena provera spremnosti kontrolera periferije jer je pretpostavljeno da je PER0 jedina periferija koja može izazvati izvršenje prekidne rutine, što implicira da ima spreman podatak za prenos. U nekim realnim upravljackim sistemima koji rade u otežanim uslovima, ovo ispitivanje se može obavljati da bi se eliminisao efekat eventualnih smetnji na liniji zahteva za prekid. U ostalim slucajevima nije pogrešno, mada je redundantno, ispitivati bit spremnosti. Ukoliko bi se ispitivanjem utvrdilo da periferija nije spremna potrebno je obezbediti da se kontrola vrati glavnom programu, a ne da se vrši cekanje u prekidnoj rutini jer se time ova tehnika svodi na tehniku sa ispitivanjem bita spremnosti.
+kontroler PER0 u prikazanom rešenju zaustavljen je u okviru prekidne rutine. Ovo rešenje je sigurnije od zaustavljanja kontrolera u glavnom programu po izlasku iz prekidne rutine iz sledeceg razloga: može se desiti da, po izlasku kontrole iz prekidne rutine u glavni program a pre zaustavljanja kontrolera, periferija (pošto još nije zaustavljena) izazove novi prekid. Pošto se u prekidnoj rutini ispitivanje uslova za kraj obavlja posle prenosa, efektivno ce biti prenet jedan bajt više od zadatog broja. Nasuprot ovoj situaciji, prekidi su po pravilu onemoguceni u toku izvršavanja prekidne rutine tako da se ova situacija u datom rešenju ne može pojaviti.
+1.4 ZADATAK
+Jednoadresni racunar sa 16-bitnom adresnom i magistralom podataka poseduje memorijski preslikan ulazno/izlazni adresni prostor. Periferije PER0 i PER1 imaju upravljacke, statusne i registre podataka redom na sledecim adresama: FF00h, FF01h, FF02h (PER0), i FF10h, FF11h, FF12h (PER1). U upravljackim registrima najmladi bit je Start kojim se dozvoljava pocetak operacije, najstariji je bit Enable kojim se dozvoljava prekid, a bit 2 je bit smera operacije (0—ulaz, 1—izlaz). U statusnim registrima najstariji bit je bit spremnosti Ready. Napisati glavni program i odgovarajucu prekidnu rutinu kojima se: blok od 100h reci ucitava sa PER0 i smešta u memoriju pocev od adrese od 1000h, zatim izvrši obrada unetih podataka pozivom procedure Obrada (CALL Obrada) i potom vrši prenos obradenog bloka (dužina i pocetna adresa bloka su iste) iz memorije u PER1. Ulaz realizovati ispitivanjem odgovarajuceg bita statusa, a izlaz mehanizmom prekida.
+Rešenje:
+U prethodnim zadacima su detaljno objašnjeni svi mehanizmi koji se ovde koriste. Glavni program je prikazan na slici Error! Reference source not found..8.
+LOAD #100H ;inicijalizacija brojaca
+STORE MemCnt
+LOAD #1000H ;inicijalizacija pokazivaca
+STORE MemAdr
+LOAD #0001H ;start kontrolera
+STORE FF00H
+P1: LOAD FF01H ;ispitivanje bita spremnosti
+AND #8000H
+JZ P1
+LOAD FF02H ;ulaz podatka
+STORE (MemAdr) ;i smeštanje u memoriju
+INC MemAdr ;ažuriranje pokazivaca
+DEC MemCnt ;i brojaca
+JNZ P1 ;ako nije poslednji, ponovi
+LOAD #0 ;zaustavljanje kontrolera
+STORE FF00H
+CALL Obrada ;obrada
+LOAD #100H ;inicijalizacija brojaca
+STORE MemCnt
+LOAD #1000H ;inicijalizacija pokazivaca
+STORE MemAdr
+LOAD #0
+STORE MemSem ;inicijalizacija semafora
+LOAD #8005H ;start kontrolera
+STORE FF10H
+….
+P2: LOAD MemSem ;prenos završen?
+CMP #1
+JNZ P2
+Slika Error! Reference source not found..8.
+Prekidna rutina za PER1 je prikazana na slici Error! Reference source not found..9.
+PER1: LOAD (MemAdr) ;izlaz podatka
+STORE FF12H
+INC MemAdr ;ažuriranje pokazivaca
+DEC MemCnt ;i brojaca
+JNZ BACK ;ako nije poslednji, vrati se
+LOAD #0 ;zaustavljanje kontrolera
+STORE FF10H
+LOAD #1 ;postavljanje semafora
+STORE MemSem
+BACK: RTI ;povratak
+Slika Error! Reference source not found..9.
+1.5 ZADATAK
+Jednoadresni racunar sa 16-bitnom adresnom i 8-bitnom magistralom podataka poseduje memorijski preslikan ulazno/izlazni adresni prostor. Periferije PER0, PER1 i PER2 imaju upravljacke, statusne i registre podataka redom na sledecim adresama: FF10h, FF11h, FF12h (PER0), FF20h, FF21h, FF22h (PER1) i FF30h, FF31h, FF32h (PER3). U upravljackim registrima najstariji bit je Start kojim se dozvoljava pocetak operacije, najmladi je bit Enable kojim se dozvoljava prekid, a bit 3 je bit smera operacije (1—ulaz, 0—izlaz). U statusnim registrima najstariji bit je bit spremnosti Ready. Napisati glavni program i odgovarajuce prekidne rutine kojima se: istovremeno sa periferija PER0 i PER1 ucitavaju blokovi od po 100h bajtova i smeštaju u memoriju pocev od lokacija 1000h (PER0) i 1100h (PER1), zatim izvrši obrada unetih blokova podataka pozivom procedure Obrada (CALL Obrada) i potom vrši prenos obradenog bloka od 200h bajtova, pocev od adrese 1000h iz memorije u PER2. Obe ulazne operacije izvršiti korišcenjem prekida, a izlaznu operaciju ispitivanjem bita Ready.
+Rešenje:
+Obe ulazne operacije treba izvršavati uporedo. To znaci da treba inicijalizovati oba ulazna prenosa i pokrenuti oba kontrolera PER0 i PER1. Tokom prenosa ce se pozivati prekidne rutine od ovih periferija medusobno nezavisno, i ti prenosi ce se obavljati do kraja. Glavni program treba da ispita da li su oba prenosa završena, pre nego što prede na obradu. Posle toga, glavni program ce izvršiti obradu, a potom preci na izlaznu operaciju. Uobicajeni mehanizmi ulaza i izlaza opisani su detaljno u prethodnim zadacima.
+Glavni program je prikazan na slici Error! Reference source not found..10.
+LOAD #1000h ;pokretanje obe ulazne operacije
+STORE MemB0
+LOAD #1100h
+STORE MemB1
+LOAD #100h
+STORE MemCnt0
+STORE MemCnt1
+LOAD #0
+STORE MemSem0
+STORE MemSem1
+LOADB #89h
+STOREB FF10h
+STOREB FF20h
+Wait0: LOAD MemSem0 ;cekanje na završetak sa PER0
+AND #1
+JZ Wait0
+Wait1: LOAD MemSem1 ;cekanje na završetak sa PER1
+AND #1
+JZ Wait1
+CALL Obrada ;obrada
+LOAD #1000h ;izlazna operacija
+STORE MemB
+LOAD #200h
+STORE MemCnt
+LOAD #80h
+STORE FF30h
+Loop: LOAD FF31h
+AND #80h
+JZ Loop
+LOADB (MemB)
+STOREB FF32h
+INC MemB
+DEC MemCnt
+JNZ Loop
+LOAD #0
+STOREB FF30h
+Slika Error! Reference source not found..10.
+Prekidne rutine su prikazane na slici Error! Reference source not found..11.
+Per0: LOADB FF12h
+STOREB (MemB0)
+INC MemB0
+DEC MemCnt0
+JNZ Back0
+LOAD #0
+STOREB FF10h
+INCA
+STORE MemSem0
+Back0: RTI
+Per1: LOADB FF22h
+STOREB (MemB1)
+INC MemB1
+DEC MemCnt1
+JNZ Back1
+LOAD #0
+STOREB FF20h
+INCA
+STORE MemSem1
+Back1: RTI
+Slika Error! Reference source not found..11.
+Diskusija:
+Neophodno je pokrenuti obe ulazne operacije, pa onda cekati na završetak obe. Pogrešno je cekati na završetak prve, pre nego što se pokrene druga. To bi znacilo nepotrebnu sekvencijalizaciju ovih operacija. Bitan efekat je upravo u tome što obe periferije paralelno izvršavaju svoje operacije, cime se dobija na vremenu. Ipak, procesor ne može istovremeno prenositi same podatke iz oba kontrolera u memoriju, to se obavlja sekvencijalno. Dobitak na vremenu je u tome što same periferije i njihovi kontroleri rade paralelno i nezavisno.
+1.6 ZADATAK
+Jednoadresni racunar sa 16-bitnom adresnom i 8-bitnom magistralom podataka poseduje razdvojen memorijski i ulazno/izlazni adresni prostor. Periferije PER0, PER1 i PER2 imaju upravljacke, statusne i registre podataka redom na sledecim adresama: FF00h, FF01h, FF02h (PER0), FF10h, FF11h, FF12h (PER1) i FF20h, FF21h, FF22h (PER2). U upravljackim registrima najstariji bit je Start kojim se dozvoljava pocetak operacije, najmladi je bit Enable kojim se dozvoljava prekid, a bit 3 je bit smera operacije (1—ulaz, 0—izlaz). U statusnim registrima najmladi bit je bit spremnosti Ready. Napisati glavni program i odgovarajuce prekidne rutine kojima se: sa periferije PER0 ucitava blok od 200h bajtova i smešta u memoriju pocev od lokacije 2000h, zatim izvrši obrada unetog bloka podataka pozivom procedure Obrada (CALL Obrada) i potom istovremeno vrši prenos obradenog bloka od 200h bajtova, pocev od adrese 2000h iz memorije u PER1 i PER2. Ulaznu operaciju izvršiti ispitivanjem bita Ready, a obe izlazne operacije korišcenjem prekida.
+Rešenje:
+Principi ovih prenosa objašnjeni su u zadatku ******. Situacija je prakticno ista, samo što su smerovi prenosa razliciti.
+Glavni program je prikazan na slici Error! Reference source not found..12.
+LOADW #200h ;ulazna operacija
+STOREW MemCnt
+LOADW #2000h
+STORE MemAdr
+LOADB #88h
+OUTB FF00h
+Wait: INB FF01h
+AND #01h
+JZ Wait
+INB FF02h
+STOREB (MemAdr)
+INCW MemAdr
+DECW MemCnt
+JZ Wait
+CALL Obrada
+LOADW #200h ;pokretanje obe izlazne operacije
+STOREW MemCnt1
+STOREW MemCnt2
+LOADW #2000h
+STOREW MemAdr1
+STOREW MemAdr2
+LOADW #0
+STOREW MemSem1
+STOREW MemSem2
+LOADB #81h
+OUTB FF10h
+OUTB FF20h
+….
+Wait1: LOADW MemSem1
+CMPW #1
+JNZ Wait1
+Wait2: LOADW MemSem2
+CMPW #1
+JNZ Wait2
+Slika Error! Reference source not found..12.
+Prekidne rutine su prikazane na slici Error! Reference source not found..13.
+Per1: LOADB (MemAdr1)
+OUTB FF12h
+INCW MemAdr1
+DECW MemCnt1
+JNZ Bck1
+LOADB #0
+OUTB FF10h
+LOADW #1
+STOREW MemSem1
+Bck1: RTI
+Per2: LOADB (MemAdr2)
+OUTB FF22h
+INCW MemAdr2
+DECW MemCnt2
+JNZ Bck2
+LOADB #0
+OUTB FF10h
+LOADW #1
+STOREW MemSem2
+Bck2: RTI
+Slika Error! Reference source not found..13.
+Diskusija: Kako dve izlazne operacije rade uporedo i nezavisno, neophodno je da obe imaju zasebne skupove promenljivih s kojima operišu (brojac, pokazivac i semafor), iako rade nad istim blokom podataka. Prekidne rutine se pozivaju potpuno nezavisno i u nepoznatom medusobnom poretku, pa svaka od njih operiše nad zasebnim skupom ovih promenljivih.
+1.7 ZADATAK
+Jednoadresni procesor sa razdvojenim adresnim prostorima, memorija, periferije PER0 i PER1 povezani su sitemskom magistralom sa 16 adresnih linija i 16 linija za podatke. Adresiranje je na nivou 16-bitnih reci. Mehanizam prekida je vektorisan a broj ulaza u IV tabelu je odreden fiksno (0 za PER0, 1 za PER1). Adrese relevantnih registara su prikazane na slici Error! Reference source not found..14.
+PER0_CONTROL
+FF00h
+PER1_CONTROL
+FF10h
+PER0_STATUS
+FF01h
+PER1_STATUS
+FF11h
+PER0_DATA
+FF02h
+PER1_DATA
+FF12h
+Slika Error! Reference source not found..14.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, bit 1 odreduje smer operacije (0—ulaz, 1—izlaz), bit 4 je Enable kojim se dozvoljava prekid, a u statusnim registrima bit 0 je Ready koji signalizira spremnost kontrolera. Napisati glavni program i odgovarajucu prekidnu rutinu kojima se: uporedo vrši ucitavanje niza A(i) (i = 0, …, 99) sa PER0 u memorijiski blok koji pocinje od adrese 1000h, i niza B(i) (i = 0, …, 99) sa PER1 u memorijski blok pocev od adrese 1100h, zatim izvrši sabiranje unetih nizova (B(i) = A(i) + B(i)) i rezultujuci niz šalje na periferiju PER0. Ulaz sa PER0 realizovati korišcenjem mehanizma prekida, ulaz sa PER1 realizovati ispitivanjem bita spremnosti, a izlaz na PER0 korišcenjem mehanizma prekida. Kontrolni registar PER0 može da se cita.
+Rešenje:
+Specificnost ovog zadatka je što je potrebno najpre sa PER0 izvršiti operaciju ulaza korišcenjem prekida, a zatim operaciju izlaza na istu periferiju takode korišcenjem prekida. Kako ova periferija generiše jedinstven zahtev za prekid, kome opet pripada jedna prekidna rutina, sledi da je neophodno u samoj prekidnoj rutini softverski utvrditi da li je u toku operacija ulaza ili izlaza. U odnosu na to se vrši odgovarajuci prenos u datom smeru. Najjednostavnije je razlikovati dve operacije pomocu jedne promenljive MemDir koja ce biti postavljena pri inicijalizaciji prenosa, u glavnom programu, na odgovarajucu vrednost, a zatim ispitivana u prekidnoj rutini.
+Druga stvar na koju treba obratiti pažnju je da ulazne operacije treba obavljati uporedo. To znaci da se u toku prenosa sa PER1 u glavnom programu generišu prekidi sa PER0, u cijim se prekidnim rutinama obavlja prenos jednog po jednog podatka. Na ovaj nacin se paralelizuje rad dve periferije i njihovih kontrolera, dok sam prenos iz memorije u kontrolere periferija vrši procesor. Iako nema paralelizacije ovog prenosa iz memorije u kontrolere periferija (jer sve radi procesor, nešto u glavnom programu, a nešto u prekidnoj rutini), postiže se nezavisnost rada dve periferije, jer se nicime ne uslovljava medusobni redosled operacija prema njima. Štaviše, greška bi bilo na bilo koji nacin medusobno uslovljavati tokove i redosled operacija sa ove dve periferije.
+Traženi program izgleda ovako:
+Glavni program je prikazan na slici Error! Reference source not found..15.
+LOAD #100h
+STORE MemCnt0
+STORE MemCnt1
+LOAD #1000h
+STORE MemAdr0
+LOAD #1100h
+STORE MemAdr1
+LOAD #0
+STORE MemSem0
+LOAD #0 ;smer: ulaz
+STORE MemDir
+LOAD #11h
+OUT FF00h
+LOAD #01h
+OUT FF10h
+Crdy: IN FF11h
+AND #01h
+JZ Crdy
+IN FF12h
+STORE (MemAdr1)
+INC MemAdr1
+DEC MemCnt1
+JNZ Crdy
+LOAD #0
+OUT FF10h
+Wait: LOAD MemSem0
+CMP #1
+JNZ Wait
+LOAD #100h
+STORE MemCnt
+LOAD #1000h
+STORE MemA
+LOAD #1100h
+STORE MemB
+Loop: LOAD (MemA)
+ADD (MemB)
+STORE (MemB)
+INC MemA
+INC MemB
+DEC MemCnt
+JNZ Loop
+LOAD #100h
+STORE MemCnt0
+LOAD #1100h
+STORE MemAdr0
+LOAD #0
+STORE MemSem0
+LOAD #1 ;smer: izlaz
+STORE MemDir
+LOAD #13h
+OUT FF00h
+…
+Wait1: LOAD MemSem0
+CMP #1
+JNZ Wait1
+HALT
+Slika Error! Reference source not found..15.
+Prekidna rutina je prikazana na slici Error! Reference source not found..16.
+LOAD MemDir ;koji smer?
+CMP #1
+JZ Out
+;input
+IN FF02h
+STORE (MemAdr0)
+Inc: INC MemAdr0
+DEC MemCnt0
+JNZ Back
+LOAD #1
+STORE MemSem0
+LOAD #0
+OUT FF00h
+JMP Back
+;output
+Out: LOAD (MemAdr0)
+OUT FF02h
+JMP Inc
+Back: RTI
+Slika Error! Reference source not found..16.
+Diskusija:
+Zadatak se mogao rešiti i na još nekoliko nacina. Prvo, umesto softverske promenljive, moguce je u prekidnoj rutini ispitivati vrednost bita smera u kontrolnom registru koji je,
+prema uslovima zadatka, povezan na magistralu tako da je moguce citati njegovu vrednost. Drugo, moguce je pretpostaviti i da u statusnom registru postoji isti ovakav bit smera, koji je zapravo kopija bita smera u kontrolnom registru, i koji upravo služi za utvrdivanje smera u prekidnoj rutini. Najzad, najsloženije rešenje se sastoji u formiranju dve prekidne rutine za PER0, jedne za ulaz a druge za izlaz, uz obaveznu promenu vektora u glavnom programu. U svakom slucaju, sasvim je pogrešno koristiti dve prekidne rutine bez preusmeravanja prekida sa jedne na drugu, kada se u glavnom programu prelazi sa operacije ulaza na operaciju izlaza.
+1.8 ZADATAK
+Jednoadresni procesor, periferije PER0 i PER1, i memorija povezani su magistralom sa 16 adresnih linija i 16 linija za podatke. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara date su na slici Error! Reference source not found..17.
+PER0_CONTROL
+FF00h
+PER1_CONTROL
+FF10h
+PER0_STATUS
+FF01h
+PER1_STATUS
+FF11h
+PER0_DATA
+FF02h
+PER1_DATA
+FF12h
+Slika Error! Reference source not found..17.
+Bit 0 kontrolnih registara je Start bit, bit 1 definiše smer operacije (0—ulaz, 1—izlaz), a bit 2 je Enable kojim se omogucuje prekid. Bit 4 statusnih registara je Ready bit. Napisati program i odgovarajuce prekidne rutine kojima se realizuje: ucitavanje niza A(i), i = 0, …, 999 sa PER0 i slanje kvadriranog niza (A(i)*A(i)) na PER1. Prijem sa PER0 i slanje na PER1 realizovati uporedo, tj. omoguciti slanje elementa niza na PER1 cim je to moguce. Ulaz relizovati mehanizmom prekida, a izlaz ispitivanjem bita spremnosti.
+Rešenje:
+U memoriji treba rezervisati prostor koji odgovara dužini niza koji se obraduje (1000 reci). Pretpostavimo da ulazni bafer pocinje na adresi 2000h. Definišemo dva pokazivaca: (a) MemWP koji pokazuje na prvu slobodnu lokaciju u koju se može smestiti sledeci element koji dolazi sa PER0, i (b) MemRP koji pokazuje na prvu lokaciju sa koje se može procitati prvi sledeci element sa slanje na PER1.
+Glavni program je prikazan na slici Error! Reference source not found..18.
+LOAD #2000h ;pocetna adresa ulaznog bafera
+STORE MemWP ;pokazivac koji prati ucitavanje sa PER0
+STORE MemRP ;pokazivac koji prati slanje na PER1
+LOAD #1000 ;broj elemenata niza
+STORE CntW
+STORE CntR
+LOAD #3
+OUT FF00 ;start PER0
+LOAD #1
+OUT FF10h ;start PER1
+Chck: IN FF11h
+AND #10h
+JZ Chck
+;provera da li postoji element spreman za slanje
+LOAD MemWP
+SUB MemRP
+JLE Chck ;skok ako je rezultat oduzimanja = 0
+LOAD (MemRP)
+MUL (MemRP) ;kvadriranje elementa niza
+OUT FF22 ;slanje rezultujuceg elementa na PER1
+INC MemRP
+DEC CntR
+JNZ Chck
+LOAD #0
+STORE FF10h ;Stop PER0
+HALT
+Slika Error! Reference source not found..18.
+Prekidna rutina periferije PER0 je prikazana na slici Error! Reference source not found..19.
+Per1: IN FF02
+STORE (MemWP)
+INC MemWP
+DEC CntW
+JNZ Back
+LOAD #0
+OUT FF00h ;Stop PER0
+Back: RTI
+Slika Error! Reference source not found..19.
+Napomena:
+Brojaci CntR i CntW nisu bili neophodni. Za detektovanje kraja tokom ulaza odnosno izlaza mogu se koristiti pokazivaci MemWP i MemRP, respektivno.
+Analiza:
+Prikazano rešenje zahteva rezervisanje bafera cija velicina odgovara velicini niza koji se obraduje. Buduci da se ucitani elementi niza odmah prosleduju na izlaz opravdano je postaviti pitanje da li je potrebno rezervisati toliki prostor u memoriji.
+Možemo grubo definisati pojam brzine periferije kao broj reci koji periferija šalje (prima) u jedinici vremena. U tom slucaju vreme koje je potrebno da periferija PER0 ceo niz elemenata pod pretpostavkom da je trajanje prekidne rutine zanemarljivo iznosi: tlenv00=,
+pri cemu je len dužina niza koji se ucitava (u ovom slucaju 1000), a v0 brzina periferije PER0. Slicno, vreme koje je potrebno za slanje celog niza na periferiju PER1 iznosi: tlenv11=,
+pri cemu je v1, brzina periferije PER1.
+Kolika je velicina bafera koji bi bio dovoljan?
+Ukoliko je periferija PER1 brža od periferije PER0 dovoljan je minimalni bafer jer ce se prakticno podatak uvek poslati na PER1 pre nego što stigne novi podatak sa PER0. Ukoliko je PER0 brža (podaci se brže generišu nego što periferija PER1 može da ih prihvati) velicina bafera se izracunava na osnovu sledece formule:
+Blentv=-01,
+odnosno Blenvv=·-()110.
+Na osnovu prethodne analize zakljucujemo da se bafer u memoriji može realizovati kao FIFO kružni bafer. Sada možemo pokazati realizaciju ulaza i izlaza u situaciji kada na raspolaganju imamo bafer ogranicenog kapaciteta.
+Rešenje:
+Kao i u prethodnom slucaju potrebna su dva pokazivaca MemWP i MemRP (na pocetku oba bafera se inicijalizuju na 0). Najpre definišimo (slika Error! Reference source not found..20) dve operacije za rad sa FIFO kružnim baferom: (a) operacija PUT kojom stavljamo novi element u bafer (u ovom slucaju stiže sa PER0), i (b) operacija GET kojom se uzima prvi spreman element iz bafera (u ovom slucaju podatak uzima PER1). Takode, uvodimo dva indikatora Full i Empty koji kada imaju vrednost razlicitu od nule ukazuju da je FIFO befer pun, odnosno prazan, redom.
+Put(e)
+{
+if (!Full)
+{
+Mem[MemWP] ? e;
+MemWP ? (MemWP + 1) mod Size;
+if (MemWP == MemRP)
+Full = 1;
+}
+}
+a)
+Get(e)
+{
+if (!Empty)
+{
+e ? Mem[MemRP];
+MemRP ? (MemRP + 1) mod Size;
+if (MemWP == MemRP)
+Empty = 1;
+}
+}
+b)
+Slika Error! Reference source not found..20.
+Imajuci u vidu gore navedena objašnjenja, rešenje polaznog zadatka u uslovima kada se kao bafer u memoriji koristi FIFO bafer kapaciteta 100 reci je dato sledecim programom i potprogramom.
+Glavni program je prikazan na slici Error! Reference source not found..21.
+LOAD #100
+STORE Size ;postavljanje maksimalne velicine bafera
+LOAD #2000h ;pocetna adresa ulaznog bafera
+STORE MemWP ;pokazivac koji prati ucitavanje sa PER0
+STORE MemRP ;pokazivac koji prati slanje na PER1
+LOAD #1000 ;broj elemenata niza
+STORE CntW
+STORE CntR
+LOAD #0
+STORE Full ;inicijalizacija indikatora Full=0
+INC
+STORE Empty ;inicijalizacija indikatora Empty=1
+LOAD #3
+OUT FF00 ;start PER0
+LOAD #1
+OUT FF10h ;start PER1
+Chck: IN FF11h
+AND #10h
+JZ Chck
+;provera da li postoji element za slanje (Empty!=0)
+LOAD Empty
+OR #0
+JNZ Chck
+LOAD (MemRP)
+MUL (MemRP) ;kvadriranje elementa niza
+OUT FF22 ;slanje rezultujuceg elementa na PER1
+INC MemRP ;MemRP=(MemRP+1)/Size
+DIV Size ;celobrojno deljenje
+STORE MemRP
+CMP MemWP
+JNZ Skip
+LOAD #1 ;setovanje indikatora Empty
+STORE Empty
+Skip: DEC CntR
+JNZ Chck
+LOAD #0
+STORE FF10h ;Stop PER0
+HALT
+Slika Error! Reference source not found..21.
+Prekidna rutina periferije PER0 je prikazana na slici Error! Reference source not found..22.
+Per0:
+;provera da li je red vec pun
+LOAD Full
+OR #0
+JNZ Back
+IN FF02 ;ucitavanje podatka sa periferije
+STORE (MemWP)
+INC MemWP ;MemWP=(MemWP+1)/Size
+DIV Size ;celobrojno deljenje
+STORE MemWP
+CMP MemRP
+JNZ Skipp
+LOAD #1
+STORE Full ;postavljanje indikatora Full
+Skipp: DEC CntW
+JNZ Back
+LOAD #0
+OUT FF00h ;Stop PER0
+Back: RTI
+Slika Error! Reference source not found..22.
+Kolika je odnos brzina periferija, tj. koliko periferija PER1 može biti sporija od PER0 pa da nikada ne dode do prepunjavanja bafera od 100 reci?
+Na osnovu ranije izvedene formule Blenvv=·-(110 , izracunava se da je odnos brzina periferija vvBlen101=-=, . Dakle, prijemni bafer se nece prepuniti ako brzina periferije PER1 nije manja od 0,9v0. Ako se, ipak, bafer prepuni ulazna periferija ce ostati blokirana sve dok se ne oslobodi prostor za smeštanje novog podatka.
+1.9 ZADATAK
+Dvoadresni procesor sa 16 registara opšte namene poseduje memorijski preslikan ulazno/izlazni adresni prostor. Procesor, memorija, periferije PER0, PER1 i PER2 povezani su sitemskom magistralom sa 16 adresnih linija i 16 linija za podatke. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su prikazane na slici Error! Reference source not found..23.
+PER0_CONTROL
+FF00h
+PER1_CONTROL
+FF10h
+PER2_CONTROL
+FF20h
+PER0_STATUS
+FF01h
+PER1_STATUS
+FF11h
+PER2_STATUS
+FF21h
+PER0_DATA
+FF02h
+PER1_DATA
+FF12h
+PER2_DATA
+FF22h
+Slika Error! Reference source not found..23.
+U upravljackim registrima bit 15 je Start kojim se dozvoljava pocetak operacije, bit 0 odreduje smer operacije (0—ulaz, 1—izlaz), bit 7 je Enable kojim se dozvoljava prekid, a u statusnim registrima bit 0 je Ready koji signalizira spremnost kontrolera periferije. Napisati glavni program i odgovarajuce prekidne rutine kojima se uporedo: vrši ucitavanje niza A(i) (i = 0, …, 99) sa PER0 u memorijiski blok koji pocinje od adrese 1000, i niza B(i) (i = 0, …, 99) sa PER1 u memorijski blok pocev od adrese 2000, formiranje rezultujuceg niza
+C(i) (C(i) = A(i) + B(i), i = 0, …, 99) koji se smešta u memorijski blok pocev od adrese 3000, i slanje rezultujuceg niza C na periferiju PER2. Formiranje niza C tece uporedo sa ucitavanjem, tj. cim se ucita i-ti element niza A(B) formira se i-ti element niza C pod uslovom da je ucitan i-ti element niza B(A). Takode, slanje niza C na PER2 treba zapoceti pre nego što je ceo niz C formiran, tj. cim je neki element niza C formiran treba omoguciti njegovo slanje na PER2. Ulaz sa PER0 i PER1 realizovati korišcenjem mehanizma prekida, a izlaz na PER2 ispitivanjem bita spremnosti.
+Rešenje:
+Diskusija
+Problem u ovom zadatku je da se ispravno postave svi vremenski odnosi izmedu uporednih operacija. Tacnije, potrebno je precizno definisati potrebne i dovoljne uslove da se neka operacija izvrši. Nikako nije dobro da uslovi budu prestrogi, cime bi se nepotrebno neka operacija kocila.
+Uslovi su sledeci:
+Da bi se ucitao element u niz A, potrebno je i dovoljno da periferija PER0 bude spremna za prenos. Analogno je za niz B. Nijedan drugi uslov nije potreban. To znaci da nikako nije dobro medusobno uslovljavati redosled ucitavanja dva niza, npr. zahtevati naizmenicno ucitavanje elemenata niza A i B, ili cekati na neki element niza B, a pri tom ne ucitavati elemente niza A, iako je periferija PER0 spremna (npr. periferija PER0 radi brže). Treba shvatiti da periferije rade nezavisno, razlicitim brzinama, i da tako nezavisno elementi treba i da se ucitavaju. Upravo zbog toga se ucitavanje vrši prekidnim rutinama. Poziv prekidne rutine se dešava upravo kada je navedeni uslov zadovoljen (periferija je spremna). Prema tome, u prekidnim rutinama treba odmah ucitati element u niz, bez dodatnih uslova.
+Da bi se izracunao jedan element i niza C, treba da su odgovarajuci elementi A(i) i B(i) ucitani. To je i potreban i dovoljan uslov. Prema tome, element i niza C može da se izracuna kada se ucitava element i niza A, pod uslovom da je vec ucian B(i), ili analogno, kada se ucitava B(i), pod uslovom da je vec ucitan A(i).
+Najzad, da bi se izvršio izlaz elementa C(i), potrebno je da je taj element izracunat i da je periferija spremna za izlaz.
+Rešenje
+Prema prethodnoj diskusiji, rešenje se može skicirati u pseudojeziku. Dobro je najpre ovako navesti rešenje, a ne odmah u asembleru, jer se time dobija na preglednosti i razumljivosti.
+Kao indeks za upis u niz A služice mcA, za upis u B mcB, indeks za upis izracunatog elementa u C je mwcC, a indeks za citanje iz C (izlazna operacija) je rdC.
+Prekidna rutina za PER0 (ulaz niza A) je prikazana na slici Error! Reference source not found..24.
+mcA := mcA + 1;
+Ucitaj element A[mcA];
+Da li je B[mcA] vec ucitan: mcB >= mcA?
+Ako jeste,
+mwcC := mwcC + 1;
+izracunaj C[mwcC] := A[mcA] + B[mcA];
+Da li je ucitan poslednji A: mcA == 99?
+Ako jeste, zaustavi PER0
+Slika Error! Reference source not found..24.
+Prekidna rutina za PER1 (ulaz niza B) je prikazana na slici Error! Reference source not found..25.
+mcB := mcB + 1;
+Ucitaj element B[mcB];
+Da li je A[mcB] vec ucitan: mcA >= mcB?
+Ako jeste,
+mwcC := mwcC + 1;
+izracunaj C[mwcC] := A[mcB] + B[mcB];
+Da li je ucitan poslednji B: mcB == 99?
+Ako jeste, zaustavi PER1
+Slika Error! Reference source not found..25.
+Glavni program treba da inicijalizuje sve indekse i prenose, kao i da vrši izlaznu operaciju, što je prikazano na slici Error! Reference source not found..26.
+mcA := 0, mcB := 0, mwcC := 0, rdC := 0;
+Inicijalizuj prenos sa PER0, PER1 i PER2;
+Petlja: Sacekaj da PER2 bude spremna;
+Da li je C[rdC] izracunat: rdC <= mwcC?
+Ako jeste,
+pošalji na izlaz C[rdC];
+rdC := rdC + 1;
+Da li je rdC == 99?
+Ako jeste, zaustavi periferiju PER2, inace ponovi petlju
+Slika Error! Reference source not found..26.
+Prema datom algoritmu, program na asembleru se jednostano piše. Indeks rdC je u R1.
+Glavni program je prikazan na slici Error! Reference source not found..27.
+MOV R0, -1
+MOV mcA, R0
+MOV mcB, R0
+MOV mwcC, R0
+MOV R1, R0 ;R1 is read pointer
+MOV FF00h, #8080h ;start PER0
+MOV FF10h, #8080h ;start PER1
+MOV FF20h, #8001h ;start PER2
+Wait: MOV R0, FF21h ;read status
+CMP R0, #1
+JNZ Wait
+MOV R2, mwcC
+CMP R2, R1
+BLE Wait
+INC R1
+MOV FF22h, 3000[R1]
+CMP R1, #99
+JNZ Wait
+MOV FF20h, #0
+HALT
+Slika Error! Reference source not found..27.
+Prekidna rutina za PER0 je prikazana na slici Error! Reference source not found..28.
+CLI
+PUSH R0
+PUSH R1
+PUSH R2
+MOV R0, FF02h
+MOV R1, mcA
+INC R1
+MOV mcA, R1
+MOV 1000[R1], R0
+CMP R1, mcB
+BGT SkipA
+ADD R0, 2000[R1]
+MOV R2, mwcC
+INC R2
+MOV mwcC, R2
+MOV 3000[R2], R0
+SkipA: CMP R1, #99
+JNZ BackA
+MOV FF00h, #0
+BackA: POP R2
+POP R1
+POP R0
+RTI
+Slika Error! Reference source not found..28.
+Prekidna rutina za PER1 je prikazana na slici Error! Reference source not found..29.
+CLI
+PUSH R0
+PUSH R1
+PUSH R2
+MOV R0, FF12h
+MOV R1, mcB
+INC R1
+MOV mcB, R1
+MOV 2000[R1], R0
+CMP R1, mcA
+BGT SkipB
+ADD R0, 1000[R1]
+MOV R2, mwcC
+INC R2
+MOV mwcC, R2
+MOV 3000[R2], R0
+SkipB: CMP R1, #99
+JNZ BackB
+MOV FF10h, #0
+BackA: POP R2
+POP R1
+POP R0
+RTI
+Slika Error! Reference source not found..29.
+DMA kontroler
+1.10 ZADATAK
+Adresni prostor racunara je kapaciteta 64 KB, a adresibilna jedinica je bajt. 16-bitne velicine se u memoriju smeštaju tako da je na nižoj adresi niži bajt. Procesor je jednoadresni, a ulazno/izlazni adresni prostor je memorijski preslikan. Posmatra se neka spora ulazno/izlazna jedinica sa kojom se operacije obavljaju korišcenjem DMA kontrolera. Procesor i DMA kontroler su jedini masteri na magistrali, pa ne postoji potreba za arbitratorom magistrale. Potrebno je preneti blok od 20h bajtova pocev od adrese 500h iz memorije u periferiju.
+a) Nacrtati principijelne šeme DMA kontrolera i kontrolera periferije, naznaciti njihove programski dostupne registre, dodeliti im adrese i opisati znacenje relevantnih bitova u tim registrima.
+b) Napisati glavni program koji inicijalizuje i pokrece ovaj prenos. Obezbediti i opisati mehanizam koji omogucava glavnom programu da ne zapocne sa pisanjem u blok operativne memorije odakle se podaci šalju sve dok se prenos ne obavi do kraja.
+c) Napisati prekidnu rutinu za ovaj prenos.
+d) Koliko puta ce DMA kontroler generisati prekid? Kakav je odgovor na ovo pitanje ako je u pitanju brza periferija, a DMA kontroler radi u burst režimu?
+Rešenje:
+a) Programski dostupni registri DMA kontrolera su prikazani na slici 0..
+DMA_CONTROL
+DMA_ADDR_HIGH
+DMA_ADDR_LOW
+DMA_DATA
+DMA_STATUS
+DMA_COUNT_HIGH
+DMA_COUNT_LOW
+Slika 0.30.
+Njima su dodeljene adrese prikazane na slici 0..
+DMA_CONTROL
+FF00h
+DMA_ADDRESS_LOW
+FF01h
+DMA_ADDRESS_HIGH
+FF02h
+DMA_COUNT_LOW
+FF03h
+DMA_COUNT_HIGH
+FF04h
+DMA_DATA
+FF05h
+DMA_STATUS
+FF06h
+Slika 0.31.
+DMA_CONTROL je upravljacki registar DMA kontrolera. On je po pravilu predviden samo za upis. U njega procesor upisuje binarnu vrednost kojom kontroleru zadaje odgovarajuce parametre režima rada i pokrece kontroler. Znacenje relevantnih bitova u DMA_CONTROL registru je prikazano na slici 0.. 0217DMA_CONTROLSTART• 0—prenos nije u toku (stop)• 1—prenos u toku (start)BRZINA• 0—spora periferija(cycle stealing)• 1—brza periferija(burst)SMER• 0—ulaz• 1—izlaz
+Slika 0.32.
+DMA_STATUS je statusni registar DMA kontrolera. On je po pravilu predviden samo za citanje. Procesor cita njegovu vrednost i na osnovu stanja pojedinih bitova, utvrduje status izvršene operacije. Znacenje relevantnih bitova u DMA_STATUS registru je prikazano na slici 0.. 07DMA_STATUSEnd Of Operation• 0—prenos je još uvek u toku• 1—prenos je završenERROR• 0—prenos je ispravnozavršen• 1—greška u prenosu
+Slika 0.33.
+DMA_ADDRESS_LOW i DMA_ADDRESS_HIGH su niži i viši bajt adresnog registra kontrolera. Ovaj registar služi da cuva adresu tekuce lokacije za prenos iz ili u memoriju. U njega procesor upisuje pocetnu adresu bloka memorije iz koga ili u koji se vrši prenos. Kako su adrese 16-bitne, a adresibilna jedinica bajt, ovaj registar mora da bude dvobajtni.
+DMA_COUNT_LOW i DMA_COUNT_HIGH su niži i viši bajt brojackog registra kontrolera. Ovaj registar služi da odbrojava reci pri prenosu. U njega procesor upisuje broj bajtova koje treba preneti (dužina bloka). Posle prenosa svakog podatka on se dekrementira, a kada stigne do nule prenos je završen. Kako su adrese 16-bitne, adresibilna jedinica bajt, a blok može biti dugacak koliko i ceo adresni prostor, i ovaj registar mora da bude dvobajtni.
+Najzad, DMA_DATA je registar podatka DMA kontrolera. Njega DMA kontroler koristi kao prihvatni registar pri prenosu svakog bajta. Kako ga koristi samo sam DMA kontroler, a procesor nema nikakve potrebe da mu pristupa, ovaj registar ne mora biti programski dostupan, iako je i to moguce.
+Programski dostupni registri kontrolera periferije su prikazani na slici 0..
+PER_CONTROL
+PER_STATUS
+PER_DATA
+Slika 0.34
+Njima su dodeljene adrese prikazane na slici 0..
+PER_CONTROL
+FF10h
+PER_STATUS
+FF11h
+PER_DATA
+FF12h
+Slika 0.35.
+Znacenje relevantnih bitova u PER_CONTROL registru je prikazano na slici 0.. 017PER_CONTROLSTART• 0—prenos nije u toku• 1—prenos u tokuSMER• 0—ulaz• 1—izlaz
+Slika 0.36.
+b) Program koji inicijalizuje i pokrece prenos je prikazan na slici 0..
+…
+LOADW #0020h
+STOREW FF03H
+LOADW #0500h
+STOREW FF01
+LOADW #0
+STOREW mSem
+LOADB #81h
+STOREB FF00h
+LOADB #81H
+STOREB FF10h
+…
+WAIT: LOADW mSem
+CMP #1
+JNZ WAIT
+…
+Slika 0.37.
+Glavni program samo inicijalizuje odgovarajuce registre DMA kontrolera prema zahtevanom prenosu. Zatim pokrece DMA i kontroler periferije. Mehanizam kojim se obezbeduje da glavni program zna kada je prenos završen, tj. da sme da upisuje u dati blok memorije tek kada je prenos završen je semafor. On je pre prenosa inicijalizovan na 0, a prekidna rutina, koja se poziva kada je prenos završen, postavice ga na 1. Glavni program ispituje njegovu vrednost i, kada je ona 1, nastavlja na onaj deo u kome je neophodno da prenos bude završen.
+c) Prekidna rutina je prikazana na slici 0..
+DMAC: LOADB #0
+OUT FF00h
+OUT FF10h
+LOADW #1
+STOREW mSem
+RTI
+Slika 0.38.
+Prekidna rutina se izvršava onda kada DMA kontroler generiše prekid. To je slucaj kada je DMA završio celokupan prenos. Zato u ovoj rutini treba samo zaustaviti oba kontrolera i postaviti vrednost semafora na 1.
+Pretpostavljeno je da je akumulator 16-bitni. Kada se izvršavaju instrukcije nad 8-bitnim velicinama, koriste se samo nižih osam bita akumulatora. Pretpostavljeno je takode da samo instrukcije LOAD i STORE mogu da se izvršavaju i nad 8-bitnim (LOADB i STOREB) i nad 16-bitnim velicinama (LOADW i STOREW).
+d) Jednom u oba slucaja, jer se prekid generiše samo po završenom celokupnom prenosu.
+1.11 ZADATAK
+Zadati racunar, sa organizacijom prikazanom na slici 0., ima adresni prostor kapaciteta 64 K reci, širina memorijske reci je 16 bita, a adresibilna jedninica je rec. Kontroler za direktan pristup memoriji (DMA) koristi se za prenošenje bloka reci sa jedne memorijske lokacije na drugu. Sistemska magistrala je sinhrona i ciklusi upisa i citanja iz memorije traju po jedan ciklus takta.
+DMA kontroler sadrži sledece registre: SOURCE za izvorišnu adresu bloka reci, DEST za odredišnu adresu, COUNT za broj reci u bloku i MBR za upis/citanje sa magistrale podataka. Kontroler ne sadrži registar MAR. Prva tri registra treba da budu povezana sa internom magistralom DMA kontrolera, dok je MBR povezan sa internom i sa odgovarajucim linijama
+sistemske magistrale. SOURCE i DEST imaju mogucnost inkrementiranja, a COUNT mogucnost dekrementiranja. Treba predvideti signal logickog uslova koji oznacava da je sadržaj interne magistrale jednak 0. Takode predvideti jednobitni registar RQ sa mogucnošcu postavljanja i brisanja, ciji izlaz treba da bude linija REQUEST.
+Pored ovih registara, DMA poseduje i upravljacki registar CTRL sa bitom Start u razredu 0 u koji procesor upisuje 1 kada dozvoljava pocetak rada kontrolera, kao i bitom BURST u razredu 1, koji vrednošcu 1 definiše burst režim rada (kada je BURST na 0 ne dozvoljava se burst režim). Procesor inicijalizuje kontroler postavljanjem izvorišne adrese, odredišne adrese i broja reci redom upisom u odgovarajuce registre kontrolera. Zatim upisuje 1 u bit Start i odgovarajucu vrednost u bit BURST, posle cega DMA pocinje prenos. Signalom REQUEST jednakim 1 DMA traži dozvolu od procesora za korišcenje magistrale. DMA sme da koristi magistralu samo kada procesor aktivira liniju GRANT. Po obavljenom prenosu DMA postavlja liniju DMAEND na 1 u trajanju od dva ciklusa takta. Posle obavljenog prenosa procesor može ponovo inicijalizovati DMA kontroler za novi prenos na opisani nacin. Deo kontrolera koji obavlja upis u registre od strane procesora ne treba realizovati. MemorijaRDWRDMADMAWRDMARDProcesorRDWR1616PODACIADRESE16161616REQUESTDMAENDGRANT1616
+Slika 0.39.
+a) Projektovati operacionu jedinicu DMA kontrolera prema datim zahtevima.
+b) Nacrtati dijagram toka upravljackih signala, od trenutka kada je Start postavljen na 1.
+Rešenje:
+a) Strukturna šema operacione jedinice je prikazana na slici 0..
+RQSTCLQDESTDSTinDSToutSOURCESRCinSRCoutMBRMBRSinMBRSoutMBRMinMBRMoutCOUNTCNTinCNTout16161616SRCincDSTincCNTdecCTRLCUBURSTSTART1ADRout1616S podaciS adreseM16stRQclRQREQUESTGRANTDMAENDGRANTDMAENDDMAWRDMARDDMARDDMAWR16M0
+Slika 0.40.
+Blok CU oznacava upravljacku jedinicu, a CTRL upravljacki registar DMA kontrolera. Linije koje ulaze i izlaze iz DMA kontrolera oznacene su, sa spoljne strane, simbolima kao na globalnoj blok-šemi racunara, a sa unutrašnje simbolima koji ce se koristiti u projektovanju samog kontrolera. U vecini slucajeva ti simboli se poklapaju.
+Registri SOURCE, DEST (Destination) i COUNT vezani su na internu magistralu M preko trostatickih bafera koji nisu prikazani (ukljucuju se u blok registra). Ove bafere otvaraju upravljacki signali SRCout, DSTout i CNTout. Upis podatka sa interne magistrale M u navedene registre vrše upravljacki signali SRCin, DSTin i CNTin.
+Prihvatni registar MBR (Memory Buffer Register) vezan je na internu magistralu preko trostatickih bafera koje otvara signal MBRMout, a na sistemsku magistralu podataka preko bafera koje otvara signal MBRSout. Upis podatka sa interne magistrale vrši signal MBRMin, a sa sistemske signal MBRSin. Predlaže se citaocu da nacrta detaljnu strukturnu šemu veza registra MBR sa magistralama.
+Na internu magistralu M vezano je logicko NILI kolo koje generiše signal M. Ovaj signal jednak je 1 kada su svi biti na magistrali M jednaki 0.
+Konacno, u cilju postavljanja adrese na sistemsku adresnu magistralu, interna magistrala M je povezana sa sistemskom adresnom magistralom preko 16 trostatickih bafera koje otvara upravljacki signal ADRout. Ovo omogucava da adresu na sistemskoj magistrali definiše svaki registar koji je vezan na internu magistralu M.
+Diskusija:
+MAR registar je, ustvari, u ovom slucaju potpuno suvišan. Nema nikakve potrebe da adresu, koja je pripremljena u jednom od registara SOURCE i DEST, premeštamo u registar MAR bez ikakve transformacije, samo da bi izašla na adresnu magistralu. Na to bi se
+nepotrebno gubio jedan takt. Dovoljno je samo otvoriti bafere odgovarajuceg registra na internu magistralu i povezati internu sa sistemskom magistralom preko posebnih bafera.
+Alternativno rešenje je povezivanje svakog od registara SOURCE i DEST na adresnu magistralu, na nacin kako je to ucinjeno sa registrom MBR. Ovo je slabije rešenje jer zahteva mnogo više bafera.
+Na kraju, postoji i rešenje koje koristi MBR i za adresu i za podatke. To podrazumeva da se sistemska magistrala vremenski multipleksira, što znaci da se najpre šalju samo adrese, a zatim samo podaci. Medutim, ovakvo rešenje bi zahtevalo da se na strani memorije nalaze posebno konstruisani uredaji koji prihvataju adresu i pamte je za sve vreme ciklusa. Takode bi bio neophodan još jedan upravljacki signal na sistemskoj magistrali koji bi ukazivao na to da li su na magistrali validne adrese ili podaci. Sve ovo se ne podrazumeva u ovom slucaju, pa ovakvo rešenje nije prihvatljivo.
+b) Dijagram toka upravljackih signala je prikazan na slici 0.. STARTstRQ1GRANT0SRCout, ADRout,DMARD, MBRSin,SRCinc, CNTdec0CNToutM01clRQDMAENDDMAENDGRANTclRQ0011
+Slika 0.41.
+DMA kontroler najpre zahteva pristup magistrali postavljanjem flip-flopa RQ na 1. Kada dobije dozvolu za prenos, DMA pocinje ciklus na magistrali. Prvo se ocitava jedan podatak sa adrese na koju ukazuje registar SOURCE. Citanje se izvršava u jednom taktu, jer je odziv memorije brz i tacno odreden. Baferi registra SOURCE se otvaraju prema internoj magistrali signalom SRCout, interna magistrala se spaja sa sistemskom adresnom magistralom preko
+bafera koje otvara signal ADRout, generiše se upravljacki signal na sistemskoj magistrali DMARD, a pristigli podatak se sa magistrale podataka upisuje u MBR (sve u istom taktu). Odmah se može registar SOURCE pripremiti za sledece citanje inkrementiranjem (signal SRCinc). U narednom taktu se obavlja upis, na analogan nacin, uz ažuriranje registra CNT.
+U sledecem taktu se ispituje vrednost registra COUNT, tako što se njegovi baferi otvaraju prema internoj magistrali i istovremeno ispituje signal M0. Upravljacka jedinica mora da bude realizovana tako da se signal M0 ispituje u takt-intervalu dok je registar COUNT otvoren prema magistrali (to je simbolicki oznaceno isprekidanim linijama na dijagramu toka).
+Ako prenos bloka nije završen (COUNT nije nula), prelazi se na prenos sledeceg podatka. Pri tom se, ako DMA nije u burst režimu, ukida zahtev za magistralom RQ, da bi se potom ponovo zatražio. Ako je DMA u burst režimu, zahtev se ne ukida, vec se direktno prelazi na sledece citanje.
+Ako je prenos bloka završen, DMA ukida zahtev za magistralom i generiše signal DMAEND u trajanju od dva takta, kako je zahtevano.
+1.12 ZADATAK
+a) Navesti koje sve informacije procesor zadaje DMA kontroleru pri inicijalizaciji prenosa bloka podataka sa ili prema periferiji.
+b) Koliko puta DMA kontroler zahteva pristup magistrali pri prenosu 100 reci sa periferije u burst režimu?
+c) Koliko puta DMA kontroler zahteva prekid pri prenosu 100 reci sa periferije u burst režimu?
+Rešenje:
+a) Pri inicijalizaciji DMA transfera programski se zadaje DMA kontroleru:
+pocetna adresa za upis bloka podataka u memoriju (u režimu ulaza) ili za citanje bloka podataka iz memorije (u režimu izlaza),
+broj podataka,
+upravljacke informacije koje obuhvataju:
+smer prenosa—ulaz (periferija?memorija) ili izlaz (memorija?periferija),
+nacin prenosa—burst ili cycle stealing režim,
+dozvolu da DMA kontroler po obavljenom prenosu celog bloka generiše signal prekida procesoru,
+nacin ažuriranja adrese po obavljenom prenosu jednog podatka—da li se adrese inkrementira ili dekrementira itd.
+b) i c) U oba slucaja odgovor je jednom.
+Diskusija:
+Treba razlikovati zahtev za pristupom magistrali od zahteva za prekidom. Zahtev za pristupom magistrali DMA kontroler mora da uputi procesoru (ili posebnom arbitratoru) pre prenosa jednog svakog pojedinacnog podatka (u cycle stealing režimu rada) ili celog bloka podataka (u burst režimu).
+Zahtev za prekidom DMA kontroler može (ako mu je zadato pri inicijalizaciji) da uputi procesoru posle prenosa kompletnog bloka podataka nezavisno od režima rada (cycle stealing ili burst).
+Ova dva zahteva na razlicit nacin se tretiraju od strane procesora. Arbitracija na magistrali vrši se u potpunosti hardverski pre svakog iniciranja ciklusa na magistrali od strane procesora ili DMA kontrolera što se može desiti i više puta u toku izvršavanja jedne procesorske instrukcije.
+U slucaju zahteva za prekidom, procesor takav zahtev detektuje na kraju izvršenja instrukcije i po se potrebi preduzima programska akcija (izvršavanje prekidne rutine—tipicno zaustavljanje DMA kontrolera i periferije) u odgovoru na takav zahtev.
+1.13 ZADATAK
+Racunarski sistem poseduje dvoadresni procesor sa memorijski mapiranim ulazom-izlazom, dve periferije PER1 i PER2 sa kojima su povezani DMA kontroleri DMAC1 i DMAC2 respektivno. Adrese registara su prikazan na slici 0..
+PER1
+PER2
+DMAC1
+DMAC2
+CONTROL
+E100
+E200
+DMACONTROL
+F100
+F200
+DATA
+E101
+E201
+DMAADDRESS
+F101
+F201
+STATUS
+E102
+E202
+DMACOUNT
+F102
+F202
+DMADATA
+F103
+F203
+DMASTATUS
+F104
+F204
+Slika 0.42.
+U upravljackim registrima periferija i DMA kontrolera bit 0 je Start, bit 1 smer prenosa (1—ulaz), bit 2 je Interrupt Enable (dozvola prekida). Dodatno, bit 3 upravljackih registara DMA kontrolera je bit režima rada (1—burst, 0—cycle stealing). Potrebno je, korišcenjem DMA prenosa, ucitati sa PER1 blok od 100h podataka i smestiti u memoriju od adrese 0h, a zatim isti blok podataka iz memorije poslati na PER2. Za vreme ucitavanja podataka procesor izvršava potprogram OBRADA (poziva se sa CALL OBRADA) nezavistan od ucitanih podataka, cije izvršavanje može da traje krace od ucitavanja podataka. Upis na PER2 treba obaviti u burst režimu. Napisati glavni program i potrebne prekidne rutine za ostvarivanje prenosa.
+Napomene:
+1. Svi nacini adresiranja dozvoljeni su za izvorišni i odredišni operand instrukcije osim neposrednog adresiranja za odredišni operand.
+2. Pri prekidu se hardverski cuvaju na steku PC, PSW i svi registri opšte namene.
+Rešenje:
+Traženi program i prekidne rutine su sledeci:
+Glavni program je prikazan na slici 0..
+INTD ;onemogucavanje prekida
+MOV #3H, E100H ;CONTROL1 (Start = 1, Smer = 1, Enable = 0)
+MOV #0H, F101H ;inicijalizacija DMAADDRESS1
+MOV #100H, F102H ;inicijalizacija DMACOUNT1
+MOV #7H, F100H ;(Start = 1, Smer = 1, Enable = 1, Rezim = 0)
+MOV #0H, MemSem ;inicijalizacija semafora
+INTE ;omogucavanje prekida
+CALL OBRADA ;obrada ide paralelno sa ulazom
+LOOP1: TST MemSem, #1H ;da li je semafor jednak 1 ?
+JPNZ LOOP1 ;ako nije cekaj
+INTD ;onemogucavanje prekida
+MOV #1H, E200H ;CONTROL2 (Start = 1, Smer = 0, Enable = 0)
+MOV #0H, F201H ;inicijalizacija DMAADDRESS2
+MOV #100H, F202H ;inicijalizacija DMACOUNT2
+MOV #0DH, F200H ;(Start = 1, Smer = 0, Enable = 1, Rezim = 1)
+MOV #0H, MemSem ;inicijalizacija semafora
+INTE ;omogucavanje prekida
+LOOP2: TST MemSem, #1H ;da li je semafor jednak 1?
+JPNZ LOOP2 ;ako nije cekaj
+HALT ;kraj programa
+Slika 0.43.
+Prekidna rutina za DMAC1 je prikazana na slici 0..
+AND #FFFEH, E100H ;zaustavljanje PER1
+AND #FFFEH, F100H ;zaustavljanje DMAC1
+MOV #1H, MemSem ;ažuriranje semafora
+RTI ;povratak iz prekidne rutine
+Slika 0.44.
+Prekidna rutina za DMAC2 je prikazana na slici 0..
+AND #FFFEH, E200H ;zaustavljanje PER2
+AND #FFFEH, F200H ;zaustavljanje DMAC2
+MOV #1H, MemSem ;ažuriranje semafora
+RTI ;povratak iz prekidne rutine
+Slika 0.45.
+Na pocetku programa zadaje se režim rada i startuje periferija PER1, inicijalizuju se registri pocetne adrese DMAADDRESS i broja podataka DMACOUNT i zadaje režim rada i startuje DMAC1. Primetiti da je prekid dozvoljen samo DMA kontroleru, ne i kontroleru periferije. DMA kontroler prekidom obaveštava procesor da je završio prenos kompletnog bloka podataka; tada se u okviru odgovarajuce prekidne rutine, zaustavljaju PER1 i DMAC1 i semaforom signalizira glavnom programu da je prenos završen.
+Dok DMAC1 obavlja ucitavanje bloka podataka u memoriju u cycle stealing režimu, procesor izvršava potprogram glavnog programa pod nazivom OBRADA. Primetiti da DMA kontroler obavlja transfer potpuno nezavisno od procesora. Pošto po uslovu zadatka OBRADA može da traje krace od ucitavanja, potrebno je u glavnom programu obezbediti sacekivanje kraja ucitavanja pre nego što se prede na realizaciju izlaza. To se postiže ispitivanjem memorijske promenljive (semafora) MemSem koja se postavlja na 1 u prekidnoj rutini. Procesor se dakle, kada završi proceduru OBRADA, za vreme ucitavanja preostalih podataka vrti u petlji koju cine instrukcija oznacena labelom LOOP1 i naredna instrukcija sve
+dok ne bude prekinut od strane prekidne rutine i, posle povratka u glavni program, ne izade iz petlje.
+Po obavljenom ulazu u glavnom programu inicijalizuju se PER2 i DMAC2 za realizaciju izlaza. DMAC2 obavlja izlaz u burst režimu, dakle kada jednom preuzme sistemsku magistralu procesor prakticno ceka dok DMAC2 ne završi kompletan transfer i ne oslobodi magistralu. S obzirom da, pre nego što pocne izlazni transfer, procesor može da izvrši još (neodreden) broj instrukcija dok PER2 ne postane spremna, potrebno je i u ovom slucaju uvesti sinhronizaciju semaforom.
+Diskusija:
+Obratiti pažnju na sledece detalje izloženog rešenja:
+Registre DMAADDRESS i DMACOUNT treba inicijalizovati pre startovanja DMA kontrolera. Dobra praksa je da se u okviru inicijalizacije zabrane maskirajuci prekidi cime se programer oslobada razmišljanja da li MemSem treba da inicijalizuje pre startovanja DMA kontrolera itd.
+U okviru prekidne rutine ne bi bilo potrebno programski cuvati registre opšte namene (npr. na steku instrukcijama PUSH ….) cak i da su u okviru prekidne rutine korišceni jer se oni, po uslovu zadatka, hardverski (tj. u okviru mikroprograma za opsluživanje prekida) cuvaju. Iz istog razloga semafor ne može biti smešten u registar opšte namene jer se njegova promena u okviru prekidne rutine anulira po izlasku iz rutine.
+1.14 ZADATAK
+Jednoadresni procesor sa razdvojenim adresnim prostorima, memorija, periferija PER0 sa pridruženim kontrolerom za direktan pristup memoriji DMA, i periferija PER1 povezani su sitemskom magistralom sa 16-bitnom adresnom i 16-bitnom magistralom podataka. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su prikazane na slici 0..
+DMA_CONTROL
+FF00h
+PER0_CONTROL
+FF10h
+DMA_ADDRESS
+FF01h
+PER0_STATUS
+FF11h
+DMA_COUNT
+FF02h
+PER0_DATA
+FF12h
+DMA_DATA
+FF03h
+PER1_CONTROL
+FF20h
+DMA_STATUS
+FF04h
+PER1_STATUS
+FF21h
+PER1_DATA
+FF22h
+Slika 0.46.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, bit 1 odreduje smer operacije (0—ulaz, 1—izlaz), bit 2 je Enable kojim se dozvoljava prekid. Bit 3 upravljackog registra DMA kontrolera zadaje režim rada (0—Burst, 1—ciklus po ciklus). Napisati glavni program i odgovarajuce prekidne rutine kojima se: blok 100h reci ucitava sa PER0 i smešta u memoriju pocev od adrese 1000h, zatim izvrši obrada unetih podataka pozivom procedure Obrada i potom vrši prenos obradenog bloka (dužina i pocetna adresa bloka ostaju iste) iz memorije u PER1. Ulaz realizovati korišcenjem DMA kontrolera u burst režimu, a izlaz mehanizmom prekida.
+Rešenje:
+Svi mehanizmi ulazno/izlaznih operacija opisani su detaljno u prethodnim zadacima.
+Glavni program je prikazan na slici 0..
+LOAD #1000h ;Ulaz sa PER0 preko DMA
+OUT FF01h
+LOAD #100h
+OUT FF02h
+LOAD #0
+STORE mSem
+LOAD #05h
+OUT FF00h
+LOAD #01h
+OUT FF10h
+….
+Wait: LOAD mSem
+CMP #1
+JNZ Wait
+CALL Obrada ;Obrada
+LOAD #1000h ;Izlaz na PER1
+STORE mSrc
+LOAD #100h
+STORE mCnt
+LOAD #0
+STORE mSem
+LOAD #07h
+OUT FF20h
+….
+End: LOAD mSem
+CMP #1
+JNZ End
+HALT
+Slika 0.47.
+Prekidna rutina DMA kontrolera je prikazana na slici 0..
+Dmac: LOAD #0
+OUT FF00h
+OUT FF10h
+INC
+STORE mSem
+RTI
+Slika 0.48.
+Prekidna rutina periferije PER1 je prikazana na slici 0..
+Per1: LOAD (mSrc)
+OUT FF22h
+INC mSrc
+DEC mCnt
+JNZ Back
+LOAD #0
+STORE FF20h
+INC
+STORE mSem
+Back: RTI
+Slika 0.49.
+1.15 ZADATAK
+Jednoadresni procesor sa razdvojenim adresnim prostorima, memorija, periferija PER0, kontroler za direktan pristup memoriji DMA, i periferija PER1 povezani su sitemskom magistralom sa 16-bitnom adresnom i 16-bitnom magistralom podataka. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su prikazane na slici 0..
+DMA_CONTROL
+FF00h
+PER0_CONTROL
+FF10h
+DMA_SRCADDR
+FF01h
+PER0_STATUS
+FF11h
+DMA_DSTADDR
+FF02h
+PER0_DATA
+FF12h
+DMA_COUNT
+FF03h
+PER1_CONTROL
+FF20h
+DMA_DATA
+FF04h
+PER1_STATUS
+FF21h
+DMA_STATUS
+FF05h
+PER1_DATA
+FF22h
+Slika 0.50.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, bit 4 je Enable kojim se dozvoljava prekid, a biti 6 i 5 odreduju vrstu prenosa (10—iz periferije u memoriju, 01—iz memorije u periferiju, 11—iz memorije u memoriju). Bit 7 upravljackog registra DMA kontrolera zadaje režim rada (0—Burst, 1—ciklus po ciklus). U statusnim registrima bit 0 je Ready bit. Napisati glavni program i odgovarajuce prekidne rutine kojima se: blok 200h reci ucitava sa PER0 i smešta u ulazni bafer u memoriji koji pocinje od adrese 0h, zatim podaci prenesu u izlazni bafer u memoriji koji pocinje od adrese 1000h, i potom podaci iz izlaznog bafera prenose na periferiju PER1. Ulaz sa periferije realizovati mehanizmom prekida, prenos izmedu bafera korišcenjem DMA kontrolera u režimu prenosa rec po rec, a izlaz realizovati ispitivanjem bita spremnosti.
+Rešenje:
+U ovom slucaju DMA kontroler služi za prenos bloka podataka sa jednog mesta u memoriji na drugo. Time se procesor oslobada da može da radi neki nezavisni posao. DMA kontroler sam obavlja ovu jednostavnu operaciju. Ostali mehanizmi ulaza i izlaza opisani su detaljno u prethodnim zadacima.
+Za operaciju prenosa bloka sa jednog mesta u memoriji na drugo, DMA kontroler se inicijalizuje na slican nacin kao i kod ulaza ili izlaza, samo što se odgovarajucim bitima 6 i 5 kontrolnog registra specifikuje vrsta prenosa i što se inicijalizuju dva adresna registra: jedan ukazuje na izvorišni, a drugi na odredišni blok.
+Glavni program je prikazan na slici 0..
+LOAD #200h ;Ulaz sa PER0
+STORE MemCnt
+LOAD #0h
+STORE MemAdr
+STORE IBSem
+LOAD #51h
+OUT FF10h
+….
+Wait1: LOAD IBSem
+CMP #1
+JNZ Wait1
+LOAD #0 ;Prenos preko DMA
+OUT FF01h
+LOAD #1000h
+OUT FF02h
+LOAD #200h
+OUT FF03h
+LOAD #0
+STORE OBSem
+LOAD #F1h
+OUT FF00h
+….
+Wait2: LOAD OBSem
+CMP #1
+JNZ Wait2
+LOAD #200h ;Izlaz na PER1
+STORE MemCnt
+LOAD #1000h
+STORE MemAdr
+LOAD #21h
+OUT FF20h
+Wait3: IN FF21h
+AND #1
+JZ Wait3
+LOAD (MemAdr)
+OUT FF22h
+INC MemAdr
+DEC MemCnt
+JNZ Wait3
+LOAD #0
+STORE FF20h
+HALT
+Slika 0.51.
+Prekidna rutina DMA kontrolera je prikazana na slici 0..
+DmaInt: LOAD #0
+OUT FF00h
+INC
+STORE OBSem
+RTI
+Slika 0.52.
+Prekidna rutina periferije PER0 je prikazan na slici 0..
+Per0Int: IN FF12h
+STORE (MemAdr)
+INC MemAdr
+DEC MemCnt
+JNZ Back
+LOAD #0
+OUT FF10h
+INC
+STORE IBSem
+Back: RTI
+Slika 0.53..
+1.16 ZADATAK
+Jednoadresni procesor sa memorijski preslikanim ulazno/izlaznim adresnim prostorom, memorija, periferija PER0 sa pridruženim kontrolerom za direktan pristup memoriji DMA, i periferije PER1 i PER2 povezani su sitemskom magistralom sa 16-bitnom adresnom i 16-bitnom magistralom podataka. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su prikazan na slici 0..
+DMA_CONTROL
+FF00h
+PER1_CONTROL
+FF20h
+DMA_ADDRESS
+FF01h
+PER1_STATUS
+FF21h
+DMA_COUNT
+FF02h
+PER1_DATA
+FF22h
+DMA_DATA
+FF03h
+PER2_CONTROL
+FF30h
+DMA_STATUS
+FF04h
+PER2_STATUS
+FF31h
+PER0_CONTROL
+FF10h
+PER2_DATA
+FF32h
+PER0_STATUS
+FF11h
+PER0_DATA
+FF12h
+Slika 0.54.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, bit 1 odreduje smer operacije (0—ulaz, 1—izlaz), bit 2 je Enable kojim se dozvoljava prekid, a u statusnim registrima bit 4 je Ready koji signalizira spremnost kontrolera. Bit 3 upravljackog registra DMA kontrolera zadaje režim rada (0—Burst, 1—ciklus po ciklus). Napisati glavni program i odgovarajuce prekidne rutine kojima se: blok 200h reci ucitava sa PER0 i smešta u memoriju pocev od adrese 1000h, zatim izvrši obrada unetih podataka pozivom procedure Obrada i potom istovremeno vrši prenos obradenog bloka (dužina i pocetna adresa bloka ostaju iste) iz memorije u PER1 i PER2. Ulaz realizovati korišcenjem DMA kontrolera u burst režimu, izlaz na periferiju PER1 mehanizmom prekida, a izlaz na periferiju PER2 ispitivanjem bita spremnosti.
+Rešenje:
+Ulazna operacija realizovana je korišcenjem DMA kontrolera na uobicajeni nacin. Dve izlazne operacije treba da se izvršavaju uporedo, što znaci da se za vreme dok se u glavnom programu vrši prenos na PER2 ispitivanjem bita spremnosti, generišu prekidi od PER1, u cijim se prekidnim rutinama obavlja prenos jedne po jedne reci na PER1. Na ovaj nacin se paralelizuje rad dve periferije i njihovih kontrolera, dok sam prenos iz memorije u kontrolere periferija vrši procesor. Iako nema paralelizacije ovog prenosa iz memorije u kontrolere periferija (jer sve radi procesor, nešto u glavnom programu, a nešto u prekidnoj rutini), postiže se nezavisnost rada dve periferije, jer se nicime ne uslovljava medusobni redosled operacija prema njima. Štaviše, greška bi bilo na bilo koji nacin medusobno uslovljavati tokove i redosled operacija sa ove dve periferije. Traženi program je prikazan na slikama 0., 0. i 0..
+LOAD #200h
+STORE FF02h
+LOAD #1000H
+STORE FF01h
+LOAD #0
+STORE MemSem0
+LOAD #1
+STORE FF10h ;Start PER0
+LOAD #5
+STORE FF00h ;Start DMA
+….
+Wait: LOAD memSem0
+CMP #1
+JNZ Wait
+CALL Obrada
+LOAD #200h
+STORE MemCnt1
+STORE MemCnt2
+LOAD #1000h
+STORE MemAdr1
+STORE MemAdr2
+LOAD #0
+STORE MemSem1
+LOAD #7
+STORE FF20h ;Start PER1
+LOAD #3
+STORE FF30h ;Start PER2
+Loop2: LOAD FF31h
+AND #10h
+JZ Loop2
+LOAD FF32h
+STORE (MemAdr2)
+INC MemAdr2
+DEC MemCnt2
+JNZ Loop2
+LOAD #0
+STORE FF30h
+End: LOAD MemSem1
+CMP #1
+JNZ End
+HALT
+Slika 0.55.
+Dma_Int: LOAD #0
+STORE FF00h
+STORE FF10h
+LAOD #1
+STORE MemSem0
+RTI
+Slika 0.56.
+Per1_Int: LOAD FF22h
+STORE (MemAdr1)
+INC MemAdr1
+DEC MemCnt2
+JNZ Back
+LOAD #0
+STORE FF20h
+LOAD #1
+STORE MemSem1
+Back: RTI
+Slika 0.57.
+1.17 ZADATAK
+Na ulaz zahteva za prekid IRQ dvoadresnog porocesora vezan je signal zahteva za prekid od DMA kontrolera. DMA kontroler ima sledece registre: i) upravljacki registar (CR) na adresi FF00h, sa bitom Enable Interrupt u razredu 0, bitom režima rada u razredu 1 (1—burst) i bitom smera prenosa u razredu 2 (1—izlaz); ii) statusni registar (SR) vezan na istu adresu FF00h kao i CR, sa bitom End of Operation u razredu 0, iii) adresni registar memorije (ARM) na adresi FF01h, iv) registar dužine bloka (WCNT) na adresi FF02h v) adresni registar periferije (ARP) na adresi FF03h u koji se upisuje adresa registra podataka kontrolera periferije. Svaki upis bilo koje vrednosti na adresu FF04h znaci pokretanje DMA kontrolera. DMA kontroler sa periferijom razmenjuje podatke preko sistemske magistrale. Sinhronizacija izmedu DMA i periferije obavlja se preko signala DREQ koji povezuje direktno DMA i
+kontroler periferije. Kada kontroler periferije ima spreman podatak ili je spreman da prihvati podatak, aktivira DREQ. Kada DMA upiše ili procita podatak iz kontrolera periferije, automatski se obara DREQ. Registar podataka periferije koja je povezana na DMA nalazi se na adresi FFF0h.
+a) Napisati deo glavnog programa kojim se inicijalizuje DMA za prenos bloka podataka sa periferije u memoriju u cycle stealing režimu. Blok je dužine 100h i treba ga smestiti pocev od lokacije 50h.
+b) Koliko ukupno ciklusa na magistrali obavlja DMA pri prenosu iz prethodne tacke?
+c) Šta još treba da poseduje DMA da bi se umesto signala DREQ koristilo ispitivanje bita spremnosti kontrolera periferije i to preko sistemske magistrale?
+Rešenje:
+DMA i kontroler periferije sada medusobno komuniciraju preko sistemske magistrale. To znaci da DMA kontroler vrši ocitavanje registra podataka kontrolera periferije, ili upis podatka u njega, u zavisnosti od smera prenosa, uobicajenim ciklusom na sistemskoj magistrali. Sinhronizacija DMA i kontrolera periferije obavlja se posebnim signalima. Zbog ovoga je potrebno da DMA kontroler poseduje adresu registra podataka kontrolera periferije jer ce njemu pristupati preko sistemske magistrale.
+a) Traženi program je prikazan na slici 0..
+LOAD R1, #50H ;ARM
+OUT FF01H, R1
+LOAD R1, #100H ;WCNT
+OUT FF02H, R1
+LOAD R1, #FFF0H ;ARP
+OUT FF03H, R1
+LOAD #1 ;CR
+OUT FF00H, R1
+OUT FF04H, R1 ;Start
+Slika 0.58.
+b) DMA obavlja ukupno 200h ciklusa na magistrali, po dva za svaku prenesenu rec: jedan za prenos iz periferije u DMA i jedan za prenos iz DMA u memoriju.
+c) U ovom slucaju DMA i kontroler periferije više ne razmenjuju interno signale za sinhronizaciju. Sada DMA ispituje spremnost kontrolera periferije ocitavanjem njegovog statusnog registra i to ponovo uobicajenim ciklusom na sistemskoj magistrali. To znaci da DMA u potpunosti izvršava proceduru prenosa podataka tehnikom ispitivanja bita spremnosti, baš kao kada to radi procesor programiranim ulazom/izlazom.
+Da bi ispitivao bit spremnosti u statusnom registru, DMA kontroler treba da zna: adresu statusnog registra, položaj bita spremnosti u njemu, kao i vrednost ovog bita koja govori da je kontroler spreman (1 ili 0). Zato DMA treba da poseduje registar u koji procesor upisuje adresu statusnog registra kontrolera periferije i bite koji govore u kom razredu ovog statusnog registra se nalazi Ready bit, kao i koja je njegova aktivna vrednost. Ovi biti mogu da budu i biti u registru CR.
+1.18 ZADATAK
+Jednoadresni procesor sa memorijski preslikanim ulazno/izlaznim adresnim prostorom, memorija, periferija PER0 sa pridruženim kontrolerom za direktan pristup memoriji DMA, i periferija PER1 povezani su sitemskom magistralom sa 16-bitnom adresnom i 16-bitnom magistralom podataka. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su prikazane na slici 0..
+DMA_CONTROL
+FF00h
+PER0_CONTROL
+FF10h
+DMA_ADDRESS
+FF01h
+PER0_STATUS
+FF11h
+DMA_COUNT
+FF02h
+PER0_DATA
+FF12h
+DMA_DATA
+FF03h
+PER1_CONTROL
+FF20h
+DMA_STATUS
+FF04h
+PER1_STATUS
+FF21h
+PER1_DATA
+FF22h
+Slika 0.59.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, bit 1 odreduje smer operacije (0—ulaz, 1—izlaz), bit 2 je Enable kojim se dozvoljava prekid, a u statusnim registrima bit 4 je Ready koji signalizira spremnost kontrolera. Bit 3 upravljackog registra DMA kontrolera zadaje režim rada (0—Burst, 1—ciklus po ciklus). Napisati glavni program i odgovarajuce prekidne rutine kojima se: ucitava blok od 100 reci sa PER0 i smešta u memoriju pocev od adrese 1000, ucitava blok od 100 reci sa periferije PER1 i smešta u memoriju pocev od adrese 2000 i šalje rezultujuci niz C (C(i) = A(i) + B(i), i=0, …, 99) na periferiju PER1. Ulaz sa PER0 realizovati korišcenjem DMA kontrolera koji radi u režimu ciklus po ciklus, ulaz sa PER1 korišcenjem mehanizma prekida, a izlaz ispitivanjem bita spremnosti. Ulaz sa PER0 i PER1 se odvija uporedo, a rezultujuci niz slati pocev od poslednjeg elementa. Niz C ne treba smeštati u memoriju, vec samo poslati na izlaz.
+Rešenje:
+Niz C nije potrebno smeštati u memoriju, vec je dovoljno izracunati jedan po jedan C(i) i direktno ih slati na izlaz. Kako se zahteva da se niz C šalje u obrnutom redosledu, neophodno je najpre ucitati sve elemente nizova A i B, pa tek posle završetka obe ulazne operacije zapoceti izlaznu. Program je prikazan na slici 0., 0. i 0..
+LOAD #100
+STORE FF02h
+STORE MemCnt
+LOAD #1000H
+STORE FF01h
+LOAD #2000
+STORE MemAdr1
+LOAD #0
+STORE MemSem0
+STORE MemSem1
+LOAD #1
+STORE FF10h ;Start PER0
+LOAD #D
+STORE FF00h ;Start DMA
+LOAD #5
+STORE FF20h ;Start PER1
+….
+Wait: LOAD MemSem0
+AND MemSem1
+JZ Wait
+LOAD #100
+STORE MemCnt
+LOAD #1099
+STORE MemAdr0
+LOAD #2099
+STORE MemAdr1
+LOAD #3
+STORE FF20h ;Start PER1
+Check: LOAD FF21h
+AND #10h
+JZ Check
+LOAD (MemAdr0)
+ADD (MemAdr1)
+STORE FF22h
+INC MemAdr0
+INC MemAdr1
+DEC MemCnt
+JNZ Check
+LOAD #0
+STORE FF20h
+HALT
+Slika 0.60.
+Dma_Int: LOAD #0
+STORE FF00h
+STORE FF10h
+LOAD #1
+STORE MemSem0
+RTI
+Slika 0.61.
+Per1_Int: LOAD FF22h
+STORE (MemAdr1)
+INC MemAdr1
+DEC MemCnt
+JNZ Back
+LOAD #0
+STORE FF20h
+LOAD #1
+STORE MemSem1
+Back: RTI
+Slika 0.62.
+1.19 ZADATAK
+Jednoadresni procesor sa razdvojenim adresnim prostorima, memorija, DMA kontroler, periferije PER0 i PER1 povezani su asinhronom magistralom sa 16 adresnih linija i 16 linija za podatke. Adresiranje je na nivou 16-bitnih reci. Adrese relevantnih registara su:
+PER0_CONTROL
+F010h
+PER1_CONTROL
+F020h
+PER0_STATUS
+F011h
+PER1_STATUS
+F021h
+PER0_DATA
+F012h
+PER1_DATA
+F022h
+DMA_CONTROL
+F000h
+DMA_ADRSRC
+F003h
+DMA_STATUS
+F001h
+DMA_ADRDST
+F004h
+DMA_DATA
+F002h
+DMA_COUNT
+F005h
+Slika 0.63.
+U upravljackim registrima bit 0 je Start kojim se dozvoljava pocetak operacije, biti 2 i 1 odreduju tip transfera (11-input, 10-memory-to-memory, 00-output), bit 7 je Enable kojim se dozvoljava prekid, a u statusnim registrima bit 15 je Ready koji signalizira spremnost kontrolera periferije. U upravljackom registru DMA kontrolera bit 4 odreduje režim rada (0-Burst, 1-Cycle Stealing).
+Napisati glavni program i odgovarajuce prekidne rutine kojima se sa periferije PER0 prihvata beskonacni niz a(i), a na periferiju PER1 šalje 2*a(i). Na raspolaganju stoje dva ulazna bafera IB0 i IB1 velicine 200h sa pocetnim adresama 1000h i 1200h, redom, koji prihvataju elemente ulaznog niza od periferije PER0. Periferija PER1 cita elemente niza iz izlaznog bafera OB kapaciteta 200h reci koji pocinje na adresi 1400h. U stacionarnom režimu, uporedo se punjenjem jednog ulaznog bafera (IB0 ili IB1) obavlja se transfer iz drugog ulaznog bafera u izlazni bafer OB i potom slanje odgovarajuceg niza na izlaznu periferiju PER1. Tako, uporedo sa punjenjem bafera IB1, sadržaj bafera IB0 se prebacuje u izlazni bafer OB, a potom iz bafera OB na periferiju; po završetku ovih operacija puni se bafer IB0, a sadržaj bafera IB1 se prebacuje u bafer OB i dalje iz bafera OB na izlaznu perferiju PER1. Ulaz sa PER0 realizovati mehanizmom prekida, transfer izmedu ulaznih i izlaznog bafera korišcenjem DMA kontrolera u burst režimu rada, a izlaz na PER1 ispitivanjem bita spremnosti.
+Da li procesor može pristupiti registru podataka periferije PER0 tokom transfera podataka iz nekog od ulaznih bafera u izlazni bafer OB? Obrazložiti odgovor.
+Rešenje:
+Glavni program:
+; init input
+CLRA
+STORE Sin
+LOAD #1000h
+STORE AdrBin
+STORE AdrBinSave
+LOAD #200h
+STORE CntBin
+OUT #87h
+STORE F010h ; St. Per0
+;.....
+WaitF: LOAD Sin
+AND #1
+JZ WaitF
+; =============;
+ChDir: LOAD AdrBinSave
+OUT F003h ; src address
+LOAD #1200h
+STORE AdrBin
+STORE AdrBinSave
+LOAD #1
+STORE Dir
+InitA: CLRA
+STORE Sin
+STORE Sm2m
+LOAD #200h
+STORE CntBin
+STORE CntBout
+OUT F005h
+LOAD #1400h
+OUT F004h ; dest address
+STORE AdrBout
+LOAD #85h ; start DMA
+OUT F000h
+LOAD #87h ; start Per0
+OUT F010h
+; ....
+WaitM: LOAD Smtom
+AND #1
+JZ WaitM
+; =============;
+LOAD #1
+OUT F020h ; Start Per1
+CheckRdy: IN F021h
+AND #8000h
+JZ CheckRdy
+LOAD (AdrBout)
+SHL 1 ; *2
+OUT F022h
+INC AdrBout
+DEC CntBout
+JNZ CheckRdy
+CLRA
+OUT FF20h
+;.......
+WaitS: LOAD Sin
+AND #1
+JZ WaitS
+LOAD Dir
+AND #1
+JZ ChDir
+; change Dir
+LOAD AdrBinSave
+OUT F003h ; src address
+LOAD #1000h
+STORE AdrBin
+STORE AdrBinSave
+CLRA
+STORE Dir
+JMP InitA
+Slika 0.64.
+Prekidna rutina za DMA:
+IntDma: CLRA
+OUT F000h
+INCA
+STORE Smtom
+RTI
+Slika 0.65.
+Prekidna rutina za PER0:
+IntPer2: IN F012h
+STORE (AdrBin) ; ;put a(i) into Buf
+INC AdrBin
+DEC CntBin
+JNZ Back
+; stop Per0
+OUT F010h
+INCA
+STORE Sin
+Back: RTI
+Slika 0.66.
+b) NE. Procesor ne može izvršiti ciklus citanja na magistrali jer Dma kontroler radi u burst režimu i drži magistralu zauzetu do završetka prenosa celoh bloka podataka.

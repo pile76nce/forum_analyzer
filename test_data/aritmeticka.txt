@@ -1,0 +1,155 @@
+class: TehnikaZamene, label: replacement policy, total score: 60.599998, score: 20.000000, cr: 100.000000, dr: 22.000000
+class: OrganizacijaSaSetAsocijativnimPreslikavanjem, label: set associative, total score: 60.599998, score: 20.000000, cr: 100.000000, dr: 22.000000
+class: VirtuelniKes, label: virtual cache, total score: 57.599998, score: 20.000000, cr: 100.000000, dr: 12.000000
+class: OUT, label: OUT, total score: 56.599998, score: 15.000000, cr: 100.000000, dr: 12.000000
+class: MemorijskaLokacija, label: memory location, total score: 55.200001, score: 20.000000, cr: 100.000000, dr: 4.000000
+class: Kes, label: cache, total score: 45.500000, score: 15.000000, cr: 25.000000, dr: 100.000000
+class: Bit, label: bit, total score: 30.200001, score: 15.000000, cr: 25.000000, dr: 49.000000
+class: PipelineOrganizacija, label: pipeline, total score: 22.200001, score: 15.000000, cr: 33.000000, dr: 9.000000
+class: Memorija, label: memory, total score: 10.700000, score: 15.000000, cr: 7.000000, dr: 14.000000
+class: OrganizacijaRacunara, label: computer organization, total score: 2.500000, score: 0.000000, cr: 5.000000, dr: 0.000000
+class: TRPD, label: TRPD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MOVC, label: MOVC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: TRPE, label: TRPE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Flash, label: flash, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OrganizacijaSaAsocijativnimPreslikavanjem, label: asociative, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: STORE, label: STORE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SISDArhitektura, label: SISD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: IndeksniRegistar, label: XR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: POP, label: POP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UkazivacNaTabeluIVT, label: IVTP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: BBC, label: BBC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AdresnaLinija, label: ABUS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Prosledjivanje, label: forwarding, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: JMP, label: JMP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ArhitekturaProcesora, label: processor architecture, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: GnezdenjePrekida, label: interrupt nesting, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarskiFajl, label: register file, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MOVE, label: MOVE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UkazivacNaOkvirSteka, label: FP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DIVU, label: DIVU, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PipelineHazard, label: pipeline hazard, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UpravljackiHazard, label: control hazard, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ArhitekturaMemorije, label: memory architecture, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OR, label: OR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Punilac, label: Loader, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SpoljasnjiPrekid, label: extenal interrupt, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CMPC, label: CMPC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: NOP, label: NOP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DinamickiPipeline, label: NelinearanPipeline, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UpravljackaJedinicaProcesora, label: control unit, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: NOT, label: NOT, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OperacionaJedinicaProcesora, label: operation unit, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ASH, label: ASH, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: InterniBafer, label: internal buffer, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ProgramskiBrojac, label: PC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UpravljackiStek, label: control stack, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: StatickiPipeline, label: LinearanPipeline, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OrganizacijaProcesora, label: processor organization, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OperativnaMemorija, label: operating memory, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SOB, label: SOB, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MemorijskaRec, label: memory word, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Traka, label: Tape, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VectorProcesor, label: array processor, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DEC, label: DEC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PrekidnaRutina, label: interrupt routine, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CISCArhitektura, label: CISC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SIMDArhitektura, label: SIMD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AdresniRegistarMemorije, label: MAR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarPodataka, label: DR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: EDGD, label: EDGD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SignalTakta, label: clock, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Akumulator, label: A, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DRAM, label: DRAM, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: InterniRegistarProcesora, label: ProgramskiNedostupanRegistarProcesora, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: KesZrtava, label: victim cache, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ThreadLevelParalelizam, label: TLP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Gazda, label: master, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: OrganizacijaOperacioneJediniceProcesora, label: operation unit organization, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: TLBJedinica, label: TLB, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CiklusCitanja, label: read cycle, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VelicinaUPokretnomZarezu, label: floating point, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: HazardPodataka, label: data hazard, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VARE, label: VARE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VARD, label: VARD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MULU, label: MULU, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarVelicineBlokaPodataka, label: Count, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AritmetickiStek, label: arithmetic stack, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarMaske, label: IMR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SegmentnaOrganizacija, label: segment, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ProgramskaStatusnaRec, label: PSW, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AdresabilniRegistarProcesora, label: ProgramskiDostupanRegistarProcesora, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CiklusUpisa, label: write cycle, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MATCHC, label: MATCHC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: NemaskirajuciPrekid, label: non maskable interrupt, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SKPC, label: SKPC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: BazniRegistar, label: BR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AOB, label: AOB, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PredvidjanjeSkoka, label: branch prediction, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: LinijaPodataka, label: DBUS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: TipPodataka, label: data type, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: INC, label: INC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: GubitakVremenaPriPromasaju, label: miss penalty, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarOpsteNamene, label: GPR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: BBS, label: BBS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ZakasnjenoPunjenje, label: delayed load, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Povezivac, label: Linker, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: LSH, label: LSH, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Potprogram, label: subroutine, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CelobrojnaVelicinaBezZnaka, label: unsigned integer, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UkazivacNaVrhSteka, label: SP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AdresniProstor, label: address space, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: StatusniRegistar, label: SR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: INT, label: INT, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: KontrolerPeriferijeSaDirektnimPristupomMemoriji, label: DMA, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: JSR, label: JSR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PropusnaMoc, label: Throughput, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RTI, label: RTI, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AND, label: AND, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PrihvatniRegistarPodatkaMemorije, label: MDR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UpravljackiRegistar, label: CR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ProcenatPromasaja, label: miss rate, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: LOAD, label: LD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SRAM, label: SRAM, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DataLevelParalelizam, label: DLP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RTS, label: RTS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CASE, label: CASE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Stek, label: stack, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: NacinAdresiranja, label: addressing mode, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SUB, label: SUB, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Sluga, label: slave, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VremePristupa, label: access time, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MaskirajuciPrekid, label: maskable interrupt, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: EDGE, label: EDGE, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: DIVS, label: DIVS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: StrukturalniHazard, label: structural hazard, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ADD, label: ADD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ArhitekturaRacunara, label: computer architecture, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: LokalnaMagistrala, label: local bus, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PUSH, label: PUSH, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AritmetickoLogickaJedinica, label: ALU, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RISCArhitektura, label: RISC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MOVTC, label: MOVTC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: RegistarProcesora, label: register, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: VremePristupaPriPogotku, label: hit time, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: SistemskaMagistrala, label: system bus, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: INTD, label: INTD, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: KontrolerPeriferijeBezDirektnogPristupaMemoriji, label: NonDMA, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UpravljackaLinijaMagistrale, label: CBUS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: LOCC, label: LOCC, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: InstructionLevelParalelizam, label: ILP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: PrihvatniRegistarInstrukcije, label: IR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: XOR, label: XOR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: AdresniRegistar, label: AR, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: MULS, label: MULS, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UnutrasnjiPrekid, label: internal interrupt, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: IN, label: IN, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: Prekid, label: interrupt, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ACB, label: ACB, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: UkazivacNaListuArgumenata, label: AP, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CelobrojnaVelicinaSaZnakom, label: signed integer, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: CelobrojnaVelicina, label: integer, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ElementArhitektureUISistema, label: ElementArhitektureUlaznoIzlaznogSistema, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+class: ZakasnjenSkok, label: delayed branch, total score: 0.000000, score: 0.000000, cr: 0.000000, dr: 0.000000
+
+0.000000; 0, 0

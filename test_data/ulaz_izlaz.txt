@@ -1,0 +1,1208 @@
+PREDGOVOR
+Ova knjiga je napisana kao osnovni udžbenik iz arhitekture i organizacije racunara i
+pokriva osnovne koncepte iz arhitekture i organizacije procesora, memorije, ulaza/izlaza i
+magistrale.
+Sistemi.
+Autor
+Beograd
+avgusta 2005.
+
+3
+SADRŽAJ
+PREDGOVOR...................................................................................................................................................... 1
+SADRŽAJ ............................................................................................................................................................. 3
+1 ULAZ/IZLAZ.............................................................................................................................................. 7
+1.1 OSNOVNI POJMOVI......................................................................................................................... 7
+1.2 KONTROLERI BEZ DIREKTNOG PRISTUPA MEMORIJI ............................................................ 8
+1.2.1 ORGANIZACIJA............................................................................................................................. 8
+1.2.2 PROGRAMIRANJE ....................................................................................................................... 12
+1.2.2.1 ULAZ/IZLAZ CITANJEM STATUSNOG REGISTRA.....................................................................12
+1.2.2.2 ULAZ/IZLAZ GENERISANJEM PREKIDA .....................................................................................15
+1.2.3 POVEZIVANJE SA PERIFERIJOM.............................................................................................. 18
+1.3 KONTROLERI SA DIREKTNIM PRISTUPOM MEMORIJI .......................................................... 23
+1.3.1 ORGANIZACIJA........................................................................................................................... 23
+1.3.2 PROGRAMIRANJE ....................................................................................................................... 24
+1.3.3 POVEZIVANJE KONTROLERA ................................................................................................... 28
+2............................................................................................................................................................................ 33
+4
+5
+
+7
+1 ULAZ/IZLAZ
+U ovoj glavi se razmatraju neki elementi organizacije ulaza/izlaza. U okviru toga se,
+najpre, definišu osnovni pojmovi. Potom se prikazuje organizacija ulaza/izlaza korišcenjem
+kontrolera priferija bez i sa direktnim pristupom memoriji i ulazno/izlaznih procesora. Na
+kraju se razmatra opsluživanje maskirajucih prekida.
+1.1 OSNOVNI POJMOVI
+Informacije sa kojima radi racunar se ili nalaze na medijumima kao što su diskovi,
+magnetne i papirne trake, papirne kartice itd. ili se unose sa terminala ili dolaze sa nekih
+drugih racunarskih sistema. Svi oni se u daljim razmatranjima nazivaju ulazni uredaji. S druge
+strane racunar je tako koncipiran da se i instrukcije i operandi uzimaju iz memorijskih
+lokacija. Zato postoji potreba da se oni sa ulaznih uredaja unose u memorijske lokacije.
+Rezultati izvršenih instrukcija se, takode, smeštaju u memorijske lokacije. Da bi se
+prezentirali korisniku i/ili sacuvali za kasnije korišcenje i/ili predali u neki drugi racunarski
+sistem, oni moraju da se šalju iz memorijskih lokacija na diskove, magnetne i papirne trake,
+printere itd., terminale ili u druge racunarske sisteme. Svi oni se u daljim razmatranjima
+nazivaju izlazni uredaji.
+Postoji veliki broj razlicitih ulaznih i izlaznih uredaja. Oni se razlikuju po tome kako se
+informacije u njima smeštaju, po nacini kako sa njih dolaze i u njih šalju informacije i po
+brzini sa kojom se to radi. Medutim, rad sa ulazno/izlaznim uredajima je tako organizovan da
+se on realizuje jednoobrazno, bez obzira na to o kojoj se vrsti ulaznog ili izlaznog uredaja
+radi. Da bi se to omogucilo svi uredaji se tako realizuju da se sastoje od kontrolera periferije i
+periferije.
+Kontroleri periferija sadrže odreden broj programski dostupnih registara i upravljacku
+logiku. Programski dostupni registri služe da se kompletna organizacija ulaza/izlaza na
+programskom nivou svede na upisivanje u ove registre i citanje ovih registara. Upravljacka
+logika služi da se na osnovu sadržaja programski dostupnih registara organizuje citanje
+podataka iz ulazne periferije i upis podataka u izlaznu periferiju. Programski dostupni registri
+se, prema svojoj funkciji, mogu svrstati u cetiri grupe i to: upravljacki registar, statusni
+registar, registar podatka i registar broja ulaza. Upravljacki registar služi da se programskim
+putem upisivanjem odgovarajucih vrednosti u ovaj registar izvrši inicijalizacija, startovanje i
+zaustavljanje kontrolera periferije. Upravljacka logika na osnovu sadržaja odredenih bitova
+upravljackog registra krece sa prenosom podataka iz ulazne periferije u registar podatka ili iz
+registra podatka u izlaznu periferiju. Za svaki podatak prenet iz ulazne periferije u registar
+podatka upravljacka logika postavlja odredeni bit u statusnom registru kao indikaciju da
+sadržaj registra podatka može da se prenese u memorijsku lokaciju. Takode i za svaki podatak
+prenet iz registra podatka u izlaznu periferiju upravljacka logika postavlja odredeni bit u
+statusnom registru kao indikaciju da sadržaj sledece memorijske lokacije može da se prenese
+u registar podatka. Samo prebacivanje podatka iz registra podatka u memorijsku lokaciju ili iz
+memorijske lokacije u registar podatka se kod nekih kontrolera periferija realizuje
+programskim putem citanjem sadržaja registra podatka ili upisivanjem u registar podatka, dok
+kod nekih kontrolera periferija to radi sam kontroler. Kod onih kontrolera perfierija kod kojih
+se to radi programskim putem, mora se citanjem statusnog registra, najpre, utvrditi da je
+sledeci podatak prenet iz ulazne periferije u registat podatka, pa ga tek onda prenositi iz
+registra podatka u memorijsku lokaciju ili da je prethodni podatak prenet iz registra podatka u
+8
+izlaznu periferiju, pa tek onda prenositi sledeci podatak iz memorijske lokacije u registar
+podatka. Kod ovih kontrolera periferija postoji i mogucnost da za svaki podatak prenet iz
+ulazne periferije u registar podatka upravljacka logika generiše signal prekida i da za svaki
+podatak prenet iz registra podatka u izlaznu periferiju upravljacka logika takode generiše
+signal prekida. Na signal prekida procesor odgovara signalom potvrde. Na ovaj signal
+kontroler periferije šalje procesoru sadržaj registra broja ulaza. Procesor na osnovu broja
+ulaza ulazi u tabelu sa adresama prekidnih rutina, cita adresu prekidne rutine i njenim
+upisivanjem u programski brojac skace na prekidnu rutinu. Sada se u prekidnoj rutini podatak
+prenosi iz registra podatka u memorijsku lokaciju ili iz memorijske lokacije u registar
+podatka. Kod onih kontrolera perfierija kod kojih to radi sam kontroler, upravljacke logika
+kontrolera realizuje ciklus upisa sadržaja iz registra podatka u memorijsku lokaciju ili ciklus
+citanja iz memorijske lokacije i prihvatanje ocitanog sadržaja u registru podatka. U oba
+slucaja upravljacka logika kontrolera periferije realizuje odredene kontrole rada sa periferijom
+i u slucaju otkrivanja nekih neregularnosti postavlja odredene bitove statusnog registra. Zbog
+toga se programskim putem u odredenim trenucima cita sadržaj statusnog registra i na osnovu
+provere njegovog sadržaja utvrduje da li se rad sa periferijom odvija regularno ili ne. Po
+završenom prenosu ili otkrivenoj neregularnost u odgovarajuce bitove upravljackog registra
+se programskim putem upisuje sadržaj na osnovu koga upravljacka logika kontrolera
+zaustavlja prenos podataka iz ulazne periferije u registar podatka ili iz registra podatka u
+izlaznu periferiju.
+Periferije sa danas tako realizuju da se detalji vezani za samo citanje iz ulazne periferije ili
+upis u izlaznu periferiju ne vide, vec se pomocu definisanog interfejsa i protokola upravlja
+citanjem iz i upisom u periferiju, primaju ili šalju podaci i dobijaju informacije o ispravnosti
+rada sa periferijom.
+Podaci se obicno unose sa periferije blokovski, tako što se u neki deo memorije u niz
+susednih lokacije prenosi odreden broj reci. Isto važi i za slanje podataka iz memorije u
+izlazne periferije. Za realizaciju blokovskog unosa podataka iz periferije u memoriju i slanja
+podataka iz memorije u periferiju treba uraditi sledece: prenositi podatke iz periferije u
+memoriju ili obratno, voditi evidenciju o adresama memorijskih lokacija u koje se reci
+upisuju ili iz kojih se reci citaju i voditi evidenciju o broju prenetih reci. Moguce je da
+procesor sve ovo radi, da deo poslova radi procesor a deo posebni uredaji i da sve ovo rade
+posebni uredaji. U zavisnosti od toga kava je podela posla izmedu procesora i posebnih
+uredaja, koristi se više tehnika organizacije ulaza/izlaza i to ulaz/izlaz sa kontrolerima bez
+direktnog pristupa memoriji, sa kontrolerima sa direktnim pristupom memoriji i sa
+ulazno/izlaznim procesorima.
+1.2 KONTROLERI BEZ DIREKTNOG PRISTUPA MEMORIJI
+U ovom odeljku se razmatraju organizacija kontrolera, programiranje kontrolera i
+povezivanje sa periferijom.
+1.2.1 ORGANIZACIJA
+U ovom odeljku se razmatra organizacija kontrolera bez direktnog pristupa memoriji (slika
+1). Kontroler se sastoji od operacione jedinice i upravljacke jedinice. Operacionu jedinicu
+cine registri Data, Control, Status i Entry i kombinaciona mreža za prepoznavanje ciklusa
+citanja i upisa koji treba da se realizuju sa ovim registrima. Upravljacka jedinica realizuje
+citanje iz i upis u registre Data, Control, Status i Entry i prenos podataka iz periferije u
+registar Data i obratno.
+9
+HIT
+stWR
+DEKODER
+ADRESA
+UPRAVLJACKA
+JEDINICA
+stRD
+Data
+ready
+Control
+intr
+Status
+Entry
+periferija
+...
+podaci upravljacki
+signali
+statusni
+signali
+...
+inta
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+start
+u/i
+enable
+kontroler
+Slika 1 Kontroler bez direktnog pristupa memoriji
+Osnovni zadatak kontrolera periferije je da u slucaju ulaza prihvata podatke koji dolaze iz
+periferije i smešta u registar podatka Data i u slucaju izlaza šalje podatke iz registra Data u
+periferiju. Prenos podatka iz registra Data u memorijsku lokaciju u slucaju ulaza i iz
+memorijske lokacije u registar Data u slucaju izlaza, realizuje se programskim putem
+izvršavanjem odgovarajuceg programa.
+Kontroler periferije i procesor rade asinhrono, pa mora da postoji mehanizam njihove
+sinhronizacije. U slucaju ulaza to znaci da procesor na neki nacin mora da ima informaciju da
+je podatak prenet od strane kontrolera iz periferije u registar Data i da može da se prede na
+program kojim ce se datak podatak prebaciti iz registra Data u odgovarajucu memorijsku
+lokaciju. U slucaju izlaza procesor mora da ima informaciju da je prethodni podatak prenet od
+strane kontrolera iz registra Data u periferiju i da procesor može da prede na izvršavanje
+programa kojim ce se sledeci podatak prebaciti iz memorijske lokacije u registar Data.
+Kao podrška za sinhronizaciju izmedu procesora i kontrolera u okviru statusnog registra
+Status postoji poseban bit ready. Dvema vrednostima ovog bita kontroler ulazuje na dve
+situacije koje mogu da se jave u slucaju ulaza. Prva je da je prethodni podatak od strane
+procesora prenet iz registra Data u memorijsku lokaciju, da je prenos sledeceg podatka iz
+periferiju u registar Data od strane kontrolera u toku i da procesor ne sme da prede na
+izvršavanje programa kojim ce se preneti sledeci podatak iz registra Data u memorijsku
+lokaciju. Druga je da je sledeci podatak prenet od strane kontrolera iz periferije u registar
+Data ali ne i u memorijsku lokaciju, pa procesor može da prede na izvršavanje programa
+kojim ce preneti taj podatak iz registra Data u memorijsku lokaciju. Na slican nacin dvema
+vrednostima ovog bita kontroler ukazuje na dve situacije koje mogu da se jave u slucaju
+izlaza. Prva je da je prethodni podatak prenet od strane procesora iz memorijske lokacije u
+registar Data, da je prenos tog podatka iz registra Data u periferiju od strane kontrolera u toku
+i da procesor ne sme da prede na izvravanje programa kojim ce preneti sledeci podatak iz
+memorijske lokacije u registar Data. Druga je da je prethodni podatak prenet od strane
+10
+kontrolera iz registra Data u periferiju, pa procesor može da prede na izvršavanje programa
+kojim ce preneti sledeci podatak iz memorijske lokacije u registar Data.
+U daljim razmatranjima ce se smatrati da aktivna vrednost signala ready ukazuje da je
+registar Data raspoloživ, a neaktivna da nije raspoloživ. Raspoloživost registra Data u slucaju
+ulaza znaci da je sledeci podatak od strane kontrolera priferije prenet iz periferije u registar
+Data i da procesor može da prede na izvršavanje programa kojim ce ovaj podatak preneti iz
+registra podatka Data u memorijsku lokaciju. Raspoloživost registra Data u slucaju izlaza
+znaci da je prethodni podatak od strane kontrolera prenet iz registra Data u periferiju i da
+procesor može da prede na izvršavanje programa kojim ce sledeci podatak biti prernet iz
+memorijske u registar Data. Ovakva sinhronizacija izmedu procesora i kontrolera zahteva da
+procesor povremeno cita registar Status i vrši proveru da li je bit ready neaktivan ili aktivan.
+Ukoliko se utvrdi da je bit ready neaktivan, to znaci da Data nije raspoloživ. U tom slucaju ne
+sme da se prede na izvršavanje programa kojim ce se u slucaju ulaza prenostiti podatak iz
+registra Data u memorijsku lokaciju, a u slucaju izlaza iz memorijske lokacije u registrar
+Data. Ukoliko se utvrdi da je bit ready aktivan, to znaci da je registar Data raspoloživ. U tom
+slucaju sme da se prede na izvršavaje programa kojim ce se u slucaja ulaza prenositi podatak
+iz registra Data u memorijsku lokaciju, a u slucaju izlaza iz memorijske lokacije u registar
+Data.
+Trenutak kada se krece sa prenosom bloka podataka iz periferije u memoriju, velicina
+bloka podataka koji se prenosi i deo memorije u koji se bloka podataka prenosi su pod
+programskom kontrolom. To znaci da kada se u okviru neke obrade javi potreba za podacima
+sa neke periferije, mora se data obrada zaustaviti za odredeno vreme i preci na izvršavanje
+programa u okviru koga ce se startovati kontroler odgovarajuce periferije, zatim prenositi
+podaci iz periferije u odredeni deo memorije i na kraju zaustaviti kontroler periferije. Po
+završetku prenosa, obrada, u okviru koje se koriste podaci iz dela memorije u koji su uneti
+podaci sa periferije, se može nastaviti. Trenutak kada se krece sa prenosom bloka podataka iz
+memorije u periferiju, velicina bloka podataka koji se prenosi i deo memorije iz koga se blok
+podataka prenosi su, takode, pod programskom kontroleom. U ovom slucaju se podrazumeva
+da su u okviru neke obrade sracunate vrednosti smeštane u neki deo memorije. Po završetku
+date obrade prelazi se na izvršavanje programa u okviru koga se staruje kontroler
+odgovarajuce periferije, zatim prenose podaci iz datog dela memorije u periferiju i na kraju
+zaustavlja kontroler periferije. Kao podrška za ovakav mehanizam starovanja kontrolera
+periferije, zatimi prenosa bloka podataka i na kraju zaustavljanja kontrolera periferije, u
+okviru upravljackog registra Control postoji bit Start. Dvema vrednostima ovog bita se
+odreduje da li je kontroler periferije i prenos bloka podataka startovan ili je kontroler priferije
+i prenos boka podataka zaustavljen. U daljim razmatranjima se podrazumeva da aktivna
+vrednost bita Start odreduje da je kontroler startovan, a neaktivna da je zaustavljen.
+Startovanje i zaustavljanje kontrolera periferije se realizuje programskim putem upisivanjem
+u registar Control kontrolera periferije vrednosti koja na poziciji bita Start ima aktivnu i
+neaktivnu vrednost, respektivno. Aktivna vrednost bita Start omogucuje da upravljacka logika
+kontrolera priferije prenosi podatke iz periferije u registar Data i obratno, dok neaktivna
+vrednost onemogucuje taj prenos.
+Po starovanju kontrolera ulazne periferije, krece se sa prenosom podataka iz periferije u
+registar Data, a pri startovanju izlazne periferije sa prenosom podataka iz registra Data u
+periferiju. U slucaju ulazno/izlaznih periferija u okviru registra Control postoji bit u/i. Dvema
+vrednostima ovog bita se odreduje da li dati ulazno/izlazni kontroler treba da radi u režimu
+ulaza ili izlaza. U daljim razmatranjim se podrazumeva da aktivna vrednost bita u/i odreduje
+režim ulaza, a neaktivna vrednost režim izlaza.
+11
+Provera raspoloživosti registra Data citanjem registra Status i proverom da li je bit ready
+aktivan ili neaktivan je jedna od tehnika kojom se organizuje ulaz/izlaz. Ovo je moguce
+organizovati na dva nacina. U prvom slucaju se u petlji cita registar Status i proverava bit
+ready sve vreme dok je bit ready neaktivan. Kada se utvrdi da je bit ready aktivan, izlazi se iz
+petlje, realizuje prenos jedne reci i vraca u petlju radi cekanja da registar Data bude ponovo
+raspoloživ. Nezgoda sa ovim nacinom je u tome da procesor ne vrši nikakvu obradu vec u
+petlji ceka. U drugom slucaju procesor vrši neku obradu, pa u okviru toga povremeno cita
+registar Status i proverava bit ready. Ukoliko se utvrdi da je bit ready neaktivan, produžava se
+sa obradom. Ukoliko se utvrdi da je bit ready aktivan, realizuje se prenos jedne reci i
+produžava sa obradom. Nezgoda sa ovim nacinom je u tome da za svaku periferiju treba
+podešavati ucestanost citanja registra Status. Ukoliko se to radi cešce, onda ce biti manji
+vremenski razmak izmedu trenutka kada je registar Data postao raspoloživ i trenutka kada je
+to citanjem registra Status utvrdeno. Medutim, u ovom slucaju ce biti dosta prethodno
+neuspešnih citanja registra Status. Ukoliko se to radi rede, bice manje neuspešnih citanja
+registra Status, ali ce biti veci vremenski razmak izmedu trunutka kada je registar Data postao
+raspoloživ i trenutka kada je to citanjem registra Status utvrdeno.
+Indikaciju o tome da je registar Data postao raspoloživ moguce je proslediti procesoru
+generisanjem signala prekida intr kad god kontroler upiše aktivnu vrednost u bit ready
+registra Status. U ovom slucaju procesor može dok traje prenos podatka iz periferije u registar
+Data ili obratno da vrši neku obradu. Kada posle jednog prenetog podatka registar Data
+postane raspoloživ, kontroler, uz upisivanje aktivne vrednosti u bit ready, generiše i signal
+prekida intr. Procesor kao reakcija na signal prekida na trenutak prekida tekucu obradu, skace
+na odgovarajucu prekidnu rutinu u okviru koje prenosi podatak iz registra Data u memoriju ili
+obratno, pa se potom vraca na prekinutu tekucu obradu. U okviru registra Control postoji i bit
+enable u koji se programskim putem može upisivati aktivna ili neaktivna vrednost. Ukoliko je
+u bitu enable aktivna vrednost, tada se pri upisu aktivne vrednosti u bit ready registra Status,
+generiše signal prekida intr. U suprotnom slucaju nema generisanja signala prekida intr.Kod
+inicijalizacije i starovanja kontrolera u registar Control je potrebno upisati takvu vrednost
+koja ce na poziciji bita enable imati aktivnu ili neaktivnu vrednost u zavisnosti od toga da li je
+programskim putem predvideno da procesor utvrduje da je registar Data raspoloživ citanjem
+registra Status ili prijemom signala prekida.
+Kombinaciona mreža za prepoznavanje ciklusa citanja i upisa stalno proverava vrednost
+signala M/IOBUS i sadržaja na linijama ABUS. Ovde je pretpostavljeno da su ulazno/izlazni i
+memorijski prostor razdvojeni i da se aktivnom i neaktivnom vrednošcu signala M/IOBUS
+odreduje da se na linijama ABUS nalazi adresa iz memorijskog ili ulazno/izlaznog adresnog
+prostora, respektivno. Ukoliko se pri neaktivnoj vrednosti signala M/IOBUS na linijama
+ABUS pojavi adresa nekog od registara kontrolera, signal HIT na izlazu DEKODERA
+ADRESA ce biti aktivan, pa ce signal RDBUS ili WRBUS dati aktivnu vrednost signala RD
+ili WR.
+Upravljacka jedinica se aktivira po prijemu aktivne vrednosti signala RD, WR, inta ili
+start. U slucaju aktivne vrednosti signala RD ili WR upravljacka jedinica generiše signale
+neophodne da se sadržaj adresiranog registra pusti na linije DBUS ili da se sadržaja sa linija
+DBUS upiše u adresirani registar, dok u slucaju aktivne vrednosti signala generiše signale
+neophodne da se sadržaj registra entry pusti na linije DBUS. U sva tri slucaja uz pretpostavku
+da se radi o asinhronoj magistrali generiše se i odgovarajuca vrednost signala FCBUS. U
+zavisnosti od toga da li je u registar Control upisana vrednost koja na poziciji bita start ima
+aktivnu ili neaktivnu vrednost, upravljacka jedinica ili generiše upravljacke signale
+12
+neophodne za citanje podataka iz periferije i upis u registar Data ili citanje podataka iz
+registra Data i upis u periferiju ili ih ne generiše.
+1.2.2 PROGRAMIRANJE
+Programiranje ulaza/izlaza korišcenjem kontrolera bez direktnog pristupa memoriji je
+ilustrovano na primeru ulazno /izlazne periferije sa koje se unosi blok podataka u memoriju.
+U programu je uzeto da se upravljacki registar, statusni registar i registar podatka nalaze na
+adresama koje su simbolicki oznacene sa Control, Status i Data, respektivno. Pocetna adresa i
+velicina bloka memorije se zadaju kao neposredne velicine oznacene sa #blockadr i
+#blockcount, respektivno. Vrednost koja se upisuje u upravljacki registar prilikom
+inicijalizacije i startovanja kontrolera periferije se zadaje kao neposredna velicina oznacena sa
+#modestart. Vrednost koja se koristi kod provere da li je u statusnom registru bit ready 1 ili 0,
+zadaje se kao neposredna velicina, oznacena sa #ready. Vrednost koja se upisuje u upravljacki
+registar prilikom zaustavljanja kontrolera periferije zadaje se kao neposredna velicina
+oznacena sa #modestop. Uzet je dvoadresni procesor sa registrima opšte namene i
+razdvojenim ulazno/izlaznim i memorijskim adresnim prostorima.
+Kod ulaza/izlaza korišcenjem kontrolera bez direktnog pristupa memoriji, programskim
+putem se ostvaruje prenos podatka iz registra podatka kontrolera u memorijsku lokaciju i
+obratno, vodi evidencija o adresama memorijskih lokacija u koje treba upisivati i iz kojih
+treba citati podatke i vodi evidencija o broju podataka koje treba preneti. Problem
+sinhronizovanja razlicitih brzina sa kojima podaci mogu da se citaju sa periferija i upisuju u
+memorijske lokacij i obratno, rešava se na dva nacina i to: programskim putem ispitivanjem
+bita ready statusnog registra kontrolera periferije (poling) i korišcenjem prekida izazvanog od
+strane kontrolera periferije (prekid). Pored toga programskim putem se vrši inicijalizacija i
+startovanje i zaustavljanje kontrolera periferije.
+U ovom odeljku se razmatra programiranje ulaza/izlaza korišcenjem kontrolera bez
+direktnog pristupa memoriji i to citanjem statusnog registra (slika 2) i generisanjem prekida
+(slika 3).
+1.2.2.1 ULAZ/IZLAZ CITANJEM STATUSNOG REGISTRA
+Programiranje ulaza/izlaza citanjem statusnog registra kontrolera ilustrovano je na primeru
+ulazno/izlazne periferije sa koje se blok podataka unosi u memoriju unosi (slika 2).
+Kompletan unos bloka podataka se realizuje programom koji je oznacen sa Glavni program.
+U ovom programu se registar R1 koristi za generisanje adresa memorijskih lokacija u koje
+se upisuju podaci iz registra podatka kontrolera periferije, a registar R2 za vodenje evidencije
+o broju podataka koje treba preneti. Stoga se na pocetku prenosa pocetna adresa bloka
+memorije u koji se unose podaci, zadata kao neposredna velicina #blockadr, upisuje u registar
+R1, a velicina bloka podataka, zadata kao neposredna velicina #blockcount, u registar R2.
+Potom se, prebacivanjem neposredne velicine #modestart preko registra R3 u upravljacki
+registar kontrolera periferije, vrši inicijalizacija i startovanje kontrolera periferije. Vrednost
+#modestart na pozicijama upravljackog registra koje odgovaraju bitovima start, enable i u/i,
+ima 1, 0 i 1, respektivno, cime se startuje kontroler periferije, zabranjuje generisanje prekida i
+zadaje režim ulaza. Na pozicijama preostalih bitova se vrednosti koje se razlikuju od
+periferije do periferije i nisu predmet ovih razmatranja. Potom se u petlji prenosi sadržaj
+statusnog registra kontrolera periferije u registar R3 i vrši provera, korišcenjem neposredna
+velicine oznacene sa #ready, koja na pozicija bita ready statusnog registra ima 1 a na ostalima
+0, da li je bit ready statusnog registra 0 ili 1. Sve dok je bit ready 0, što znaci da podatak nije
+raspoloživ u registru podatka, ostaje se u petlji. Prvi put kada se otkrije da je bit ready 1, šro
+13
+ce se desiti da poddatak postane raspoloživ u registru podatka, izlazi se iz petlje. Podatak se
+potom iz registra podatka preko registra R3 upisuje u memorijsku lokaciju na adresi
+odredenoj sadržajem registra R1, što je oznaceno sa [R1]. Inkrementiranjem sadržaja registra
+R1 u njemu se formira adresa sledece memorijske lokacije u koju treba upisati sledeci
+podatak. Dekrementiranjem sadržaja registra R2 u njemu se dobija vrednost koja ukazuje
+koliko još reci treba preneti. Ukoliko tom prilikom sadržaj registra R2 nije postao nula, vraca
+se na labelu LOOPi prenos sledece reci.
+Glavni program
+.
+.
+MOV #blockadr, R1
+MOV #blockcount, R2
+MOV #modestart, R3
+OUT R3, Control
+LOOP: IN Status, R3
+AND R3, #ready
+JZ LOOP
+IN Data, R3
+MOV R3, [R1]
+INC R1
+DEC R2
+JNZ LOOP
+IN Control, R3
+AND R3, #modestop
+OUT R3, Control
+.
+.
+Slika 2 Programirani ulaz citanjem statusnog registra
+Treba napomenuti da se prilikom prebacivanje podatka iz registra podatka kontrolera
+periferije u registar R3, podrazumeva da kontroler periferije hardverski u bit ready statusnog
+registra upisuje vrednost 0. Ovaj bit ce ponovo postati 1 tek pošto sledeci podatak bude prenet
+iz periferije u registar podatka kontrolera periferije. Da to nije tako uradeno, onda bi se, u
+slucaju sporih periferija, dešavalo da se, povratkom na pocetak petlje preko labele LOOP, u
+statusnom registru nalazilo da je bit ready jedinica, ali ne zbog toga što je u registar podatka
+unet novi podatak sa periferije i bit ready postavljen na jeda, vec zbog toga što je vrednost
+jedan bita ready zaostala od prethodnog podatka. U tom slucaju bi se prošlo kroz petlju i
+prešlo na instrukcije kojima bi se isti podatak ponovo preneo u susednu memorijsku lokaciju.
+Iz ovoga se vidi da se program sastoji iz unutrašnje i spoljašnje petlje. Unutrašnja petlja
+služi za utvrdivanje da li je novi podatak prenet iz periferije u registar podatka kontrolera.
+Spoljašnja petlja služi za prenos podatka iz registra podatka kontrolera u memorijsku lokaciju
+14
+i ažuriranje registara sa adresom i brojem podatak koje još treba preneti. U unutrašnjo petlji se
+vrti dok novi podatak ne bude raspoloživ u registru podatka kontrlera. U spoljašnjoj petlji se
+vrti dok se ne prenesu svi podaci bloka iz periferiju u memoriju.
+Kada sadržaj registra R2 postane nula, izlazi se iz spoljašnje petlje i prelazi na zadnje tri
+instrukcije kojima se zaustavlja kontroler periferije. Upravljacki registar kontrolera se, najpre,
+prebacuje u registar R3, zatim se, korišcenjem neposredne velicine oznacene sa #modestop,
+koja na pozicija bita start upravljackog registra ima 0 a na ostalima 1, u registar R3 na poziciji
+bita start upravljackog registra upisuje 0, dok se ostali bitovi ne menjaju, i na kraju sadržaj
+registra R3 upisuje u upravljacki registar kontrolera. S obzirom na to da vrednost koja se
+upisuje u upravljacki registar kontrolera ima nulu na poziciji bita start, zaustavlja se kontroler
+priferije.
+Programirani izlaz citanjem statusnog registra se realizuje programom koji je veoma slican
+programu za programirani ulaz citanjem statusnog registra (slika 2). Prva razlika je da
+neposredna velicina #modestart, cijim se upisivanjem preko registra R3 u upravljacki registar
+kontrolera periferije vrši inicijalizacija i startovanje kontrolera periferije, mora na pozicijama
+upravljackog registra koje odgovaraju bitovima start, enable i u/i, da ima 1, 0 i 0, respektivno.
+Druga razlika je da je umesto instrukcija
+IN Data, R3
+MOV R3, [R1]
+kojima se vrši prebacivanje sadržaja registra podatka kontrolera u memorijsku lokaciju,
+potrebno staviti instrukcije
+MOV [R1], R3
+OUT R3, Data
+kojima se vrši prebacivanje sadržaja memorijske lokacije u registar podatka kontrolera.
+U slucaju da se radi o sistemu kod koga je ulazno/izlazni adresni prostor memorijski
+preslikan, treba u opštem slucaju umesto instrukcija IN i OUT koristiti instrukciju MOV.
+Medutim, ukoliko se radi sa procesorima kod kojih u instrukciji MOV oba operanda mogu da
+budu memorijske lokacije, moguce je pri prenosu iz registra podatka kontrolera u memorijsku
+lokaciju umesto instrukcija
+MOV Data, R3
+MOV R3, [R1]
+da se stavi
+MOV Data, [R1]
+i pri prenosu iz memorijske lokacije u registar podatka kontrolera umesto instrukcija
+MOV [R1], R3
+MOV R3, Data
+da se stavi
+MOV [R1], Data
+Nedostatak programiranog ulaza/izlaza citanjem statusnog registra kontrolera je cekanje u
+unutrašnjoj petlji. Ako se radi sa sporim periferijama, najveci deo vremena ce se provoditi u
+unutrašnjoj petlji.
+15
+1.2.2.2 ULAZ/IZLAZ GENERISANJEM PREKIDA
+Programiranje ulaza/izlaza generisanjem prekida ilustrovano je na primeru ulazno/izlazne
+periferije sa koje se blok podataka unosi u memoriju (slika 3). Kompletan unos bloka
+podataka se realizuje programima koji su oznaceni sa Glavni program i Prekidna rutina. U
+glavnom programu se zadaju pocetna adresa dela memoriju u koji se unosi blok podataka,
+velicina bloka podataka i vrši inicijalizacija i startovanje kontrolera periferije. U prekidnoj
+rutini se ostvaruje prenos podatka iz registra podatka kontrolera u memorijsku lokaciju,
+generisanje adrese memorijske lokacije u koju treba preneti sledeci podatak i vodenje
+evidencije o tome koliko ješ podataka boka preba preneti. U prekidnoj rutini se, po prenosu
+zadnjeg podatka bloka, vrši i zaustavljanje kontrolera periferije.
+U ovom programu se memorijska lokacija mem1 koristi za generisanje adresa memorijskih
+lokacija u koje se upisuju podaci iz registra podatka kontrolera periferije, a memorijska
+lokacija mem2 za vodenje evidencije o broju podataka koje treba preneti. Stoga se na pocetku
+prenosa pocetna adresa bloka memorije u koji se unose podaci, zadata kao neposredna
+velicina #blockadr, upisuje u memorijsku lokaciju mem1, a velicina bloka podataka, zadata
+kao neposredna velicina #blockcount, u memorijsku lokaciju mem2. Potom se, prebacivanjem
+neposredne velicine #modestart preko registra R3 u upravljacki registar kontrolera periferije,
+vrši inicijalizacija i startovanje kontrolera periferije. Vrednost #modestart na pozicijama
+upravljackog registra koje odgovaraju bitovima start, enable i u/i, ima 1, cime se startuje
+kontroler periferije, dozvoljava generisanje prekida i zadaje režim ulaza. Na pozicijama
+preostalih bitova se vrednosti koje se razlikuju od periferije do periferije i nisu predmet ovih
+razmatranja. Zatim se u memorijsku lokaciju sem upisuje vrednost 1, koja služi kao indikacija
+da je unos podataka u blok memorije u toku i da procesor ne sme da koristi podatke iz njega.
+Potom se prelazi na izvršavanje programa u kome se ne koriste podaci iz bloka memorije u
+koji je unos podataka u toku. U toku izvršavanja ovog programa dolaze zahtevi za prekid od
+kontrolera periferije svaki put kada je novi podatak raspoloživ u registru podatka kontrolera.
+Kao rezultat toga za svaki podatak prebacen iz periferije u registar podatka kontrolera skace
+se na prekidnu rutinu.
+Na ulasku u prekidnu rutinu i izlasku iz prekidne rutine registar R1 se stavlja na stek i
+skida sa steka, respektivno, jer se u no koristi. U prekidnoj rutini se podatak iz registra
+podatka preko registra R1 upisuje u memorijsku lokaciju na adresi odredenoj sadržajem
+memorijske lokacije mem1, što je oznaceno sa [mem1]. Inkrementiranjem sadržaja
+memorijske lokacije mem1 u njoj se formira adresa sledece memorijske lokacije u koju treba
+upisati sledeci podatak. Dekrementiranjem sadržaja memorijske lokacije mem2 u njoj se
+dobija vrednost koja ukazuje koliko još reci treba preneti. Ukoliko tom prilikom sadržaj
+memorijske lokacije nije postao nula, vraca se preko labele BACK u prekinuti glavni
+program. Prilikom zadnjeg ulaska u prekidnu rutinu i prenosa zadnjeg podatka u blok
+memorije, sadržaj memorijske lokacije mem2 postaje nula, pa se, umesto skoka na labelu
+BACK, produžava sa izvršavanjem prekidne rutine. Najpe se u memorijsku lokaciju sem
+upisuje vrednost nula, koja služi kao indikacija da je unos podataka u blok memorije završen i
+da procesor sme da koristi podatke iz njega. Zatim se prelazi na zadnje tri instrukcije kojima
+se zaustavlja kontroler periferije. Upravljacki registar kontrolera se, najpre, prebacuje u
+registar R1, zatim se, korišcenjem neposredne velicine oznacene sa #modestop, koja na
+pozicija bita start upravljackog registra ima 0 a na ostalima 1, u registar R1 na poziciji bita
+start upravljackog registra upisuje 0, dok se ostali bitovi ne menjaju, i na kraju sadržaj registra
+R1 upisuje u upravljacki registar kontrolera. S obzirom na to da vrednost koja se upisuje u
+upravljacki registar kontrolera ima nulu na poziciji bita start, zaustavlja se kontroler priferije.
+Potom se vraca u prekinuti glavni program
+16
+Glavni program
+.
+MOV #blockadr, mem1
+MOV #blockcount, mem2
+MOV #modestart, R3
+OUT R3, Control
+MOV #1, sem
+! Program u kome se ne koriste
+! podaci iz bloka memorije u koji
+! se unose podaci sa periferije
+LOOP: CMP sem, #0
+JNZ LOOP
+! Program u kome se koriste
+! podaci iz bloka memorije u koji
+! su uneti podaci sa periferije
+.
+Prekidna rutina
+PUSH R3
+IN Data, R3
+MOV R1, [mem1]
+INC mem1
+DEC mem2
+JNZ BACK
+MOV #0, sem
+IN Control, R3
+AND R3, #modestop
+OUT R3, Control
+BACK: POP R3
+RTI
+Slika 3 Programirani ulaz generisanjem prekida
+Izvršavanje dela glavnog programa u kome se ne koriste podaci iz bloka memorije u koji
+se unose podaci, može da traje duže ili krace od vremena neophodnog za unošenje celog
+bloka podataka. Zbog toga kada se u glavnom programu dode do labele LOOP mogu da se
+jave dve situacije.
+Ukoliko je to vreme duže, tada ce se zahtev za prekid i skok na prekidnu rutinu radi
+unošenja zadnjeg podatka bloka desiti pre nego što se u glavnom programu stigne na labelu
+17
+LOOP. U prekidnoj rutini ce se, izmedu ostalog, zbog toga što se prenosi zadnji podatak
+bloka, u memorijsku lokaciju sem upisati vrednost nula. Po povratku u glavni program
+produžice se njegovo izvršavanje bez dalji prekida od strane kontrolera i stici do labele
+LOOP. Instrukcijom CMP ce se utvrditi da je sadržaj memorijske lokacije sem nula, jer je
+prenos bloka podataka u memoriju kompletiran, pa ce se preci na izvršavanje dela glavnog
+programa u kome se koriste podaci iz bloka memorije u koji su preneti podaci sa ulazne
+periferije.
+Ukoliko je to vreme krace, tada ce se u glavnom programu stici na labelu LOOP pre
+kompletiranja prenosa bloka podataka u memoriju. Instrukcijom CMP ce se utvrdivati da je
+sadržaj memorijske lokacije sem jedinica. Zbog toga se nece preci na izvršavanje dela
+glavnog programa u kome se koriste podaci iz bloka memorije u koji se prenose podaci sa
+periferije. Umesto toga program ce se vrteti u petlji sve vreme dok je sadržaj memorijske
+lokacije sem jedinica. Za to vreme unos podataka u blok memorije ce se odvijati do
+kompletiranja prenosa. Za svaki novi podatak prenet iz periferije u registar podatka
+kontrolera, generisace se prekid i, u zavisnosti od toga kada je zahtev za prekid generisan, iz
+instrukcije CMP ili JNZ ce se skakati u prekidnu rutinu. U prekidnoj rutini ce se podatak
+prenositi u memorijsku lokaciju, ažurirati sadržaji memorijskih lokacija mem1 i mem2 i,
+ukoliko nije preneta zadnja rec, vracati na instrukciju CMP ili JNZ. Prilikom zadnjeg ulaska u
+prekidnu rutinu, izmedu ostalog, ce se upisati nula u memorijsku lokaciju sem i zaustaviti
+kontroler. Po povratku u glavni program na instrukciju CMP ili JNZ, prvim izvršavanjem
+instrukcije CMP ce se utvrditi da je sadržaj memorijske lokacije sem nula, pa ce se po
+izvršavanju instrukcije JNZ izaci iz petlje. Time se prelazi na izvršavanje programa u kome se
+koriste podaci iz bloka memorije u koji su uneti podaci sa ulazne periferije.
+Programirani izlaz generisanjem prekida se realizuje programom koji je veoma slican
+programu za programirani ulaz generisanjem prekida (slika 3). Prva razlika je da neposredna
+velicina #modestart, cijim se upisivanjem preko registra R3 u upravljacki registar kontrolera
+periferije vrši inicijalizacija i startovanje kontrolera periferije, mora na pozicijama
+upravljackog registra koje odgovaraju bitovima start, enable i u/i, da ima 1, 1 i 0, respektivno,
+cime se startuje kontroler periferije, dozvoljava generisanje prekida i zadaje režim izlaza..
+Druga razlika je da je umesto instrukcija
+IN Data, R3
+MOV R3, [mem1]
+kojima se vrši prebacivanje sadržaja registra podatka kontrolera u memorijsku lokaciju,
+potrebno staviti instrukcije
+MOV [mem1], R3
+OUT R3, Data
+kojima se vrši prebacivanje sadržaja memorijske lokacije u registar podatka kontrolera.
+U slucaju da se radi o sistemu kod koga je ulazno/izlazni adresni prostor memorijski
+preslikan, treba u opštem slucaju umesto instrukcija IN i OUT koristiti instrukciju MOV.
+Medutim, ukoliko se radi sa procesorima kod kojih u instrukciji MOV oba operanda mogu da
+budu memorijske lokacije, moguce je pri prenosu iz registra podatka kontrolera u memorijsku
+lokaciju umesto instrukcija
+MOV Data, R3
+MOV R3, [mem1]
+18
+da se stavi
+MOV Data, [mem1]
+i pri prenosu iz memorijske lokacije u registar podatka kontrolera umesto instrukcija
+MOV [mem1], R3
+MOV R3, Data
+da se stavi
+MOV [mem1], Data
+Prednost programiranog ulaza/izlaza generisanjem prekida u odnosu na programirani
+ulaz/izlaz citanjem statusnog registra je da dok traje unošenje podataka iz periferije u
+memoriju procesor ne ceka u petlji, vec izvršava program kome nisu potrebni podaci cije je
+uošenje u toku. Izvršavanje ovog programa se prekida, radi skoka na prekidnu rutinu, onoliko
+puta kolika je velicina bloka podataka. Ovo prekidanje je vremenski zanemarljivo ukoliko je
+periferija spora. Ukoliko je periferija brza, može se desiti da su prekidanja toliko cesta da
+procesor više vremena troši na ulazak u prekidnu rutinu i povratak iz prekidne rutine, nego na
+izvršavanje programa. U slucaju veoma brze periferije može se cak desiti da procesor ne bude
+u stanju da prati podatke koji dolaze sa periferije ili koji treba da se šalju u periferiju. U tom
+slucaju se moraju koristiti druga rešenja za ulaz/izlaz, kao što je kontroler sa direktnim
+pristupom memoriji.
+1.2.3 POVEZIVANJE SA PERIFERIJOM
+U ovom odeljku se razmatra jedan od mogucih nacina povezivanja kontrolera i periferije
+pomocu paralelnog interfejsa. Kod ovog interfejsa postoji osam linija podataka DATA i tri
+upravljacke linije. U slucaju ulazne periferije po linijama DATA periferija šalje podatak
+kontroleru, po upravljackoj liniji IBF kontroler šalje periferiji indikaciju da li je registar Data
+pun ili ne i po upravljackoj liniji STB periferija generiše signal za upis sadržaja sa linija
+DATA u registar Data. U slucaju izlazne periferije po linijama DATA kontroler šalje podatak
+periferiji, po liniji upravljackoj OBF kontroler šalje periferiji indikaciju da li je registar Data
+pun ili ne i po upravljackoj liniji ACK periferija generiše signal kada je sadržaj sa linija
+DATA upisan u periferiju. Aktivnom vrednošcu po upravljackoj liniji START kontroler
+kontroler startuje ulaznu periferiju da krene sa citanjem podataka i izlaznu periferiju da krene
+sa prijemom podataka, dok se neaktivnom vrednošcu periferija zaustavlja.
+Kod ulazne periferije kontroler signalom IBF daje indikaciju da li je spreman da primi novi
+podatak od periferije. Uzeto je da je aktivna vrednost signala IBF indikacija da je registar
+Data pun i da kontroler ne može da primi sledeci podatak, dok je neaktivna vrednost signala
+IBF indikacija da registar Data nije pun i da kontroler može da primi sledeci podatak.
+Periferija po startovanju cita podatak, stavlja ga na linije DATA i proverava signal IBF.
+Ukoliko je signal IBF neaktivan, periferija generiše signal STB kojim upisuje sadržaj sa linija
+DATA u registar Data kontrolera. Ukoliko je signal IBF aktivan, periferija ceka da signal IBF
+postane neaktivan, pa tek onda generiše signal STB kojim upisuje sadržaj sa linija DATA u
+registar Data kontrolera. Po upisu sadržaja sa linija DATA u registar Data kontrolera, signal
+IBF postaje aktivan. Signal IBF postaje neaktivan tek kada se programskim putem sadržaj
+registra Data kontrolera prebaci u memorijsku lokaciju. Po upisu sadržaja sa linija DATA u
+registar Data kontrolera, periferija cita sledeci podatak stavlja ga na linije DATA i proverava
+signal IBF. Ukoliko se radi o sporoj periferiji sadržaj registra Data kontrolera ce tada vec biti
+prebaceni u memorijsku lokaciju signal i signal IBF ce biti neaktivan, pa periferija odmah
+generiše signal STB kojim upisuje sadržaj sa linija DATA u registar Data kontrolera. Ukoliko
+19
+se radi o brzoj periferiji sadržaj registra Data kontrolera još uvek nece biti prebaceni u
+memorijsku lokaciju i signal IBF ce bit aktivan, pa periferija mora ceka da signal IBF postane
+neaktivan, pa tek onda generiše signal STB kojim upisuje sadržaj sa linija DATA u registar
+Data kontrolera.
+Vremenski oblici signala kontrolera, periferije i izmedu kontrolera i periferije prilikom
+unosa bloka podataka iz spore i brze periferije u memoriju, dati su na slikama 4 i 5,
+respektivno. Signal start je interni signal kontrolera koji odgovara vrednosti bita start registra
+Control. Po startovanju kontrolera programskim putem signal start postaje aktivan i ostaje
+aktivan sve dok se kontroler programskim putem ne zaustavi. Signal start se po upravljackoj
+liniji START vodi iz kontrolera u periferiju. Aktivnom i neaktivnom vrednošcu po liniji
+START kontroler startuje i zaustavlja periferiju. Signal ready je interni signal kontrolera koji
+odgovara vrednosti bita ready registra Status. Po startovanju kontrolera za unos bloka
+podataka signal ready postaje neaktivan. Signal ready postaje aktivan kada se iz ulazne
+periferije po linijama DATA u registar Data kontrolera prebaci prvi podatak, a neaktivan kada
+se programskim putem sadržaj registra Data prebaci u memorijsku lokaciju. Upravljacki
+signal IBF, koji kontroler šalje periferiji, prati vrednost signala ready. Upravljackim signalom
+STB, koji ulazna periferija šalje kontroleru onda kada ima procitan sledeci podatak i kada je
+signal IBF neaktivan, upisuje se sadržaj sa linija DATA u registar Data kontrolera.
+start
+IBF
+STB
+ready
+DATA
+Slika 4 Vremenski oblici signala za sporu ulaznu periferiju
+start
+IBF
+STB
+ready
+DATA
+Slika 5 Vremenski oblici signala za brzu ulaznu periferiju
+Po startovanju kontrolera situacija je ista i za sporu i za brzu periferiju. Aktivna vrednost
+signala start, a time i signala START, startuje citanje prvog podatka u periferiji. Periferija,
+pošto procita prvi podatak i stavi ga na linije DATA, utvrduje da je signal IBF neaktivan, pa,
+generisanjem aktivne vrednosti signala STB, upisuje sadržaj sa linija u registar Data
+kontrolera. Kao reakcija na aktivnu vrednost upravljackog signala periferije STB, kontroler
+postavlja najpre bit ready a zatim i signal IBF na aktivnu vrednost. Kao reakcija na neaktivnu
+vrednost upravljackog signala kontrolera STB, periferija najpre postavlja signal STB na
+aktivnu vrednost, a zatim uklanja sadržaj sa linija podataka DATA. Nadalje se paralelno
+odvija prebacivanje podatka iz registra Data kontrolera u memorijsku lokaciju i citanje
+sledeceg podatka u periferiji. Od ovog trenutka nastaje razlika izmedu spore i brze periferije.
+U slucaju spore periferije utvrdivanje, bilo citanjem registra Status bilo kao reakcija na
+prekid, da je bit ready registra Status postao aktivan i prelazak na izvršavanje programa kojim
+se cita sadržaj registra Data i prenosi u memorijsku lokaciju, postavljanje najpre bita ready a
+zatim i signala IBF na neaktivnu vrednost, se završavaju pre nego što je periferija procitala
+sledeci podatak (slika 4). Zbog toga, periferija, cim procita i stavi na linije DATA sledeci
+podatak, utvrduje da je signal IBF neaktivan, pa, generisanjem aktivne vrednosti signala STB,
+upisuje sadržaj sa linija u registar Data kontrolera. U slucaju brze periferije, na linije DATA
+20
+periferija stavlja procitani sledeci podatak pre nego što je utvrdivanje, bilo citanjem registra
+Status bilo kao reakcija na prekid, da je bit ready registra Status postao aktivan i prelazak na
+izvršavanje programa kojim se cita sadržaj registra Data i prenosi u memorijsku lokaciju,
+postavljanje najpre bita ready a zatim i signala IBF na neaktivnu vrednost, završeno (slika 5).
+Zbog toga periferija mora da ceka da bi utvrdila da je signal IBF postao neaktivan, pa da,
+generisanjem aktivne vrednosti signala STB, upiše sadržaj sa linija u registar Data kontrolera.
+Kod izlazne periferije kontroler signalom OBF daje indikaciju periferiji da je registar Data
+pun i da se na linijama DATA nalazi podatak. Uzeto je da je aktivna vrednost signala OBF
+indikacija periferiji da je registar Data pun, da je na linijama DATA podatak i da periferija
+može da ga prihvati, dok je neaktivna vrednost signala OBF indikacija periferiji da registar
+Data nije pun, da se na linijama DATA ne nalazi novi podatak i da periferija ne može da ga
+prihvati. Signal OBF postaje aktivan tek kada se programskim putem sadržaj memorijske
+lokacije prebaci u registar Data kontrolera. Periferija po startovanju proverava signal OBF.
+Ukoliko je signal OBF aktivan, periferija prihvata sadržaj sa linija DATA i generiše signal
+ACK kao indikaciju kontroleru da joj sadržaj sa linija DATA nije više potreban. Ukoliko je
+signal OBF neaktivan, periferija ceka da signal OBF postane aktivan, pa tek onda prihvata
+sadržaj sa linija DATA i generiše signal ACK. Po prihvatanju sadržaja sa linija DATA od
+strane periferije, signal OBF postaje neaktivan. Po završenom upisu sadržaja periferija
+proverava signal OBF. Ukoliko se radi o sporoj periferiji, sadržaj sledece memorijske lokacije
+ce vec biti prebacen u registar Data kontrolera i signal OBF ce biti aktivan, pa periferija
+odmah prihvata sadržaj sa linija DATA i generiše signal ACK. Ukoliko se radi o brzoj
+periferiji sadržaj sledece memorijske lokacije još uvek nece biti prebacen u registar Data
+kontrolera i signal OBF ce biti neaktivan, pa periferija mora ceka da signal OBF postane
+aktivan, pa tek onda prihvati sadržaj sa linija DATA i generiše signal ACK.
+Vremenski oblici signala kontrolera, periferije i izmedu kontrolera i periferije prilikom
+slanja bloka podataka iz memorije u sporu i brzu periferiju, dati su na slikama 6 i 7,
+respektivno. Signal start je interni signal kontrolera koji odgovara vrednosti bita start registra
+Control. Po startovanju kontrolera programskim putem signal start postaje aktivan i ostaje
+aktivan sve dok se kontroler programskim putem ne zaustavi. Signal start se po upravljackoj
+liniji START vodi iz kontrolera u periferiju. Aktivnom i neaktivnom vrednošcu po liniji
+START kontroler startuje i zaustavlja periferiju. Signal ready je interni signal kontrolera koji
+odgovara vrednosti bita ready registra Status. Po startovanju kontrolera za unos bloka
+podataka signal ready postaje aktivan. Signal ready postaje neaktivan kada se programskim
+putem sadržaj memorijske lokacije prebaci u registar Data kontrolera i stavi na linije DATA, a
+aktivan kada izlazna periferija prihvati podatak sa linija DATA. Upravljacki signal OBF, koji
+kontroler šalje periferiji, prati inverznu vrednost signala ready. Upravljackim signalom ACK,
+koji izlazna periferija šalje kontroleru onda kada je signal OBF aktivan i kada je sadržaj sa
+linija DATA prihvatila, periferija signalizira kontroleru da joj sadržaj sa linija DATA nije više
+potreban. Signal PER je interni signal periferije koji neaktivnom vrednošcu ukazuje da
+periferija ceka da prihvati podatak sa linija DATA, dok aktivnom vrednošcu ukazuje da je
+periferija prihvatila sadržaj sa linija DATA i da je upis podatka u toku.
+start
+OBF
+ACK
+ready
+DATA
+PER
+Slika 6 Vremenski oblici signala za sporu izlaznu periferiju
+21
+start
+OBF
+ACK
+ready
+DATA
+PER
+Slika 7 Vremenski oblici signala za brzu izlaznu periferiju
+Po startovanju kontrolera situacija je ista i za sporu i za brzu periferiju. Aktivnom
+vrednošcu signala start se bit ready postavlja na aktivnu vrednost. Pored toga aktivna vrednost
+signala start, a time i signala START, startuje prihvatanje prvog podatka u periferiji koja je
+slobodna, na šta ukazuje neaktivna vrednost signala PER, onda kada signal OBF postane
+aktivan. Zbog aktivne vrednosti bita ready registra Status, što se utvrduje bilo citanjem
+registra Status bilo kao reakcija na prekid, prelazi se na izvršavanje programa kojim se cita
+sadržaj memorijske lokacije i prenosi u registar Data, što ima za posledicu da se sadržaj
+registra Data pojavljuje na linijama DATA i da se bit ready postavlja na neaktivnu, a signal
+OBF na aktivnu vrednost. Kao reakcija na aktivnu vrednost signala OBF, periferija prihvata
+sadržaj sa linija DATA i krece sa upisom, na šta ukazuje aktivna vrednost signala PER. Pored
+toga, periferija, generisanjem aktivne vrednosti signala ACK, ukazuje kontroleru da joj
+sadržaj sa linija DATA nije više potreban. Kao reakcija na aktivnu vrednost upravljackog
+signala periferije ACK, kontroler postavlja najpre bit ready na aktivnu a zatim i signal OBF
+na neaktivnu vrednost i uklanja sadržaj sa linija DATA. Kao reakcija na neaktivnu vrednost
+upravljackog signala kontrolera OBF, periferija postavlja signal ACK na neaktivnu vrednost.
+Nadalje se paralelno odvija prebacivanje sledeceg podatka iz memorijske lokacije u registar
+Data kontrolera i upis prethodnog podatka u periferiji. Od ovog trenutka nastaje razlika
+izmedu spore i brze periferije.
+U slucaju spore periferije utvrdivanje, bilo citanjem registra Status bilo kao reakcija na
+prekid, da je bit ready registra Status postao aktivan i prelazak na izvršavanje programa kojim
+se prenosi sadržaj sledece memorijske lokacije u registar Data, postavljanje najpre bita ready
+na neaktivnu a zatim i signala OBF na aktivnu vrednost, se završavaju pre nego što je
+periferija upisala prethodni podatak, na šta ukazuje aktivna vrednost signala PER (slika 6).
+Zbog toga, periferija, cim završi sa upisom prethodnog podatka, na šta ukazuje neaktivna
+vrednost signala PER, prihvata sadržaj sa linija DATA i krece sa upisom, na šta ukazuje
+aktivna vrednost signala PER. Pored toga, periferija, generisanjem aktivne vrednosti signala
+ACK, ukazuje kontroleru da joj sadržaj sa linija DATA nije više potreban. U slucaju brze
+periferije, periferija završava sa upisom, na šta ukazuje neaktivna vrednost signala PER, pre
+nego što je utvrdivanje, bilo citanjem registra Status bilo kao reakcija na prekid, da je bit
+ready registra Status postao aktivan i prelazak na izvršavanje programa kojim se prenosi
+sadržaj sledece memorijske lokacije u registar Data, postavljanje najpre bita ready na
+neaktivnu a zatim i signala OBF na aktivnu vrednost, završeno (slika 7). Zbog toga periferija
+mora da ceka da bi utvrdila da je signal OBF postao aktivan, pa da, najpre prihvati sadržaj sa
+linija DATA i krene sa upisom, na šta ukazuje aktivna vrednost signala PER, i da zatim,
+generisanjem aktivne vrednosti signala ACK, ukaže kontroleru da joj sadržaj sa linija DATA
+nije više potreban.
+Kod razmotrenog pristupa povezivanja kontrolera i periferije, kontroler neaktivnom
+vrednošcu signala IBF šalje indikaciju ulaznoj periferiji da može da upiše sledeci podatak i
+aktivnom vrednošcu signala OBF šalje indikaciju izlaznoj periferiji da može da prihvati
+sledeci podatak. Periferija je ta koja, ukoliko je ulazna, kada ima podatak i ukoliko utvrdi da
+je signal IBF neaktivan, signalom STB upisuje podatak sa linija DATA u kontroler i, ukoliko
+22
+je izlazna, kada utvrdi da je signal OBF aktivan i ukoliko utvrdi da nema podatak ciji je upis u
+toku, prihvata podatak sa linija DATA i o tome signalom ACK obaveštava kontroler.
+Povezivanje kontrolera i periferije je moguce realizovati i na taj nacin da ulazna periferija
+daje indikaciju kontroleru da ima podatak, a da kontroler realizuje prihvatanje podatka sa
+linija DATA u registar Data i da izlazna periferija daje indikaciju da nema podatak ciji je upis
+u toku, a da kontroler realizuje slanje podatka sa linija DATA u periferiju. Ulazna periferija
+aktivnom vrednošcu signala OBF šalje indikaciju kontroleru da može da prihvati sledeci
+podatak i neaktivnom vrednošcu signala IBF šalje indikaciju kontroleru da može da pošalje
+sledeci podatak. Kontroler je sada taj koji, ukoliko je periferija ulazna, kada nema podatak i
+ukoliko utvrdi da je signal OBF aktivan, prihvata podatak sa linija DATA i o tome signalom
+ACK obaveštava kontroler i, ukoliko je periferija izlazna, kada ima podatak i ukoliko utvrdi
+da je signal IBF neaktivan, signalom STB upisuje podatak sa linija DATA u periferiju.
+Aktivnom vrednošcu po upravljackoj liniji START kontroler kontroler startuje ulaznu
+periferiju da krene sa citanjem podataka i izlaznu periferiju da krene sa prijemom podataka,
+dok se neaktivnom vrednošcu periferija zaustavlja.
+Vremenski oblici signala kontrolera, periferije i izmedu kontrolera i periferije prilikom
+unosa bloka podataka iz spore i brze periferije u memoriju, dati su na slikama 8 i 9,
+respektivno.
+start
+DATA
+ready
+OBF
+ACK
+PER
+Slika 8 Vremenski oblici signala za sporu ulaznu periferiju
+start
+DATA
+ready
+OBF
+ACK
+PER
+Slika 9 Vremenski oblici signala za brzu ulaznu periferiju
+Vremenski oblici signala kontrolera, periferije i izmedu kontrolera i periferije prilikom
+slanja bloka podataka iz memorije u sporu i brzu periferiju, dati su na slikama 10 i 11,
+respektivno.
+start
+DATA
+ready
+IBF
+STB
+PER
+Slika 10 Vremenski oblici signala za sporu izlaznu periferiju
+23
+start
+DATA
+ready
+IBF
+STB
+PER
+Slika 11 Vremenski oblici signala za brzu izlaznu periferiju
+1.3 KONTROLERI SA DIREKTNIM PRISTUPOM MEMORIJI
+U ovom odeljku se razmatraju organizacija kontrolera sa direktnim pristupom memoriji,
+njegovo programiranje radi organizacije ulaza/izlaza i povezivanje periferije korišcenjem
+kontrolera bez direktnog pristupa memoriji i kontrolera sa direktnim pristupom memoriji.
+1.3.1 ORGANIZACIJA
+U ovom odeljku se razmatra organizacija kontrolera sa direktnim pristupom memoriji
+(slika 12). Kontroler se sastoji od operacione jedinice i upravljacke jedinice. Operacionu
+jedinicu cine registri Data, Control, Status, Entry, Adr i Count i kombinaciona mreža za
+prepoznavanje ciklusa citanja i upisa koji treba da se realizuju sa ovim registrima.
+Upravljacka jedinica realizuje citanje iz i upis u registre Data, Control, Status, Entry, Adr i
+Count, prenos podataka iz periferije u registar Data i obratno, arbitraciju za izlazak na
+magistralu, cikluse upisa u memoriju i citanja iz memorije, vodenje evidencije o adresama
+memorijskih lokacija iz kojih treba citati ili upisivati i vodenje evidencije o broju podataka
+koje treba preneti izmedu periferije i memorije i obratno.
+Data
+ready
+Control
+intr
+Status
+Entry
+inta
+periferija
+podaci upravljacki
+signali
+kontroler
+hreq
+hack
+stWR
+UPRAVLJACKA
+JEDINICA
+stRD
+...
+statusni
+signali
+...
+HIT
+DEKODER
+ADRESA
+end
+KRAJ
+PRENOSA
+Count Adr
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+start
+u/i
+enable
+burst
+Slika 12 Kontroler sa direktnim pristupom memoriji
+24
+1.3.2 PROGRAMIRANJE
+Programiranje ulaza/izlaza korišcenjem kontrolera sa direktnim pristupom memoriji je
+ilustrovano na primeru ulazno /izlazne periferije sa koje se unosi blok podataka u memoriju.
+U programu je uzeto da se upravljacki registar, statusni registar, adresni registar i registar
+velicine bloka podataka nalaze na adresama koje su simbolicki oznacene sa Control, Status,
+Adr i Count, respektivno. Pocetna adresa i velicina bloka memorije se zadaju kao neposredne
+velicine oznacene sa #blockadr i #blockcount, respektivno. Vrednost koja se upisuje u
+upravljacki registar prilikom inicijalizacije i startovanja kontrolera periferije se zadaje kao
+neposredna velicina oznacena sa #modestart. Vrednost koja se upisuje u upravljacki registar
+prilikom zaustavljanja kontrolera periferije zadaje se kao neposredna velicina oznacena sa
+#modestop. Uzet je dvoadresni procesor sa registrima opšte namene i razdvojenim
+ulazno/izlaznim i memorijskim adresnim prostorima.
+Kod ulaza/izlaza korišcenjem kontrolera sa direktnim pristupom memoriji, programskim
+putem se vrši inicijalizacija i startovanje i zaustavljanje kontrolera periferije, dok sam
+kontroler ostvaruje prenos podataka iz periferije u registar podatka kontrolera i dalje u
+memorijsku lokaciju i obratno, vodi evidenciju o adresama memorijskih lokacija u koje treba
+upisivati i iz kojih treba citati podatke i vodi evidencija o broju podataka koje treba preneti.
+Utvrdivanje da li je prenos bloka podatak kompletiran se realizuje ili programskim putem
+ispitivanjem bita ready statusnog registra kontrolera periferije ili korišcenjem prekida
+izazvanog od strane kontrolera periferije.
+Programiranje ulaza/izlaza generisanjem prekida ilustrovano je na primeru ulazno/izlazne
+periferije sa koje se blok podataka unosi u memoriju (slika 13). Programi koji se tom prilikom
+koriste su oznaceni sa Glavni program i Prekidna rutina. U glavnom programu se kontroleru
+zadaju pocetna adresa dela memoriju u koji se unosi blok podataka, velicina bloka podataka i
+režim rada i vrši startovanje kontrolera periferije. U prekidnoj rutini se, po prenosu zadnjeg
+podatka bloka, vrši zaustavljanje kontrolera periferije.
+Prilikom prenosa bloka podataka kontroler koristi adresni registar za generisanje adresa
+memorijskih lokacija u koje se upisuju podaci iz registra podatka kontrolera periferije, a
+registar velicine bloka podataka za vodenje evidencije o broju podataka koje treba preneti.
+Stoga se na pocetku glavnog programa pocetna adresa bloka memorije u koji se unose podaci,
+zadata kao neposredna velicina #blockadr, upisuje u adresni registar kontrolera, a velicina
+bloka podataka, zadata kao neposredna velicina #blockcount, u registar velicine bloka
+podataka. Potom se, prebacivanjem neposredne velicine #modestart preko registra R3 u
+upravljacki registar kontrolera periferije, vrši zadavanje režima rada i startovanje kontrolera
+periferije. Vrednost #modestart na pozicijama upravljackog registra koje odgovaraju bitovima
+start, enable i u/i, ima 1, cime se startuje kontroler periferije, dozvoljava generisanje prekida i
+zadaje režim ulaza. Na pozicijama preostalih bitova se vrednosti koje se razlikuju od
+periferije do periferije i nisu predmet ovih razmatranja. Zatim se u memorijsku lokaciju sem
+upisuje vrednost 1, koja služi kao indikacija da je unos podataka u blok memorije u toku i da
+procesor ne sme da koristi podatke iz njega.
+Potom se prelazi na izvršavanje programa u kome se ne koriste podaci iz bloka memorije u
+koji je unos podataka u toku. U toku izvršavanja ovog programa kontroler pebacuje podatak
+iz periferije u registar podatka i zatim iz registra podatka upisuje u emorijsku lokaciju na
+adresi odredenoj sadržajem adresnog registra kontrolera. Potom kontroler inkrementira
+sadržaj adresnog registra i dekrementira sadržaj reistra velicine bloka. Na kraju kontroler
+proverava sadržaj registra velicine bloka. Ukoliko sadržaj registra nije nula, na isti nacin se
+prenosi sledeci podatak iz periferije u memorijsku lokaciju. Ukoliko je nula, u bit ready
+25
+statusnog registra se upisuje 1 i generiše prekid, ukoliko je bit enable upravljackog registra
+jedinica.
+Glavni program
+.
+MOV #blockadr, R1
+OUT R1, Adr
+MOV #blockcount, R1
+OUT R1, Count
+MOV #modestart, R1
+OUT R1, Control
+MOV #1, sem
+! Program u kome se ne koriste
+! podaci iz bloka memorije u koji
+! se unose podaci sa periferije
+LOOP: CMP sem, #0
+JNZ LOOP
+! Program u kome se koriste
+! podaci iz bloka memorije u koji
+! su uneti podaci sa periferije
+.
+Prekidna rutina
+PUSH R1
+MOV #0, sem
+IN Control, R1
+AND R1, #modestop
+OUT R1, Control
+BACK: POP R1
+RTI
+Slika 13 Programirani ulaz/izlaz sa prekidom
+Na ulasku u prekidnu rutinu i izlasku iz prekidne rutine registar R1 se stavlja na stek i
+skida sa steka, respektivno, jer se u njoj koristi. U prekidnoj rutini se u memorijsku lokaciju
+sem upisuje vrednost nula, koja služi kao indikacija da je unos podataka u blok memorije
+završen i da procesor sme da koristi podatke iz njega. Zatim se prelazi na zadnje tri
+instrukcije kojima se zaustavlja kontroler periferije. Upravljacki registar kontrolera se, najpre,
+prebacuje u registar R1, zatim se, korišcenjem neposredne velicine oznacene sa #modestop,
+koja na pozicija bita start upravljackog registra ima 0 a na ostalima 1, u registar R1 na poziciji
+26
+bita start upravljackog registra upisuje 0, dok se ostali bitovi ne menjaju, i na kraju sadržaj
+registra R1 upisuje u upravljacki registar kontrolera. S obzirom na to da vrednost koja se
+upisuje u upravljacki registar kontrolera ima nulu na poziciji bita start, zaustavlja se kontroler
+priferije. Potom se vraca u prekinuti glavni program
+Izvršavanje dela glavnog programa u kome se ne koriste podaci iz bloka memorije u koji
+se unose podaci, može da traje duže ili krace od vremena neophodnog za unošenje celog
+bloka podataka. Zbog toga kada se u glavnom programu dode do labele LOOP mogu da se
+jave dve situacije.
+Ukoliko je to vreme duže, tada ce se zahtev za prekid i skok na prekidnu rutinu desiti pre
+nego što se u glavnom programu stigne na labelu LOOP. U prekidnoj rutini ce se, izmedu
+ostalog, u memorijsku lokaciju sem upisati vrednost nula. Po povratku u glavni program
+produžice se njegovo izvršavanje i stici do labele LOOP. Instrukcijom CMP ce se utvrditi da
+je sadržaj memorijske lokacije sem nula, jer je prenos bloka podataka u memoriju
+kompletiran, pa ce se preci na izvršavanje dela glavnog programa u kome se koriste podaci iz
+bloka memorije u koji su preneti podaci sa ulazne periferije.
+Ukoliko je to vreme krace, tada ce se u glavnom programu stici na labelu LOOP pre
+kompletiranja prenosa bloka podataka u memoriju. Instrukcijom CMP ce se utvrdivati da je
+sadržaj memorijske lokacije sem jedinica. Zbog toga se nece preci na izvršavanje dela
+glavnog programa u kome se koriste podaci iz bloka memorije u koji se prenose podaci sa
+periferije. Umesto toga program ce se vrteti u petlji sve vreme dok je sadržaj memorijske
+lokacije sem jedinica. Za to vreme unos podataka u blok memorije ce se odvijati do
+kompletiranja prenosa. Kada kontroler prenese zadnji podatak iz periferije u memoriju,
+generisace se prekid i, u zavisnosti od toga kada je zahtev za prekid generisan, iz instrukcije
+CMP ili JNZ ce se skakati u prekidnu rutinu. U prekidnoj rutini ce se upisati nula u
+memorijsku lokaciju sem i zaustaviti kontroler. Po povratku u glavni program na instrukciju
+CMP ili JNZ, prvim izvršavanjem instrukcije CMP ce se utvrditi da je sadržaj memorijske
+lokacije sem nula, pa ce se po izvršavanju instrukcije JNZ izaci iz petlje. Time se prelazi na
+izvršavanje programa u kome se koriste podaci iz bloka memorije u koji su uneti podaci sa
+ulazne periferije.
+Utvrdivanje da je kontroler sa direktnim pristupom memoriji preneo ceo blok podataka
+može se realizovati i povremenim citanje statusnog registra kontrolera i proverom bita ready.
+Prelazak najpre na program u kome ce se zaustavlja kontroler a zatim i na program u kome se
+koriste podaci iz bloka memorije u koji su uneti podaci, se realizuje po otkrivanju vrednosti 1
+u bitu ready satusnog registra.
+Programirani izlaz generisanjem prekida se realizuje programom koji je veoma slican
+programu za programirani ulaz generisanjem prekida (slika 3). Razlika je da neposredna
+velicina #modestart, cijim se upisivanjem preko registra R3 u upravljacki registar kontrolera
+periferije vrši inicijalizacija i startovanje kontrolera periferije, mora na pozicijama
+upravljackog registra koje odgovaraju bitovima start, enable i u/i, da ima 1, 1 i 0, respektivno,
+cime se startuje kontroler periferije, dozvoljava generisanje prekida i zadaje režim izlaza.
+U slucaju da se radi o sistemu kod koga je ulazno/izlazni adresni prostor memorijski
+preslikan, treba u opštem slucaju umesto instrukcija IN i OUT koristiti instrukciju MOV.
+Medutim, ukoliko se radi sa procesorima kod kojih u instrukciji MOV oba operanda mogu da
+budu memorijske lokacije, moguce je pri prenosu neposredne velicine #blockadr u adresni
+registar kontrolera umesto instrukcija
+MOV #blockadr, R1
+27
+OUT R1, Adr
+da se stavi
+MOV #blockadr, Adr
+Isto važi i za prenos neposredne velicine #blockcount u registar broja reci i neposredne
+velicine #modestart u upravljacki registar.
+Prednost programiranog ulaza/izlaza korišcenjem kontrolera sa direktnim pristupom
+memoriji u odnosu na programirani ulaz/izlaz korišcenjem kontrolera bez direktnog pristupa
+memoriji i generisanjem prekida je da dok kontroler ne kompletira unos celog boka podataka
+iz periferije u memoriju nema nema prekidanja izvršavanja programa kome nisu potrebni
+podaci cije je unošenje u toku.
+U slucaju veoma brze i vremenski kriticne periferije može se cak desiti da kontroler ne
+bude u stanju da prati podatke koji dolaze sa periferije ili koji treba da se šalju u periferiju. To
+je zbog toga što za svaki podatak koji treba kontroler da prenese iz registra podatka u
+memorijsku lokaciju ili obratno, kontroler mora da traži dozvolu za korišcenje magistrale i da
+tek po dobijanju dozvole realizuje ciklus na magistrali. Da bi se ovaj problem rešio, kontroler
+se može, upisivanjem vrednosti 1 u bit burst upravljackog registra, programirati da prenos
+bloka podataka realizuje u paketskom režimu rada. U ovom režimu rada kontroler, po
+dobijanju dozvole korišcenja magistrale, drži magistralu zauzetu sve vreme dok ne prenese
+ceo blok podataka i tek po završetku prenosa ukida zahtev za korišcenje magistrale.
+Režim penosa memorija-memorija. Zbog toga postoje i dodatni adresni registar i dodatni
+bit mem u upravljackom registru. Sada postoje izvorišni i odredišni adresni registri. Jedan
+adresni registar se koristi za citanje iz memorije i prebacivanje u registar podatka i drugi za
+upis iz registra podatka u memorijsku lokaciju. Na magistrali se realizuju dva posebna ciklusa
+i to ciklus citanja i ciklus upisa.
+Režim slanja iste vrednosti. Tada se izvorišni adresni registar koristi samo za jedno citanje
+i upis u data registar, a posle se isti sadržaj data registra upisuje u memoriju pocev od adrese
+koja je data odredišnim adresnim registrom i to onoliko puta k olika je vrednost Count
+registra.
+Režim prenosa prema višim i nižim memorijskim lokacijama. Postoji poseban bit direction
+u upravljackom registru, pa se dvema vrednostima ovog bita odreduje da li sadržaj adresnog
+registra treba inkrementirati ili dekrementirati. Ovo je moguce i za prenose izmedu periferije i
+memorije i za prenose iz memorije u memoriju.
+28
+1.3.3 POVEZIVANJE KONTROLERA
+Postoje realizacije kontrolera sa direktnim pristupom memoriji kod kojih ne postoji
+direktna veza izmedu kontrolera i periferije, pa se tada periferija povezuje na uobicajeni nacin
+sa kontrolerom bez direktnog pristupa memoriji (slika 14). U slucaju ulazne periferije
+kontroler bez direktnog pristupa memoriji prihvata podatak iz periferije i smešta u svoj data
+registar, dok kontroler sa direktnim pristupom memoriji realizuje upis podatka iz data registra
+kontrolera bez direktnog pristupa memoriji u memorijsku lokaciju. U slucaju izlazne
+periferije kontroler sa direktnim pristupom memoriji realizuje citanje podatka iz memorije i
+smeštanje u registar podatka kontrolera bez direktnog pristupa memoriji, dok kontroler bez
+direktnog pristupa memoriji realizuje slanje podataka iz svog registra podatka u periferiju.
+Sinhronizacija rada ova dva kontrolera se realizuje razmenom signala po linijama DREQ i
+DACK.
+Programskim putem se vrši inicijalizacija, startovanje i zaustavljanje oba kontrolera.
+Inicijalizacija podrazumeva ne samo upisivanje odgovarajucih vrednosti i upravljacke registra
+oba kontrolera, vec i u adresni registar i registar broja podataka DMA kontrolera.
+U slucaju ulazne periferije nonDMA kontroler cita podatak iz periferije, smešta ga u
+registar Data i o tome obaveštava DMA kontroler postavljanjem signala DREQ na aktivnu
+vrednost. DMA kontroler signalom hreq traži dozvolu za korišcenje magistrale. Pošto
+signalom hack dobije dozvolu, DMA kontroler izbacuje adresu na adresne linije magistrale,
+zatim signalom DACK omogucuje da nonDMA kontroler izbaci podatak na linije podataka i
+na kraju startuje ciklus upisa. Po završetku ciklusa upisa, DMA kontroler uklanja adresu sa
+adresnih linija magistrale, zatim signalom DACK omogucuje da nonDMA kontroler ukloni
+podatak sa linije podataka magistrale i ukida zahtev za korišcenje magistrale. Potom DMA
+kontroler inkrementira adresni registar i dekrementira registar broja reci, dok nonDMA
+kontroler cita sledeci podatak iz periferije. Kada se podatak upiše iz periferije u registar Data,
+opisani postupak se ponavlja sve dok registar broja podataka ne dode do nule.
+U slucaju izlazne periferije DMA kontroler signalom hreq traži dozvolu za korišcenje
+magistrale. Pošto signalom hack dobije dozvolu, DMA kontroler izbacuje adresu na adresne
+linije magistrale i startuje ciklus citanja. Kada podatak postane raspoloživ na linijama
+podataka magistrale, DMA kontroler signalom DACK omogucuje da nonDMA kontroler
+podatak sa linija podataka upiše u svoj registar podatka. Po završetku ciklusa citanja, DMA
+kontroler uklanja adresu sa adresnih linija magistrale i ukida zahtev za korišcenje magistrale.
+Potom DMA kontroler inkrementira adresni registar i dekrementira registar broja reci, dok
+nonDMA kontroler šalje podatak iz registra Data u periferiju. Opisani postupak se ponavlja
+sve dok registar broja podataka ne dode do nule.
+Po završetku prenosa bloka podataka u bit ready registra Status upisuje se 1 i, ukoliko je
+bit enable registra Control jedinica, generiše prekid. Završetak prenosa bloka podataka se
+utvrduje programskim putem i to ili citanjem registra Status i proverom vrednosti bita ready
+ili generisanjem prekida. Po utvrdivanju završetka prenosa programskim putem se vrši
+zaustavljanje oba kontrolera.
+29
+Datadma
+ready
+Controldma
+intr
+Statusdma
+Entrydma
+inta
+kontroler
+hreq
+hack
+stWR
+UPRAVLJACKA
+JEDINICA
+stRD
+HIT
+DEKODER
+ADRESA
+end
+KRAJ
+PRENOSA
+Count Adr
+start
+u/i
+enable
+burst
+DREQ
+DACK
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+Dataper
+HIT
+stWR
+UPRAVLJACKA
+JEDINICA
+ready stRD
+Controlper
+intr
+Statusper
+Entryper
+periferija
+...
+podaci upravljacki
+signali
+statusni
+signali
+...
+inta
+kontroler
+start
+u/i
+enable
+DEKODER
+ADRESA
+Slika 14 Povezivanje periferije korišcenjem kontrolera bez direktnog pristupa
+memoriji i kontrolera sa direktnim pristupom memoriji
+30
+Programiranje ulaza/izlaza generisanjem prekida ilustrovano je na primeru ulazno/izlazne
+periferije sa koje se blok podataka unosi u memoriju (slika 15).
+Glavni program
+.
+MOV #blockadr, R1
+OUT R1, Adr
+MOV #blockcount, R1
+OUT R1, Count
+MOV #modestartdma, R1
+OUT R1, Controldma
+MOV #modestartper, R1
+OUT R1, Controlper
+MOV #1, sem
+! Program u kome se ne koriste
+! podaci iz bloka memorije u koji
+! se unose podaci sa periferije
+LOOP: CMP sem, #0
+JNZ LOOP
+! Program u kome se koriste
+! podaci iz bloka memorije u koji
+! su uneti podaci sa periferije
+.
+Prekidna rutina
+PUSH R1
+MOV #0, sem
+MOV #0, R1
+OUT R1, Controldma
+OUT R1, Controlper
+BACK: POP R1
+RTI
+Slika 15 Programirani ulaz/izlaz sa prekidom
+31
+Delovi kontrolera sa direktnim pristupom memoriji i bez direktnog pristupa memoriji koji
+ucestvuju u realizaciji citanja iz memorije i upisu u memoriju su dati na slici 16.
+Controldma
+DMA kontroler
+UPRAVLJACKA
+JEDINICA
+DREQ
+DACK
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+1
+AE RD FC
+1
+start WR
+u/i
+hreq
+hack
+Adr
+ABUS
+DBUS
+RDBUS
+WRBUS
+FCBUS
+M/IO
+UPRAVLJACKA
+JEDINICA
+periferija
+...
+podaci upravljacki
+signali
+statusni
+signali
+nonDMA kontroler ...
+Controlper
+start
+u/i
+Dataper
+LD
+S
+1 0
+MP
+Slika 16 Citanje iz memorije i upis u memoriju povezivanjem periferije korišcenjem
+kontrolera bez direktnog pristupa i kontrolera sa direktnim pristupom memoriji
+32
+Vremenski oblici signala prilikom realizacije citanja iz periferije i upisa u memoriju i
+citanja iz memorije i upisa u periferiju u slucaju povezivanja periferije korišcenjem kontrolera
+bez direktnog pristupa i kontrolera sa direktnim pristupom memoriji su dati na slikama 17 i 18
+, respektivno.
+DREQ
+hack
+AE
+hreq
+DACK
+WR
+FC
+Slika 17 Vremenski oblici signala prilikom realizacije citanja iz periferije i upisa u memoriju
+DREQ
+hack
+AE
+hreq
+RD
+FC
+DACK
+Slika 18 Vremenski oblici signala prilikom realizacije citanja iz memorije i upisa u periferiju
+33
+2

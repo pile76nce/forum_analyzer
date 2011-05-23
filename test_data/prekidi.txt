@@ -1,0 +1,92 @@
+Mehanizam prekida
+Mehanizam prekida kod procesora omogucuje prekid u izvršavanju tekuceg programa, koji ce se nazivati glavni program, i skok na novi program, koji ce se nazivati prekidna rutina. Poslednja instrukcija u prekidnoj rutini je instrukcija RTI. Ona omogucuje povratak u glavni program. Izvršavanje glavnog programa se produžava sa onog mesta gde je bilo prekinuto. Može se uzeti da zahtev za prekid stiže u toku izvršavanja neke od instrukcija. Zbog toga se mehanizam prekida obicno tako realizuje da se instrukcija u toku cijeg je izvršavanja stigao zahtev za prekid, najpre, izvrši do kraja, pa se tek onda prihvata zahtev za prekid i skace na prvu instrukciju prekidne rutine. Izuzetak od ovoga predstavljaju instrukcija nad nizovima alfanumerickih znakova. Kod ovih instrukcija se zahtev za prekid prihvata u prvom pogodnom trenutku, koji može da nastupi i pre trenutka u kom je instrukcija izvršena do kraja.
+Efekti mehanizma prekida i instrukcije RTI na izvršavanje glavnog programa i prekidne rutine su prikazani na slici 1. Uzeto je da u toku izvršavanja instrukcije glavnog programa sa adrese 1237 stiže zahtev za prekid. Ova instrukcija se se najpre izvrši do kraja. Potom procesor produžava sa izvršavanjem instrukcija sa adrese 2100 na kojoj se nalazi prva instrukcija prekidne rutine umesto sa adrese 1238 na kojoj se nalazi prva sledeca instrukcija glavnog programa. Instrukcijom RTI sa adrese 2122 se obezbeduje da procesor kao sledecu izvršava instrukciju glavnog programa sa adrese 1238. To je instrukcija glavnog programa koja bi se normalno i izvršavala posle instrukcije sa adrese 1237 da u toku njenog izvršavanja nije stigao zahtev za prekid.
+glavni program		prekidna rutina
+?				
+1234
+—		2100	—
+1235	—		2101	—
+1236	—		2102	—
+1237	—		?	—
+1238
+—		2121	—
+1239	—		2122	RTI
+1240	—			
+1241	—			
+1242	—			
+?				
+Slika 1 Prekid i povratak iz prekidne rutine
+Aktivnosti u procesoru kojima se prekida izvršavanje glavnog programa i skace na prekidnu rutinu nazivaju se opsluživanje zahteva za prekid, a aktivnosti kojima se obezbeduje povratak iz prekidne rutine u glavni program i produžavanje izvršavanja glavnog programa sa mesta i pod uslovima koji su bili pre skoka na prekidnu rutinu nazivaju se povratak iz prekidne rutine.
+Zahteve za prekid mogu da generišu:
+?	kontroleri periferija da bi procesoru signalizirali spremnost za prenos podataka (maskirajuci prekidi),
+?	uredaji racunara koji kontrolišu ispravnost napona napajanja, transfera na magistrali, rada memorije itd. (nemaskirajuci prekidi),
+?	procesor, kao rezultat otkrivene nekorektnosti u izvršavanju tekuce instrukcije (nelegalan kod operacije, nelegalno adresiranje, greška prilikom deljenja, itd.),
+?	procesor, ako je zadat takav režim rada procesora, kroz postavljanje bita T u programskoj statusnoj reci PSW, da se posle svake instrukcije skace na odredenu prekidnu rutinu i
+?	procesor kao rezultat izvršavanja instrukcije prekida INT.
+Prekidi pod ? i ? se nazivaju spoljašnji, a pod ?, ? i ? unutrašnji. 
+1.1	Opsluživanje zahteva za prekid i povratak iz prekidne rutine
+Opsluživanje zahteva za prekid se realizuje delom hardverski i delom softverski, a povratak iz prekidne rutine softverski. Hardverska realizacija dela opsluživanja zahteva za prekid znaci da se izvršavanje instrukcije u kojoj se javlja neki zahtev za prekid produžava za onoliko koraka koliko je potrebno da se taj deo realizuje. Softverska realizacija dela opsluživanja zahteva za prekid i povratka iz prekidne rutine se realizuju izvršavanjem odgovarajucih instrukcija procesora.
+1.1.1	Opsluživanje zahteva za prekid
+Opsluživanje zahteva za prekid se sastoji iz:
+•	cuvanja konteksta procesora i
+•	utvrdivanja adrese prekidne rutine
+Kontekst procesora cine programski brojac PC, programska statusna rec PSW i preostali programski dostupni registri, kao, na primer, registri podataka, adresni registri, indeksni registri, bazni registri, registri opšte namene itd. Kontekst procesora se cuva najcešce na steku i to:
+•	programski brojac PC da bi se po povratku iz prekidne rutine u glavni program omogucilo procesoru izvršavanje glavnog programa od instrukcije na kojoj se stalo i
+•	programska statusna rec PSW i preostali programski dostupni registri da bi se u procesoru obezbedilo isto stanje koje bi bilo da nije bilo prekida i skoka na prekidnu rutinu.
+Programski brojac PC i programska statusna rec PSW se cuvaju hardverski. Preostali programski dostupni registri se cuvaju hardverski kod onih procesora kod kojih broj ovih registara nije veliki i softverski sa nekoliko instrukcija na pocetku prekidne rutine kod onih procesora kod kojih je broj ovih registara veliki.
+Utvrdivanje adrese prekidne rutine se realizuje na osnovu sadržaja tabele adresa prekidnih rutina (IV tabela) i broja ulaza u IV tabelu. Stoga se u memoriji, pocev od adrese na koju ukazuje sadržaj registra procesora IVTP (Interrupt Vector Table Pointer), nalazi IV tabela sa adresama prekidnih rutina za sve vrste prekida. Brojevi ulaza u IV tabelu se dobijaju na više nacina i to:
+•	procesoru ih šalju kontroleri periferija za prekide iz tacke ?, ako ulazi u IV tabelu za maskirajuce prekide nisu fiksni, što je odredeno odgovarajucom vrednošcu bita ulazi u IV tabelu promenljivi u programskoj statusnoj reci procesora PSW,
+•	procesor generiše fiksne vrednosti za prekide iz tacke ?, ako su ulazi u IV tabelu za maskirajuce prekide fiksni, što je odredeno odgovarajucom vrednošcu bita ulazi u IV tabelu promenljivi u programskoj statusnoj reci procesora PSW,
+•	procesor generiše fiksne vrednosti za prekide iz tacaka ?, ? i ? i
+•	procesor generiše vrednosti na osnovu adresnog dela instrukcije INT za prekid iz tacke ?.
+Memorijska adresa na kojoj se nalazi adresa prekidne rutine dobija se sabiranjem broja ulaza u IV tabelu sa sadržajem registra IVTP. Sa ove adrese se cita sadržaj i upisuje u registar PC. Utvrdivanje adrese prekidne rutine se realizuje hardverski.
+U okviru opsluživanja zahteva za prekid hardverski se još:
+•	brišu biti maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW kod prekida svih vrsta i
+•	upisuje u bite tekuci nivo prioriteta u statusnoj reci procesora PSW nivo prioriteta prekidne rutine na koju se skace u slucaju maskirajuceg prekida.
+Brisanjem bita maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora PSW se obezbeduje da procesor po ulasku u prekidnu rutinu ne reaguje na maskirajuce prekide, a brisanjem bita prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW se obezbeduje da procesor po ulasku u prekidnu rutinu ne izvršava prekidnu rutinu u režimu prekid posle svake instrukcije. Time se omogucava obavljanje odredenih aktivnosti na pocetku svake prekidne rutine. Posle toga moguce je u samoj prekidnoj rutini posebnim instrukcijama postaviti bit maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora PSW i time dozvoliti maskirajuce prekide i postaviti bit prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW i time zadati režim rada procesora prekid posle svake instrukcije.
+Upisivanjem u bite tekuci nivo prioriteta u statusnoj reci procesora PSW nivoa prioriteta prekidne rutine na koju se skace u slucaju maskirajuceg prekida obezbeduje se da se u slucaju maskirajucih zahteva za prekid pristiglih u toku izvršavanja prekidne rutine prihvate samo oni koji su višeg nivoa prioriteta od nivoa prioriteta prekidne rutine.
+Opsluživanje zahteva za prekid pocinje na kraju izvršavanja svake instrukcije ispitivanjem da li je u toku njenog izvršavanja stigao zahtev za prekid. U slucaju da jeste izvršavanje tekuce instrukcije se produžava za odredeni broj koraka u okviru kojih se:
+•	stavljaju na stek programski brojac PC i programska statusna rec PSW, a ukoliko se  radi o procesorima kod kojih se  hardverski cuvaju preostali programski dostupni registri, i preostali programski dostupni registri,
+•	brišu biti maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW kod prekida svih vrsta,
+•	upisuje u bite tekuci nivo prioriteta u programskoj statusnoj reci procesora PSW nivo prioriteta prekidne rutine na koju se skace za slucaj maskirajucih prekida i
+•	upisuje u programski brojac PC pocetna adresa prekidne rutine.
+Na pocetku prekidne rutine se samo oni preostali programski dostupni registri cije se vrednosti menjaju u prekidnoj rutini posebnim instrukcijama stavljaju na stek, ukoliko se  radi o procesorima kod kojih se  softverski cuvaju preostali programski dostupni registri.
+1.1.2	Povratak iz prekidne rutine
+Povratak iz prekidne rutine se realizuje tako što se, najpre, posebnim instrukcijama pri kraju prekidne rutine restauriraju vrednostima sa steka sadržaji onih preostalih programski dostupnih registara cije su vrednosti posebnim instrukcijama sacuvane na steku na pocetku prekidne rutine, ukoliko se  radi o procesorima kod kojih se  softverski cuvaju preostali programski dostupni registri, a potom izvrši instrukcija RTI. Ovom instrukcijom se sa steka restauriraju sadržaji programske statusne reci procesora PSW i programskog brojaca PC. Od tog trenutka nastavlja se izvršavanje prekinutog glavnog programa od instrukcije koja bi se izvršavala i sa kontekstom procesora koji bi bio, da nije bilo skoka na prekidnu rutinu.
+1.2	Prioriteti prekida
+U slucajevima kada se generiše više prekida istovremeno, prekidi se opslužuju po redosledu opadajucih prioriteta. Tako, na primer, za ranije pobrojane prekide taj redosled je sledeci: najviši je ?, zatim ?, ?, ? i na kraju ?.
+Prekidi pod ? koji dolaze od kontrolera periferija (spoljašnji maskirajuci prekidi) mogu se javiti istovremeno pa se i oni opslužuju po redosledu opadajucih prioriteta. Ukoliko svaka periferija ima posebnu liniju u procesoru za slanje svog zahteva za prekid prekida, na osnovu pozicije linije se odreduje prioritet datog zahteva za prekid.
+1.3	Selektivno maskiranje maskirajucih prekida
+Za maskirajuce prekide postoji u procesoru poseban programski dostupan registar IMR koji se naziva registar maske. Svakoj liniji po kojoj mogu da se šalju zahtevi za prekid od periferija pridružen je poseban razred registra maske. Zahtev za prekid koji stiže po odredenoj liniji u procesoru ce biti opslužen jedino ukoliko se u odgovarajucem razredu registra maske nalazi vrednost 1. Posebnom instrukcijom se u registar maske IMR upisuje odgovarajuca vrednost. Time se programskim putem selektivno dozvoljava ili zabranjuje opsluživanje maskirajucih prekida.
+1.4	Maskiranje svih maskirajucih prekida
+Maskirajuci zahtevi za prekid, bez obzira na to da li su selektivno maskirani sadržajem registra maske ili ne, mogu se svi maskirati bitom maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW. Posebnim instrukcijama u ovaj razred registra PSW upisuju se vrednosti 1 ili 0, respektivno. Time se programski putem dozvoljava ili zabranjuje opsluživanje maskirajucih prekida koji nisu selektivno maskirani sadržajem registra maske IMR.
+1.5	Prekid posle svake instrukcije
+Postoji mogucnost da se zada takav režim rada procesora da se posle svake izvršene instrukcije skace na odredenu prekidnu rutinu. Ovakav režim rada procesora se naziva prekid posle svake instrukcije. U njemu se procesor nalazi ukoliko bit prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW ima vrednost 1. Posebnim instrukcijama u ovaj bit programske statusne reci procesora PSW upisuju se vrednosti 1 ili 0. Time se programskim putem dozvoljava ili ne dozvoljava režim rada procesora prekid posle svake instrukcije.
+1.6	Instrukcija prekida
+U skupu instrukcija postoji instrukcija INT kojom se može programskim putem izazvati prekid i skok na željenu prekidnu rutinu. Prekidna rutina na koju treba skociti odreduje se adresnim delom ove instrukcije koji sadrži broj ulaza u tabelu adresa prekidnih rutina. Izvršavanje ove instrukcije realizuje sve ono što je nabrojano u okviru hardverskog dela opsluživanja zahteva za prekid, s tim što je broj ulaza u tabeli adresa prekidnih rutina dat adresnim poljem same instrukcije.
+1.7	Gneždenje prekida
+Kada procesor izvršava prekidnu rutinu može stici novi zahtev za prekid. Na ovaj zahtev za prekid može se reagovati na sledece nacine:
+•	prekida se izvršavanje tekuce prekidne rutine i skace na novu prekidnu rutinu ili
+•	ne prekida se izvršavanje prekidne rutine, vec se zahtev za prekid prihvata tek po povratku u glavni program.
+Procesor reaguje na oba nacina u zavisnosti od situacije u kojoj se nalazi. Ta situacija zavisi od citavog niza elemenata kao što su:
+•	ima više tipova zahteva za prekid,
+•	kod ulaska u prekidnu rutinu brišu se biti maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW kod prekida svih vrsta,
+•	programskim putem se može, upisivanjem vrednosti 0 ili 1 u bite maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW, odrediti kada ce se reagovati na maskirajuce prekide ili prekidati program posle svake instrukcije, a kada ne i
+•	maskirajuci prekidi su uredeni po prioritetima.
+Kao ilustracija tih situacija može se uzeti pojednostavljen primer da u procesor stižu samo maskirajuci zahtevi za prekid koji nisu ni selektivno maskirani registrom maske IMR, ni svi zajedno bitom maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora PSW. Maskirajuci zahtevi za prekid imaju prioritete. Pored toga, kada se ude u prekidnu rutinu po nekom maskirajucem prekidu, u procesoru se u bitima tekuci nivo prioriteta u programskoj statusnoj reci procesora PSW cuva nivo prioriteta te prekidne rutine. Kada stigne neki novi zahtev za prekid, a procesor se vec nalazi u prekidnoj rutini, procesor ce:
+•	prihvatiti novi zahtev za prekid, ako je on višeg prioriteta nego nivo prioriteta tekuce prekidne rutine ili
+•	ignorisati novi zahtev za prekid, ako je on nižeg ili istog nivoa prioriteta kao i nivo prioriteta tekuce prekidne rutine.
+Prekidanje izvršavanja tekuce prekidne rutine i skok na novu prekidnu rutinu naziva se gneždenje prekida.
+1.8	Prihvatanje zahteva za prekid
+Zahtev za prekid može da bude opslužen i time skok na prekidnu rutinu realizovan ili na kraju instrukcije u toku cijeg izvršavanja je generisan ili kasnije, na kraju neke od sledecih instrukcija. Kada ce odredeni zahtev za prekid biti opslužen zavisi od više faktora, kao što su: da li je rec o spoljašnjem ili unutrašnjem prekidu, da li su maskirajuci prekidi maskirani, i to ili selektivno ili svi, da li je stigao samo jedan ili više zahteva za prekid, itd. Stoga za svaku vrstu zahteva za prekid odredeni uslovi treba da budu ispunjeni da bi se prešlo na njegovo opsluživanje. Prelazak na opsluživanje odredenog zahteva za prekid naziva se prihvatanje zahteva za prekid.
+U slucaju da u toku izvršavanja neke instrukcije stigne više zahteva za prekid redosled njihovog prihvatanja definisan je medusobnim prioritetima razlicitih vrsta prekida. Najviši prioritet ima prekid izazvan izvršavanjem instrukcije prekida INT (?), pa redom slede unutrašnji procesorski prekidi (?), spoljašnji nemaskirajuci prekid (?), spoljašnji maskirajuci prekidi (?) i prekid posle svake instrukcije (?) koji ima najniži prioritet. Detaljnije objašnjenje prihvatanja pojedinih tipova zahteva za prekid je dato u daljem tekstu.
+Unutrašnji procesorski kao rezultat izvršavanja instrukcije prekida INT: Ovaj zahtev za prekid se bezuslovno prihvata na kraju faze izvršenja instrukcije INT. Broj ulaza u IV tabelu je dat adresnim delom instrukcije INT i ima takve vrednosti da može da se ude u bilo koji ulaz tabele sa adresama prekidnih rutina.
+Unutrašnji procesorski prekidi pri korišcenju nelegalnog adresiranja, citanju instrukcije sa nepostojecim kodom operacije, greške prilikom adresiranja itd.: Zahtevi za ove prekide prihvataju se ako ne postoji zahtev višeg prioriteta. Brojevi ulaza u IV tabelu za ove prekide su fiksirani.
+Spoljašnji nemaskirajuci prekid: Uredaj racunara koji kontroliše ispravnost rada delova racunara postavlja zahtev za nemaskirajuci prekid preko posebne linije. Zahtev ce biti prihvacen ako ne postoji zahtev višeg prioriteta. Broj ulaza u IV tabelu za nemaskirajuci prekid je fiksiran.
+Spoljašnji maskirajuci prekidi: Zahteve za maskirajucim prekidima postavljaju periferije preko posebnih linija. Najveci prioritet, u slucaju simultanog pristizanja više od jednog zahteva, ima prekid sa najvecim rednim brojem linije. Da bi zahtev za maskirajuci prekid bio prihvacen potrebno je da bude ispunjen svaki od sledecih uslova:
+•	da je odgovarajuci bit u registru maske IMR postavljen,
+•	da je bit maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora PSW postavljen,
+•	da je nivo prioriteta periferije koja je uputila zahtev za prekid veci od nivoa prioriteta tekuceg programa i
+•	da ne postoje zahtevi za prekid druge vrste višeg prioriteta.
+Ako je bit ulazi u IV tabelu promenljivi u programskoj statusnoj reci procesora PSW jednak jedan pa ulazi u IV tabelu nisu fiksni, tada procesor dobija broj ulaza u IV tabelu od periferije. Procesor o prihvatanju zahteva za prekid obaveštava periferiju aktiviranjem odgovarajuce linije potvrde. Periferija tada šalje broj ulaza u IV tabelu koji procesor koristi za odredivanje adrese prekidne rutine. Ako je bit ulazi u IV tabelu promenljivi u programskoj statusnoj reci procesora PSW jednak nula, pa su ulazi u IV tabelu fiksni, brojeve ulaza generiše sam procesor. Po cuvanju sadržaja programske statusne reci procesora PSW na steku, procesor u bite tekuci nivo prioriteta u programskoj statusnoj reci procesora PSW upisuje nivo prioriteta prekidne rutine na koju se skace.
+Unutrašnji procesorski prekid posle svake instrukcije: Zahtev za ovaj prekid se javlja posle izvršenja svake pojedine procesorske instrukcije pod uslovom da je postavljen bit prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW. Zahtev se prihvata ukoliko ne postoje zahtevi višeg prioriteta. Broj ulaza u IV tabelu je fiksan.

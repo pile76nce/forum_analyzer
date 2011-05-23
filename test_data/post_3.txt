@@ -1,0 +1,9 @@
+From The User Man, there is a note that says if PxSEL is enabled, it disables interrupts on that port.
+
+
+My P1out is not the cause, I have check it, it is CCR0 which is outputing to P1.2. I'll break down what Is going on.
+
+
+If I start my switches low, the code runs fine, no interrupt is processed.
+But if I start with any switches High or switch a switch High, then interrupts are continuous. It is only found when the code is run, since single stepping takes too long for the pwm cycle to go through one cycle.
+It is interrupting when bit 3, P1.2, is switched high. Now that bit is not selected as an Interrupt from this line, P1IE = 0xFA, nor is P1.0. But P1IN is changing bit 3 when the piezo goes high. Either way, that change should not enable an interrupt, but it does.

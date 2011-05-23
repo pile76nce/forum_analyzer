@@ -1,0 +1,118 @@
+A major effect of pipelining is to change the relative timing of instructions by
+overlapping their execution. This overlap introduces data and control hazards.
+Clock cycle number
+Instruction 1 2 3 4 5 6 7 8 9 10
+Load instruction IF ID EX MEM WB
+Instruction i + 1 IF ID EX MEM WB
+Instruction i + 2 IF ID EX MEM WB
+Instruction i + 3 stall IF ID EX MEM WB
+Instruction i + 4 IF ID EX MEM WB
+Instruction i + 5 IF ID EX MEM
+Instruction i + 6 IF ID EX
+Figure A.5 A pipeline stalled for a structural hazard—a load with one memory port. As shown here, the load
+instruction effectively steals an instruction-fetch cycle, causing the pipeline to stall—no instruction is initiated on
+clock cycle 4 (which normally would initiate instruction i + 3). Because the instruction being fetched is stalled, all
+other instructions in the pipeline before the stalled instruction can proceed normally. The stall cycle will continue to
+pass through the pipeline, so that no instruction completes on clock cycle 8. Sometimes these pipeline diagrams are
+drawn with the stall occupying an entire horizontal row and instruction 3 being moved to the next row; in either
+case, the effect is the same, since instruction i + 3 does not begin execution until cycle 5. We use the form above,
+since it takes less space in the figure. Note that this figure assumes that instruction i + 1 and i + 2 are not memory
+references.
+A-16  Appendix A Pipelining: Basic and Intermediate Concepts
+Data hazards occur when the pipeline changes the order of read/write accesses to
+operands so that the order differs from the order seen by sequentially executing
+instructions on an unpipelined processor. Consider the pipelined execution of
+these instructions:
+DADD R1,R2,R3
+DSUB R4,R1,R5
+AND R6,R1,R7
+OR R8,R1,R9
+XOR R10,R1,R11
+All the instructions after the DADD use the result of the DADD instruction. As shown
+in Figure A.6, the DADD instruction writes the value of R1 in the WB pipe stage,
+but the DSUB instruction reads the value during its ID stage. This problem is
+called a data hazard. Unless precautions are taken to prevent it, the DSUB instruction
+will read the wrong value and try to use it. In fact, the value used by the DSUB
+instruction is not even deterministic: Though we might think it logical to assume
+that DSUB would always use the value of R1 that was assigned by an instruction
+prior to DADD, this is not always the case. If an interrupt should occur between the
+DADD and DSUB instructions, the WB stage of the DADD will complete, and the
+value of R1 at that point will be the result of the DADD. This unpredictable
+behavior is obviously unacceptable.
+The AND instruction is also affected by this hazard. As we can see from
+Figure A.6, the write of R1 does not complete until the end of clock cycle 5.
+Thus, the AND instruction that reads the registers during clock cycle 4 will receive
+the wrong results.
+The XOR instruction operates properly because its register read occurs in
+clock cycle 6, after the register write. The OR instruction also operates without
+incurring a hazard because we perform the register file reads in the second half of
+the cycle and the writes in the first half.
+The next subsection discusses a technique to eliminate the stalls for the hazard
+involving the DSUB and AND instructions.
+Minimizing Data Hazard Stalls by Forwarding
+The problem posed in Figure A.6 can be solved with a simple hardware technique
+called forwarding (also called bypassing and sometimes short-circuiting).
+The key insight in forwarding is that the result is not really needed by the DSUB
+until after the DADD actually produces it. If the result can be moved from the pipeline
+register where the DADD stores it to where the DSUB needs it, then the need for
+a stall can be avoided. Using this observation, forwarding works as follows:
+1. The ALU result from both the EX/MEM and MEM/WB pipeline registers is
+always fed back to the ALU inputs.
+2. If the forwarding hardware detects that the previous ALU operation has written
+the register corresponding to a source for the current ALU operation, control
+logic selects the forwarded result as the ALU input rather than the value
+read from the register file.
+Notice that with forwarding, if the DSUB is stalled, the DADD will be completed
+and the bypass will not be activated. This relationship is also true for the case of
+an interrupt between the two instructions.
+As the example in Figure A.6 shows, we need to forward results not only
+from the immediately previous instruction, but possibly from an instruction that
+started 2 cycles earlier. Figure A.7 shows our example with the bypass paths in
+place and highlighting the timing of the register read and writes. This code
+sequence can be executed without stalls.
+Forwarding can be generalized to include passing a result directly to the functional
+unit that requires it: A result is forwarded from the pipeline register corresponding
+to the output of one unit to the input of another, rather than just from the result of 
+a unit to the input of the same unit. Take, for example, the following sequence:
+DADD R1,R2,R3
+LD R4,0(R1)
+SD R4,12(R1)
+To prevent a stall in this sequence, we would need to forward the values of the
+ALU output and memory unit output from the pipeline registers to the ALU and
+data memory inputs. Figure A.8 shows all the forwarding paths for this example.
+
+Data Hazards Requiring Stalls
+Unfortunately, not all potential data hazards can be handled by bypassing.
+Consider the following sequence of instructions:
+LD R1,0(R2)
+DSUB R4,R1,R5
+AND R6,R1,R7
+OR R8,R1,R9
+The pipelined data path with the bypass paths for this example is shown in
+Figure A.9. This case is different from the situation with back-to-back ALU
+operations. The LD instruction does not have the data until the end of clock cycle
+4 (its MEM cycle), while the DSUB instruction needs to have the data by the
+beginning of that clock cycle. Thus, the data hazard from using the result of a
+load instruction cannot be completely eliminated with simple hardware. As Figure
+A.9 shows, such a forwarding path would have to operate backward in
+time—a capability not yet available to computer designers! We can forward the
+result immediately to the ALU from the pipeline registers for use in the AND operation,
+which begins 2 clock cycles after the load. Likewise, the OR instruction has
+no problem, since it receives the value through the register file. For the DSUB
+instruction, the forwarded result arrives too late—at the end of a clock cycle,
+when it is needed at the beginning.
+The load instruction has a delay or latency that cannot be eliminated by forwarding
+alone. Instead, we need to add hardware, called a pipeline interlock, to
+preserve the correct execution pattern. In general, a pipeline interlock detects a
+hazard and stalls the pipeline until the hazard is cleared. In this case, the interlock
+stalls the pipeline, beginning with the instruction that wants to use the data until
+the source instruction produces it. This pipeline interlock introduces a stall or
+bubble, just as it did for the structural hazard. The CPI for the stalled instruction
+increases by the length of the stall (1 clock cycle in this case).
+Figure A.10 shows the pipeline before and after the stall using the names of the
+pipeline stages. Because the stall causes the instructions starting with the DSUB to
+move 1 cycle later in time, the forwarding to the AND instruction now goes
+through the register file, and no forwarding at all is needed for the OR instruction.
+The insertion of the bubble causes the number of cycles to complete this
+sequence to grow by one. No instruction is started during clock cycle 4 (and none
+finishes during cycle 6).

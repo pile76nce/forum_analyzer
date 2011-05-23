@@ -1,0 +1,10 @@
+Hey,
+I am currently having a problem that P1.2 is causing an interrupt, even though it is not selected as an interrupt and it should also be disabled by nature, becuase when P1SEL is high for a bit, its Interrupt should be disabled.
+
+Has anyone else seen this. You might not realize it until you step through your code, or if your piezo sounds "choppy", I know I heard others sound the same way.
+
+
+Anyone have any idea why this might be happening?
+
+Thanks,
+Matt

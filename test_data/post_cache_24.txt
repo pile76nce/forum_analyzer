@@ -1,0 +1,1 @@
+... I don't think we're responsible for knowing that... at least not yet. This brings up another question, for problem 4 are we starting with a cold cache? I will assume yes since we weren't given an initial cache state table.

@@ -1,0 +1,1 @@
+You read 8 bytes, one block, from the memory into each cache line. This is because the cache cannot work with pieces smaller than a block. However, when actually writing to or reading from the cache, the CPU (in this system) can read or write just a single byte. That's all this says.

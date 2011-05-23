@@ -1,0 +1,67 @@
+When a processor is pipelined, the overlapped execution of instructions requires
+pipelining of functional units and duplication of resources to allow all possible
+combinations of instructions in the pipeline. If some combination of instructions
+cannot be accommodated because of resource conflicts, the processor is said to
+have a structural hazard.
+The most common instances of structural hazards arise when some functional
+unit is not fully pipelined. Then a sequence of instructions using that unpipelined
+unit cannot proceed at the rate of one per clock cycle. Another common way that
+structural hazards appear is when some resource has not been duplicated enough
+to allow all combinations of instructions in the pipeline to execute. For example,
+a processor may have only one register-file write port, but under certain circumstances,
+the pipeline might want to perform two writes in a clock cycle. This will generate a structural hazard.
+When a sequence of instructions encounters this hazard, the pipeline will stall
+one of the instructions until the required unit is available. Such stalls will increase
+the CPI from its usual ideal value of 1.
+Some pipelined processors have shared a single-memory pipeline for data
+and instructions. As a result, when an instruction contains a data memory reference,
+it will conflict with the instruction reference for a later instruction, as
+shown in Figure A.4. To resolve this hazard, we stall the pipeline for 1 clock
+cycle when the data memory access occurs. A stall is commonly called a
+pipeline bubble or just bubble, since it floats through the pipeline taking space but
+carrying no useful work. We will see another type of stall when we talk about
+data hazards.
+Designers often indicate stall behavior using a simple diagram with only the
+pipe stage names, as in Figure A.5. The form of Figure A.5 shows the stall by
+indicating the cycle when no action occurs and simply shifting instruction 3 to
+the right (which delays its execution start and finish by 1 cycle). The effect of the
+pipeline bubble is actually to occupy the resources for that instruction slot as it
+travels through the pipeline.
+
+Example
+Let’s see how much the load structural hazard might cost. Suppose that data references
+constitute 40% of the mix, and that the ideal CPI of the pipelined processor,
+ignoring the structural hazard, is 1. Assume that the processor with the
+structural hazard has a clock rate that is 1.05 times higher than the clock rate of
+the processor without the hazard. Disregarding any other performance losses, is
+the pipeline with or without the structural hazard faster, and by how much?
+Answer
+There are several ways we could solve this problem. Perhaps the simplest is to
+compute the average instruction time on the two processors:
+Average instruction time =
+Since it has no stalls, the average instruction time for the ideal processor is simply
+the Clock cycle time ideal. The average instruction time for the processor with the structural hazard is
+Average instruction time = CPI × Clock cycle time
+(1 + 0.4 × 1)
+Clock cycle timeideal
+1.05
+= × ---------------------------------------------------
+= 1.3 × Clock cycle timeideal
+
+Clearly, the processor without the structural hazard is faster; we can use the ratio
+of the average instruction times to conclude that the processor without the hazard
+is 1.3 times faster.
+As an alternative to this structural hazard, the designer could provide a separate
+memory access for instructions, either by splitting the cache into separate
+instruction and data caches, or by using a set of buffers, usually called instruction
+buffers, to hold instructions. Chapter 5 discusses both the split cache and instruction
+buffer ideas.
+If all other factors are equal, a processor without structural hazards will
+always have a lower CPI. Why, then, would a designer allow structural hazards?
+The primary reason is to reduce cost of the unit, since pipelining all the functional
+units, or duplicating them, may be too costly. For example, processors that
+support both an instruction and a data cache access every cycle (to prevent the
+structural hazard of the above example) require twice as much total memory
+bandwidth and often have higher bandwidth at the pins. Likewise, fully pipelining
+a floating-point multiplier consumes lots of gates. If the structural hazard is
+rare, it may not be worth the cost to avoid it.

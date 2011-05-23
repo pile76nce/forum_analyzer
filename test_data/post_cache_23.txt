@@ -1,0 +1,3 @@
+I don't think LRU is taken into account in problems 2&3.
+
+And in problem 4, that cache is cold, since he didn't give us values for it.

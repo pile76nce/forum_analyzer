@@ -1,0 +1,1359 @@
+JOVAN ðORðEVIC
+ARHITEKTURA
+I
+ORGANIZACIJA
+RACUNARA
+ARHITEKTURA RACUNARA
+BEOGRAD, 2006.
+
+DJM
+
+1
+PREDGOVOR
+Ova knjiga je napisana kao osnovni udžbenik iz arhitekture i organizacije racunara i
+pokriva osnovne koncepte iz arhitekture i organizacije procesora, memorije, ulaza/izlaza i
+magistrale.
+Sistemi.
+Autor
+Beograd
+avgusta 2005.
+
+3
+SADRŽAJ
+PREDGOVOR...................................................................................................................................................... 1
+SADRŽAJ.............................................................................................................................................................. 3
+1 ARHITEKTURA RACUNARA.................................................................................................................. 7
+1.1 ARHITEKTURA PROCESORA.......................................................................................................... 7
+1.1.1 PROGRAMSKI DOSTUPNI REGISTRI .......................................................................................... 7
+1.1.2 TIPOVI PODATAKA ..................................................................................................................... 14
+1.1.2.1 CELOBROJNE VELICINE.................................................................................................................14
+1.1.2.2 VELICINE U POKRETNOM ZAREZU.............................................................................................15
+1.1.2.3 ALFANUMERICKI NIZ .....................................................................................................................15
+1.1.2.4 NUMERICKI NIZ ...............................................................................................................................15
+1.1.3 FORMATI INSTRUKCIJA............................................................................................................. 17
+1.1.3.1 OPERACIJA I TIP PODATKA...........................................................................................................17
+1.1.3.2 IZVORIŠNI I ODREDIŠNI OPERANDI ............................................................................................18
+1.1.3.3 SLEDECA INSTRUKCIJA .................................................................................................................19
+1.1.4 NACINI ADRESIRANJA................................................................................................................ 19
+1.1.5 SKUP INSTRUKCIJA.................................................................................................................... 20
+1.1.5.1 STANDARDNE INSTRUKCIJE.........................................................................................................20
+1.1.5.1.1 INSTRUKCIJE PRENOSA............................................................................................................20
+1.1.5.1.2 ARITMETICKE INSTRUKCIJE....................................................................................................21
+1.1.5.1.3 LOGICKE INSTRUKCIJE.............................................................................................................22
+1.1.5.1.4 INSTRUKCIJE POMERANJA I ROTIRANJA .............................................................................22
+1.1.5.1.5 INSTRUKCIJE SKOKA.................................................................................................................22
+1.1.5.1.6 MEŠOVITE INSTRUKCIJE ..........................................................................................................24
+1.1.5.2 NESTANDARDNE INSTRUKCIJE....................................................................................................24
+1.1.6 MEHANIZAM PREKIDA............................................................................................................... 33
+4
+5
+
+7
+1 ARHITEKTURA RACUNARA
+U ovoj glavi se razmatraju elementi arhitekture racunara koju cine arhitektura procesora,
+arhitektura memorije i arhitektura ulazno/izlaznog sistema.
+1.1 ARHITEKTURA PROCESORA
+Arhitekturu procesora cine programski dostupni registri, tipovi podataka, formati
+instrukcija, nacini adresiranja, skup instrukcija i mehanizam prekida.
+1.1.1 PROGRAMSKI DOSTUPNI REGISTRI
+Programski dostupni registri procesora su registri u koje je i iz kojih je moguce
+programskom putem izvršavanjem instrukcija procesora ili upisivati vrednosti ili ocitavati
+vrednosti. U instrukcijama kojima se pristupa ovim registrima se registar u koji treba upisati
+ili iz koga treba ocitati specificira ili eksplicitno nekim od adresnih polja instrukcije ili
+implicitno kodom operacije instrukcije. Ovi registri su namenjeni da se u njih nekom od
+instrukcija postavi neka vrednost, pa da se ta vrednost nekom kasnijom ili nekim kasnijim
+instrukcijam cita. Ove registre treba razlikovati od registara procesora koje projektant
+procesora ubacuje da bi prema nekom svom pristupu projektovanja procesora obezbedio
+cuvanje neophodnih sadržaja prilikom prolaska kroz sve korake iz kojih se sastoji izvršavanje
+jedne instrukcije. Vrednost koja se u neki od ovih registara upisuju u nekom od koraka
+izvršavanja instrukcije koriste se u nekom ili nekim kasnijim koracima izvršavanja te iste
+instrukcije, ali ne neke od sledecih instrukcija. Upisivanje vrednosti u ove registre i citanje
+vrednosti iz ovih registara je nemoguce specificirati instrukcijama. To je odreñeno usvojenim
+algoritmima izvršavanja svake instrukcije posebno.
+Funkcije i broj programski dostupnih registara se razlikije od procesora do procesora. Ovde
+se daju oni programski dostupni registri koji se cesto srecu kod komercijalno raspoloživih
+procesora i to programski brojac PC, registri podataka DR, adresni registri AR, bazni registri
+BR, indeksni registri XR, registri opšte namene GPR, akumulator A, programska statusna rec
+PSW, ukazivac na vrh steka SP, ukazivac na okvir steka FP, ukazivac na listu argumenata AP,
+registar maske IMR i ukazivac na tabelu adresa prekidnih rutina IVTP.
+Programski brojac PC je standardni programski brojac procesora.
+Registri podataka DR se koriste kod direktnog registarskog adresiranja. Njima se
+programskim putem ubrzava pristup podacima, koji se na pocetku nekog racunanja nalaze u
+memorijskim lokacijama. Korišcenje registara podataka radi ubrzavanja pristupa podacima
+ima smisla ukoliko se u toku nekog racunanja javi potreba da se viša puta koristi neki
+podatak. U ovom slucaju, moguce je, najpre, dati podatak, programskim putem izvršavanjem
+odgovarajuce instrukcije, prebaciti iz memorijske lokacije u neki od registara podataka, a
+zatim, kad god postoji potreba za datim podatkom, podatak citati iz registra podatka. Ubrzanje
+se postiže time što umesto da se svaki put kada postoji potreba za datim podatkom ide u
+memorijsku lokaciju ide se u registar podatka. Pored toga moguce je meñurezultate racunanja
+ostavljati u registrima podataka, da bi kasnije, kada oni budu potrebni, njima moglo da se
+pristupa citanjem odgovarajucih registara podataka. Ubrzanje se postiže time što se
+meñurezultat ne smešta u memorijsku lokaciju i što kasnije kada postoji potreba za njim
+umesto da se ide u memorijsku lokaciju ide se u registar podatka. Konacne rezultate racunanja
+8
+treba na kraju, programskim putem izvršavanjem odgovarajucih instrukcija, prebaciti iz
+registara podataka u memorijske lokacije.
+Ovaj pristup sa registrima podataka ima opravdanja iz dva razlog. Prvi je vremenski
+lokalitet prilikom rada sa skalarnim velicinama. Ako se jedanput pristupilo nelom podatku
+postoji potreba da se posle toga više puta njemu pristupa. Drugi je sekvencijalna priroda
+racunanja. Obicno se tako racuna da se razultat jedne operacije koristi kao podatak za drugu
+operaciju.
+Adresni registri AR se koriste kod indirektnog registarskog adresiranja, preinkrement i
+postdekrement nacina adresiranja. Sadržaj specificiranog adresnog registra predstavlja adresu
+memorijske lokacije na kojoj se nalazi izvorišni ili odredišni operand u slucaju aritmetickih,
+logickih ili pomerackih instrukcija ili adresu skoka u slucaju instrukcija skoka. Koristi se u
+situacijama kad treba sa nekoliko instrukcija izracunati adresu elementa neke složene
+strukture podataka, pa onda u okviru aritmeticke, logicke ili pomeracke instrukcije sa date
+odrese procitati operand ili na datoj adresi upisati rezultat. Koristi se i u situacijama kad treba
+sa nekoliko instrukcija izracunati adresu skoka, pa onda u okviru neke od instrukcija skoka
+datu adresu upisati u programski brojac PC.
+Bazni registri BR se koriste kod baznih i bazno-indeksnih adresiranja. Zbir sadržaja
+specificiranog baznog registra i pomeraja kod baznih adresiranja, odnosno baznog registra,
+indeksnog registra i pomeraja kod bazno-indeksnih adresiranja, predstavlja adresu memorijske
+lokacije na kojoj se nalazi izvorišni ili odredišni operand.
+Indeksni registri XR se koriste kod indeksnih i bazno-indeksnih adresiranja, kao i kod
+operacija nad nizovima alfanumerickih znakova. Zbir sadržaja specificiranog indeksnog
+registra i pomeraja kod indeksnih adresiranja, odnosno baznog registra, indeksnog registra i
+pomeraja kod bazno-indeksnih adresiranja, predstavlja adresu memorijske lokacije na kojoj se
+nalazi izvorišni ili odredišni operand.
+Registri opšte namene GPR se koriste kao registri podataka, adresni registri, bazni registri
+i indeksni registri.
+Akumulator A se koristi kao izvorište i odredište operanda u svim operacijama kod
+jednoadresnih procesora.
+Registar PSW je standardna programska statusna rec procesora sastavljena od odreñenog
+broja bitova, koji se obicno nazivaju indikatori. Bitovi programske statusne reci PSW se
+nezavisno postavljaju i koriste po pravilima definisanim posebno za svaki bit. Meñutim, u
+odreñenim situacijama, kao kada se skace na prekidnu rutinu i vraca iz nje, sa bitovima
+programske statusne reci PSW se postupa na isti nacin, pa se zato uzima da oni predstavljaju
+razrede jednog registra. U programskoj statusnoj reci PSW postoje dve grupe bitova i to bitovi
+statusnog i bitovi upravljackog karaktera (slika 1). Ovi bitovi se nazivaju i indikatori.
+15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
+I T P E IN NN IV U - - L1 L0 V C Z N
+Slika 1 Struktura registra PSW
+Bitovi statusnog karaktera su:
+• N—bit koji se postavlja na 1 u slucaju da je rezultat operacije negativan,
+• Z—bit koji se postavlja na 1 u slucaju da je rezultat operacije jednak 0,
+• C—bit koji se postavlja na 1 u slucaju prenosa/pozajmice u aritmetici celobrojnih
+velicina bez znaka,
+9
+• V—bit koji se postavlja na 1 u slucaju prekoracenja u aritmetici celobrojnih velicina
+sa znakom,
+• L1, L0—bitovi kojima se pamti nivo prioriteta tekuceg programa,
+• U—bit koji se postavlja na 1 u slucaju da je rezultat operacije u pokretnom zarezu
+Underflow,
+• IV—bit koji se postavlja na 1 u slucaju da je rezultat operacije u pokretnom zarezu
+Inexact Value,
+• NN—bit koji se postavlja na 1 u slucaju da je rezultat operacije u pokretnom zarezu
+Not a Number i
+• IN—bit koji se postavlja na 1 u slucaju da je rezultat operacije u pokretnom zarezu
+Infinity.
+Bitovi upravljackog karaktera su:
+• E—bit koji je jednak 0 ako se zahtevi za maskirajuce prekide šalju kao nivo i 1 ako se
+zahtevi za maskirajuce prekide šalju kao impuls,
+• P—bit koji je jednak 0 ako su ulazi u tabelu adresa prekidnih rutina za maskirajuce
+prekide fiksni i odreñeni pozicijama linija po kojima periferije šalju zahteve za prekid
+i 1 ako ulazi u tabelu adresa prekidnih rutina za maskirajuce prekide nisu fiksni i
+odreñeni su brojevima ulaza koje šalju periferije,
+• T—bit koji je jednak 1 ako procesor treba da posle svake instrukcije generiše prekid i
+• I—bit koji je jednak 1 ako treba da budu dozvoljeni maskirajuci prekidi.
+Bitovi statusnog karaktera N, Z, C, V, U, IV, NN i IN se postavljaju hardverski na osnovu
+rezultata izvršavanja instrukcija. Bitovi statusnog karaktera L1 i L0 se postavljaju hardverski u
+okviru opsluživanja prekida i softverski kao rezultat izvršavanja instrukcije povratak iz
+prekidne rutine. Bitovi upravljackog karaktera se postavljaju softverski kao rezultat
+izvršavanja posebnih instrukcija.
+Registar SP je standardan ukazivac na vrh steka kada je stek je organizovan u operativnoj
+memoriji.
+Registar SP može da raste prema višim i prema nižim adresama. Ukoliko stek raste prema
+višim adresama, onda se prilikom upisa na stek vrši inkrementiranje registra SP, a prilikom
+citanja dekrementiranje registra SP. Ukoliko stek raste prema nižim adresama, onda se
+prilikom upisa na stek vrši dekrementiranje registra SP, a prilikom citanja inkrementiranje
+registra SP.
+Registar SP može da ukazuje na poslednju zauzetu i prvu slobodnu lokaciju na steku.
+Ukoliko stek ukazuje na poslednju zauzetu lokaciju na steku, onda se prilikom upisa na stek
+prvo vrši inkrementiranje ili dekrementiranje registra SP, pa se onda vrši upis, a prilikom
+citanja prvo se vrši citanje, pa onda dekrementiranje ili inkrementiranje registra SP. Ukoliko
+stek ukazuje na prvu slobodnu lokaciju na steku, onda se prilikom upisa na stek prvo vrši
+upis, pa se onda vrši inkrementiranje ili dekrementiranje registra SP, a prilikom citanja prvo se
+vrši dekrementiranje ili inkrementiranje registra SP, pa se onda vrši citanje.
+Stek se koristi kao upravljacki stek i kao aritmeticki stek.
+Upravljacki stek se koristi kod skoka na potprograma i skoka a na prekidnu rutinu.
+Aritmeticki stek se koristi kod nula-adresnih ili stek procesora. Kod njih sve instrukcije
+implicitno u toku izvršavanja uzimaju operande sa vrha steka i rezultat smeštaju na vrh steka.
+Postoje realizacije kod kojih se jedan stek koristi i kao aritmeticki i kao upravljacki, a
+posteoje i realizacije kod kojih postoje posebno aritmeticki i posebno upravljacki stek.
+10
+Ukazivac na okvir steka FP (frame pointer) ukazuje na bazu okvira (frame-a) koji se
+formira na steku kod poziva potprograma. Koristi se za pristup
+- parametrima koji se predaju kod poziva potprograma i
+- lokalnim promenljivim velicinama kod jezika sa dinamickim dodeljivanjem prostora
+kod ulaska u potprogram i oslobañanjem prostora kod napuštanja potprograma.
+11
+Primer 1.
+PROGRAM PRIMER;
+begin
+integer par1, par2;
+...
+procedure PRIM (x,y);
+begin
+integer a, b, c;
+...
+begin PUSH BP
+MOVE SP, BP
+PUSH R1
+PUSH R2
+PUSHPSW
+SUB SP, 3
+... ...
+end; ADD SP, 3
+POPPSW
+POP R2
+POP R1
+POP BP
+RTS
+end;
+...
+begin
+...
+CALL PRIM (par1,par2); PUSH par1
+PUSH par2
+JSR PRIM
+ADD SP, 2
+...
+end;
+end;
+12
+Primer 2.
+PROGRAM PRIMER;
+begin
+integer par1, par2;
+...
+procedure TEST (z);
+begin
+integer e, f;
+...
+begin PUSH BP
+MOVE SP, BP
+PUSHPSW
+SUB SP, 2
+... ...
+end; ADD SP, 2
+POPPSW
+POP BP
+RTS
+end;
+procedure PRIM (x,y);
+begin
+integer a, b, c;
+...
+begin PUSH BP
+MOVE SP, BP
+PUSH R1
+PUSH R2
+PUSHPSW
+SUB SP, 3
+... ...
+CALL TEST(c); PUSH c
+JSR TEST
+ADD SP,1
+... ...
+end; ADD SP, 3
+POPPSW
+POP R2
+POP R1
+POP BP
+RTS
+end;
+...
+begin
+...
+CALL PRIM (par1, par2); PUSH par1
+PUSH par2
+JSR PRIM
+ADD SP, 2
+...
+end;
+end;
+13
+Primer 3.
+PROGRAM PRIMER;
+begin
+integer par1, par2;
+...
+procedure PRIM (x,y);
+begin
+integer a, b, c;
+...
+begin PUSH BP
+MOVE SP, BP
+PUSH R1
+PUSH R2
+PUSHPSW
+SUB SP, 3
+... ...
+CALL PRIM (a,b); PUSH a
+PUSH b
+JSR PRIM
+ADD SP, 2
+... ...
+end; ADD SP, 3
+POPPSW
+POP R2
+POP R1
+POP BP
+RTS
+end;
+...
+begin
+...
+CALL PRIM (par1,par2); PUSH par1
+PUSH par2
+JSR PRIM
+ADD SP, 2
+...
+end;
+end;
+14
+Ukazivac na listu argumenata AP
+Registar IMR je standardni registar maske za selektivno maskiranje maskirajucih prekida.
+Registar IVTP je ukazivac na tabelu adresa prekidnih rutina koja se koristi u okviru
+vektorisanog mehanizma prekida.
+1.1.2 TIPOVI PODATAKA
+Tipovi podataka predstavljaju razlicite nacine predstavljanja podataka binarnim recima.
+Najcešce korišceni tipovi podataka su celobrojne velicine, velicine u pokretnom zarezu,
+alfanumericki niz i numericki niz.
+1.1.2.1 CELOBROJNE VELICINE
+Celobrojne velicinine mogu da budu bez znaka i sa znakom.
+Ako se binarna rec dužine n bitova, u kojoj su bitovi oznaceni sa an-1an-2...a1a0, interpretira
+kao celobrojna velicina bez znaka, onda ona predstavlja podatak A cija se vrednost izracunava
+pomocu izraza
+A = S
+-
+=
+n 1
+i 0
+i
+2i a
+Uz takav nacin interpretiranja bitova binarne reci, predstavljaju se celobrojne velicine bez
+znaka u opsegu 0 do 2n-1.
+Meñutim, ako se ista binarna rec intrpretira kao celobrojna velicina sa znakom u drugom
+komplementu, onda ona predstavlja podatak A cija se vrednost izracunava pomocu izraza
+A = -2n-1an-1 + S
+-
+=
+n 2
+i 0
+i
+2i a
+Uz ovakav nacin interpretiranja bitova binarne reci, predstavljaju se celobrojne vrednosti sa
+znakom u opsegu -2n-1 do 2n-1-1.
+Binarne reci koje predstavljaju celobrojne velicine se mogu interpretirati i na druge nacine
+kao, na primer, celobrojne velicine sa znakom predstavljene kao znak i velicina, celobrojne
+velicine sa znakom u prvom komplementu itd.
+Celobrojne velicine mogu da budu fiksne i promenljive dužine.
+Celobrojne velicine fiksne dužine se u racunarima predstavljaju na fiksnim dužinama od 8,
+16, 32 i 64 bita i njihova dužina i nacin intrpretacije su odreñeni poljem koda operacije
+instrukcije.
+Celobrojne velicine promenljive dužine se predstavljaju na razlicitim dužinama u nekom
+opsegu dužina koji je definisan za odreñeni racunar i koji odgovara najvecoj dužini celobrojne
+velicina fiksne dužine datog racunara. Ako je ta dužina 64 bita, onda i celobrojne velicine
+promenljive dužine mogu da budu u opsegu dužina do 64 bit. Celobrojne velicine promenljive
+dužine se predstavljaju pomocu tri operanda koji definišu pocetnu adresu memorijske lokacije
+(A), poziciju najmlañeg bita celobrojne velicine (P) i dužinu (S).
+15
+1.1.2.2 VELICINE U POKRETNOM ZAREZU
+Velicine u pokretnom zarezu imaju polje znaka (s), polje eksponenta (e) i mantise (f). Po
+standardu dužine velicina u pokretnom zarezu su 32 i 64 bita. U slucaju velicine u pokretnom
+zarezu dužine 32 bita, ta velicina je predstavljena kao na slici.
+31 30 ... 23 22 ... 0
+s e f
+Slika Velicina u pokretnom zarezu
+Vrednost v se dobija na sledeci nacin:
+1. za e=255 i f?0, v je Not a Number bez obzira na s,
+2. za e=255 i f=0, v=(-1)s 8,
+3. za 0<e<255, v=(-1)s 2e-127 (1.f),
+4. za e=0 i f?0, v=(-1)s 2e-126 (0.f) – denormalizovani broj,
+5. za e=0 i f=0, v=(-1)s 0 (nula).
+1.1.2.3 ALFANUMERICKI NIZ
+Alfanumericki niz (string) je niz karaktera kodiranih sa 8 bitova, koji se zadaje sa dva
+operanda i to: A – adresa prvog bajta niza i L – dužina niza u bajtovima.
+1.1.2.4 NUMERICKI NIZ
+Numericki niz (decimalni broj) je celobrojna velicina bez znaka ili sa znakom
+predstavljena kao niz binarno kodiranih decimalnih cifara, koji se zadaje sa dva operanda i to:
+A – adresa prvog bajta niza i L – dužina niza u bajtovima. U zavisnosti od toga da li se za
+predstavljanje binarno kodiranih decimalnih cifara i znaka koristi osam bitova ili cetiri bita,
+razlikuju se dva osnovna formata numerickih nizova i to: nepakovani format i pakovani
+format, respektivno.
+Nepakovani format
+Nepakovani format numerickih nizova koristi 8 bitova za kodiranje decimalnih cifara i
+znaka. Nepakovani format se pojavljuje u dve varijante u zavisnosti od toga kako se
+predstavlja znak i to:
+- trailing format kod koga se znak numerickog niza utvrñuje na osnovu znaka najmlañe
+cifre koja je data zadnjim bajtom niza i
+- leading separate format kod koga se znak numerickog niza utvrñuje na osnovu posebnog
+bajta koji je prvi bajt niza.
+U trailing format-u se posebno kodiraju pozitivne cifre od 0 do 9 i negativne cifre od -0 do
+-9 (slika ). Cetiri najstarija bita svake cifre predstavljaju znak, a cetiri najmlaña bita velicinu
+decimalne binarno kodirane cifre. Sve pozitivne cifre imaju cetiri najstarija bita sa vrednošcu
+3, a negativne sa vrednošcu 7.
+Na slikama je prikazano kako se predstavljaju trocifreni decimalni brojevi 123 i -123. Oba
+broja zauzimaju po tri bajta, pocev od adrese A. Cifre stotica i desetica kao starije cifre
+predstavljene su pozitivnim ciframa 1 i 2, respektivno, a cifre jedinica, kao najmlañe cifre,
+predstavljene su pozitivnim i negativnim ciframa 3, respektivno. Na osnovu znaka cifara 3
+odreñeni su znaci brojeva 123 i -123.
+16
+cifra kod
++0 30
++1 31
++2 32
+... ...
++8 38
++9 39
+-0 70
+-1 71
+-2 72
+... ...
+-8 78
+-9 79
+Slika Kodiranje cifara u trailing format-u
++123 adresa -123 adresa
+3 1 A 3 1 A
+3 2 A+1 3 2 A+1
+3 3 A+2 7 3 A+2
+Slika Predstavljanje brojeva 123 i -123 u trailing format-u
+U leading separate format-u se posebno kodiraju cifre od 0 do 9, a posebno znak + i -
+(slika ).
+Na slikama je prikazano kako se predstavljaju trocifreni decimalni brojevi 123 i -123. Oba
+broja zauzimaju po cetiri bajta, pocev od adrese A. Na adresi A je bajt koji predstavlja znak, a
+na preostale tri adrese bajtovi koji odgovaraju ciframa stotica, desetica i jedinica. U ovom
+formatu brojevi 123 i -123 se razlikuju jedino u prvom bajtu.
+znak kod
++ 2B
+- 2D
+cifra kod
+0 30
+1 31
+2 32
+... ...
+8 38
+9 39
+Slika Kodiranje znakova i cifara u leading separate format-u
++123 adresa -123 adresa
+2 B A 2 D A
+3 1 A+1 3 1 A+1
+3 2 A+2 3 2 A+2
+3 3 A+3 3 3 A+3
+Slika Predstavljanje brojeva 123 i -123 u leading separate format-u
+17
+Pakovani format
+Pakovani format numerickih nizova koristi 4 bita za kodiranje decimalnih cifara od 0 do 9 i
+znakova + i - (slika ). Cifre od 0 do 9 su predstavljene binarnim vrednostima od 0 do 9, znak
++ binarnim vrednostima A, C, E ili F, i znak – binarnim vrednostima B ili D. Za znak + se
+najcešce koristi binarna vrednost C, a za znak – binarna vrednost D.
+Na slikama je prikazano kako se predstavljaju decimalni brojevi 123 i -12. Oba broja
+zauzimaju po dva bajta, pocev od adrese A. Znak broja 123 odreñen je sa C, a znak broja -12
+sa D.
+cifra ili znak kod
+0 0
+1 1
+2 2
+... ...
+8 8
+9 9
++ A, C, E ili F
+- B ili D
+Slika Kodiranje cifara u pakovanom formatu
++123 adresa -12 adresa
+1 2 A 0 1 A
+3 C A+1 2 D A+1
+Slika Predstavljanje brojeva 123 i -12 u pakovanom formatu
+1.1.3 FORMATI INSTRUKCIJA
+Formatom instrukcije se specificiraju tri vrste informacija neophodne za izvršavanje
+instrukcija i to:
+- operacija i tip podatka,
+- izvorišni i odredišni operandi i
+- sledeca instrukcija.
+Ove informacije se specificiraju odgovarajucim poljima instrukcije. U zavisnosti od toga kako
+se ove tri vrste informacija specificiraju, zavisi koja su polja u formatu instrukcije prisutna.
+Na osnovu toga se govori o razlicitim formatim instrukcija.
+1.1.3.1 OPERACIJA I TIP PODATKA
+Ovim poljem se specificira operacija koju treba izvršiti i tip podatka nad kojim datu
+operaciju treba izvršiti.
+Pod operacijom se misli na operacije iz skupa instrukcija, kao što su operacije prenosa,
+aritmeticke operacije, logicke operacije, operacije pomeranja i rotiranja i
+upravljackeoperacije.
+Pod tipom podatka se misli na celobrojne velicine sa znakom i bez znaka, velicine u
+pokretnom zarezu itd. i to na razlicitim dužinama. Poljem izvorišni i odredišni operandi se, na
+primer, samo specificira adresa memorijske lokacije pocev od koje je smešten operand. S
+obzirom na to da operandi mogu da budu na razlicitim dužinama, razlicitim vrednostima polja
+operacije se specificira dužina operanda. Ono što se procita je binarna rec koju je moguce
+18
+interpretirati na više razlicitih nacina u zavisnosti od broja raspoloživih tipova podataka. Kao
+primer se može uzeti binarna rec 10000011 koju je moguce interpretirati na više nacina. To je
++131, ako se inerpretira kao celobrojna vrednost bez znaka,
+-3, ako se interpretira kao celobrojna vrednost sa znakom u nacinu predstavljanja znak i
+velicina
+-125, ako se interpretira kao celobrojna velicina sa znakom u nacinu predstavljanja prvi
+komplement i
+-124, ako se interpretira kao celobrojna velicina sa znakom u nacinu predstavljanja drugi
+komplement.
+Stoga za odreñenu operaciju postoji onoliko kodova opdracija koliko ima razlicitih tipova
+podataka razlicitih dužina.
+1.1.3.2 IZVORIŠNI I ODREDIŠNI OPERANDI
+Ovim poljem se eksplicitno specificiraju operandi. Postoje više varijanti ovog polja koje
+nastaju kao posledica sledeca dva elementa:
+- broj eksplicitno specificiranih operanada i
+- moguce lokacije operanada.
+Broj eksplicitno specificiranih operanada
+Na osnovu broja eksplicitno specificiranih operanada razlikuji se troadresni, dvoadresni,
+jednoadresni i nulaadresni formati instrukcija.
+Postoje i promenljivi formati instrukcija gde se na osnovu koda operacije zakljucuje koliko
+je ima operanada. Instrukcije binarnih aritmetickih i logickih operacija imaju troadresni
+format, instrukcije operacija prenosa ima ju dvoadresni format, instrukcije operacija
+inkrementiranja i dekrementiranja imaju jednoadresni fromat itd.
+U slucaju instrukcija nestandardnih operacija za rad sa stringovima, kontrolu petlji itd. ima
+i više od tri operanda..
+Moguce lokacije operanada
+Moguce lokacije operanada su memorijske lokacije, registri procesora i neposredne
+velicine u instrukciji. Ima više varijanti realizacije ovog polja instrukcije,a motivi kod
+njegovog definisanja su da:
+– da ovaj deo bude kraci da bi se manje memorije zauzimalo za programe i brže ocitavale
+instrukcije (adresa memorije, neposredna velicina ili adresa registra),
+– da se brže dolazi do operanada (memorije, neposredna velicina ili registar), i
+– da se pruži podrška za mogucu primenu nekih tehnika realizacije procesora (pipeline).
+Na osnovu mogucih lokacija operanada razlikuju se tri vrste arhitektura:
+– memorija – memorija,
+– memorija – registar i
+– registar – registar.
+U slucaju arhitekture memorija – memorija, svi operandi sa kojima se radi, i to i izvorišni i
+odredišni, su iskljucivo u memoriji. Postoje i troadresni i dvoadresni i jednoadresni i
+nulaadresni formati ove arhitekture.
+U slucaju arhitekture memorija – registar, jedan izvorišni operand je uvek registar, drugi
+izvorišni operand je memorija, a odredište ili registar ili memorija. Postoji obicno dvoadresni
+format ove arhitekture.
+19
+U slucaju arhitekture registar – registar, svi operandi sa kojima se radi, i to i izvorišni i
+odredišni, su iskljucivo u registrima, a memorijskim lokacijama se iskljucivo pristupa
+instrukcijama load i store. Postoje obicno troadresni format ove arhitekture.
+Ovo je neka osnovna podela, pri cemu i u odnosu na nju ima varijanti. Najdrasticniji
+primer su procesori koji su u osnovi memoria – memorija, ali koji dozvoljavaju da se kroz
+adresiranja specificira za svaki od operanada ne samo memorija, vec i registar i neposredna
+velicina. Time se pokrivaju sve varijante.
+1.1.3.3 SLEDECA INSTRUKCIJA
+Ovo polje je postojalo kod nekih ranijih procesora, koji nisu imali PC. Danas tog polja
+nema. Razlog je da je time instrukcija kraca i da nema opravdanja za to zbog sekvencijalnosti
+izvršavanja instrukcija sa 15% skokova. Cena koja se placa je povecanje programa za 15%
+instrukcija skokova.
+1.1.4 NACINI ADRESIRANJA
+Nacini adresiranja odreñuju da li je operand sadržaj neke memorijske lokacije, nekog od
+registara podataka ili registara opšte namene procesora ili neposredna velicina u samoj
+instrukciji. Nacini adresiranja speciificiraju i kako treba formirati adresu memorijske lokacije
+ukoliko je operand sadržaj neke memorijske lokacije. Najcešci nacini adresiranja su
+registarsko direktno adresiranje, registarsko indirektno adresiranje, memorijsko direktno
+adresiranje, memorijsko indirektno adresiranje, bazno adresiranje sa pomerajem, indeksno
+adresiranje sa pomerajem, registarsko indirektno adresiranje sa pomerajem, bazno-indeksno
+adresiranje sa pomerajem, postdekrement adresiranje, preinkrement adresiranje, relativno
+adresiranje sa pomerajem i neposredno adresiranje.
+Registarsko direktno adresiranje je adresiranje kod koga se operand nalazi u jednom od
+registara podataka ili registara opšte namene. Registar podataka ili registar opšte namene je
+specificiran poljem reg_dir.
+Registarsko indirektno adresiranje je adresiranje kod koga se operand nalazi u memoriji na
+adresi odreñenoj sadržajem jednog od adresnih registara ili registara opšte namene. Adresni
+registar ili registar opšte namene je specificiran poljem reg_ind.
+Memorijsko direktno adresiranje je adresiranje kod koga se operand nalazi u memoriji na
+adresi odreñenoj poljem mem.
+Memorijsko indirektno adresiranje je adresiranje kod koga se operand nalazi u memoriji na
+adresi odreñenoj sadržajem memorijske lokacije cija je adresa odreñena poljem mem.
+Bazno adresiranje sa pomerajem je adresiranje kod koga se operand nalazi u memoriji na
+adresi koja se dobija sabiranjem sadržaja jednog od baznih registara i pomeraja. Bazni registar
+je specificiran poljem reg_baz, a pomeraj poljem displ.
+Indeksno adresiranje sa pomerajem je adresiranje kod koga se operand nalazi u memoriji
+na adresi koja se dobija sabiranjem sadržaja jednog od indeksnih registara i pomeraja.
+Indeksni registar je specificiran poljem reg_inx, a pomeraj poljem displ.
+Registarsko indirektno adresiranje sa pomerajem je adresiranje kod koga se operand nalazi
+u memoriji na adresi koja se dobija sabiranjem sadržaja jednog od registara opšte namene i
+pomeraja. Registar opšte namene je specificiran poljem reg_gpr, a pomeraj poljem displ.
+20
+Bazno-indeksno adresiranje sa pomerajem je adresiranje kod koga se operand nalazi u
+memoriji na adresi koja se dobija sabiranjem sadržaja jednog od baznih registara, jednog od
+indeksnih registara i pomeraja. Bazni registar je specificiran poljem reg_baz, indeksni registar
+poljem reg_inx, a 8-bitni pomeraj poljem displ. Ukoliko se radi o procesoru sa registrima
+opšte namene, tada se poljima reg_baz i reg_inx kao bazni i indeksni registar specificiraju dva
+registra opšte namene.
+Postdekrement adresiranje i preinkrement adresiranje su adresiranja kod kojih se operand
+nalazi u memoriji na adresi odreñenoj sadržajem jednog od adresnih registara ili registra opšte
+namene. Kod postdekrement adresiranja sadržaj specificiranog adresnog registra ili registra
+opšte namene se smanji za 1 posle pristupa operandu, dok se kod preinkrement adresiranja
+sadržaj specificiranog adresnog registra ili registra opošte namene poveca za 1 pre pristupa
+operandu. Adresni registar ili registar opšte namene je specificiran poljem reg_ind.
+Relativno adresiranje sa pomerajem je adresiranje kod koga se operand nalazi u memoriji
+na adresi dobijenoj sabiranjem sadržaja programskog brojaca PC i pomeraja, koji je
+specificiran poljem displ.
+Neposredno adresiranje je adresiranje kod koga se operand kao celobrojna velicina bez
+znaka ili sa znakom nalazi u polju immed instrukcije.
+1.1.5 SKUP INSTRUKCIJA
+Skup instrukcija specificira operacije koje mogu da se izvršavaju u procesoru. Skup
+instrukcija cine standardne instrukcije i nestandardne instrukcije.
+1.1.5.1 STANDARDNE INSTRUKCIJE
+Standardne instrukcije ukljucuje operacije cijim kombinovanjem svaki problem koji treba
+da se reši u racunaru može da se predstavi programom. Standardne instrukcije se u nekom
+vidu nalaze u svakom procesoru. Skup standardnih instrukcija cine instrukcije prenosa,
+aritmeticke instrukcije, logicke instrukcije, instrukcije pomeranja i rotiranja, instrukcije skoka
+i mešovite instrukcije.
+1.1.5.1.1 INSTRUKCIJE PRENOSA
+Instrukcije prenosa su:
+MOVE
+LOAD i STORE
+PUSH i POP
+IN i OUT
+Instrukcija LOADB src prenosi sadržaj operanda iz izvorišne lokacije src u akumulator.
+Operand može da bude memorijska lokacija, registar procesora i neposredna velicina. Format
+ove instrukcije je jednoadresni.
+Instrukcija STOREB dst prenosi sadržaj akumulatora u operand dst. Operand može da
+bude memorijska lokacija ili registar procesora, ali ne neposredna velicina. Format ove
+instrukcije je jednoadresni.
+Postoje instrukcije kojima se prenosi sadržaja akumulatora u registre SP, IMR, IVTP itd.
+Format je najcece bezadresni, pa se na osnovu vrednosti koda operacije implicitno zna koji je
+od ovih registar odredište u koje se prebacuje sadržaj akumulatora
+21
+Instrukcija PUSH src prenosi sadržaj operanda iz izvorišne lokacije src na vrh steka.
+Operand može da bude memorijska lokacija, registar procesora i neposredna velicina. Format
+ove instrukcije je jednoadresni.
+Instrukcija POP dst prenosi sadržaj sa vrha steka u operand dst. Operand može da bude
+memorijska lokacija ili registar procesora, ali ne neposredna velicina. Format ove instrukcije
+je jednoadresni.
+Instrukcija IN src prenosi sadržaj registra kontrolera periferije cija je adresa data poljem src
+u akumulator. Format ove instrukcije je jednoadresni.
+Instrukcija OUT dst prenosi sadržaj akumulatora u registar kontrolera periferije cija je
+adresa data poljem dst. Format ove instrukcije je jednoadresni.
+1.1.5.1.2 ARITMETICKE INSTRUKCIJE
+Instrukcija ADD src sabira celobrojnu 8-bitnu velicinu koja se nalazi u nižih 8 razreda
+akumulatora AL sa operandom src koji je celobrojna 8-bitna velicina, a rezultat smešta u nižih
+8 razreda akumulatora AL. Format instrukcije dat je u odeljku Error! Reference source not
+found..
+Instrukcija SUB src oduzima operand src koji je celobrojna 8-bitna velicina od celobrojne
+8-bitne velicine koja se nalazi u nižih 8 razreda akumulatora AL, a rezultat smešta u nižih 8
+razreda akumulatora AL. Format instrukcije dat je u odeljku Error! Reference source not
+found..
+Instrukcija INC inkrementira celobrojnu 8-bitnu velicinu koja se nalazi u nižih 8 razreda
+akumulatora AL i rezultat smešta u akumulator AL. Instrukcija je bezadresna. Format
+instrukcije dat je u odeljku Error! Reference source not found..
+Instrukcija DEC dekrementira celobrojnu 8-bitnu velicinu koja se nalazi u nižih 8 razreda
+akumulatora AL i rezultat smešta u akumulator AL. Instrukcija je bezadresna. Format
+instrukcije dat je u odeljku Error! Reference source not found..
+Instrukcija MULU src množi celobrojnu 8-bitnu velicinu bez znaka koja se nalazi u nižih 8
+razreda akumulatora AL sa operandom src koji je celobrojna 8-bitna velicina bez znaka.
+Dobijeni 16-bitni rezultat se smešta u akumulator A. Format instrukcije dat je u odeljku
+Error! Reference source not found..
+Instrukcija MULS src množi celobrojnu 8-bitnu velicinu sa znakom koja se nalazi u nižih
+8 razreda akumulatora AL sa operandom src koji je celobrojna 8-bitna velicina sa znakom.
+Dobijeni 16-bitni rezultat se smešta u akumulator A. Format instrukcije dat je u odeljku
+Error! Reference source not found..
+Instrukcija DIVU src deli celobrojnu 16-bitnu velicinu bez znaka koja se nalazi u
+akumulatoru A, sa operandom src koji je celobrojna 8-bitna velicina bez znaka. Rezultat
+deljenja se smešta u nižih 8 razreda akumulatora AL, a ostatak deljenja se smešta u viših 8
+razreda akumulatora AH. Format instrukcije dat je u odeljku Error! Reference source not
+found..
+Instrukcija DIVS src deli celobrojnu 16-bitnu velicinu sa znakom koja se nalazi u
+akumulatoru A, sa operandom src koji je celobrojna 8-bitna velicina sa znakom. Rezultat
+deljenja se smešta u nižih 8 razreda akumulatora AL, a ostatak deljenja se smešta u viših 8
+razreda akumulatora AH. Format instrukcije dat je u odeljku Error! Reference source not
+found..
+22
+1.1.5.1.3 LOGICKE INSTRUKCIJE
+Instrukcija AND src izracunava logicko I sadržaja nižih 8 razreda akumulatora AL i
+operanda src koji je 8-bitna velicina, a rezultat smešta u nižih 8 razreda akumulatora AL.
+Format instrukcije dat je u odeljku Error! Reference source not found..
+Instrukcija OR src izracunava logicko ILI sadržaja nižih 8 razreda akumulatora AL i
+operanda src koji je 8-bitna velicina, a rezultat smešta u nižih 8 razreda akumulatora AL.
+Format instrukcije dat je u odeljku Error! Reference source not found..
+Instrukcija XOR src izracunava logicko EKSLUZIVNO ILI sadržaja nižih 8 razreda
+akumulatora AL i operanda src koji je 8-bitna velicina, a rezultat smešta u nižih 8 razreda
+akumulatora AL. Format instrukcije dat je u odeljku Error! Reference source not found..
+Instrukcija NOT izracunava logicku NEGACIJU sadržaja nižih 8 razreda akumulatora AL,
+gde ostaje i rezultat. Format instrukcije dat je u odeljku Error! Reference source not found..
+1.1.5.1.4 INSTRUKCIJE POMERANJA I ROTIRANJA
+Instrukcija ASH src pomera sadržaj nižih 8 razreda akumulatora AL ulevo ili udesno za
+onoliko mesta koliko je specificirano operandom src, koji je celobrojna 8-bitna velicina sa
+znakom. Ako je operand src pozitivan, pomeranje se vrši ulevo, a ako je operand src
+negativan, pomeranje se vrši udesno. Pri pomeranju udesno, razred AL7 ostaje nepromenjen.
+Pri pomeranju ulevo, u razred AL0 se upisuje 0. Format instrukcije dat je u odeljku Error!
+Reference source not found..
+Instrukcija LSH src pomera sadržaj nižih 8 razreda akumulatora AL ulevo ili udesno za
+onoliko mesta koliko je specificirano operandom src, koji je celobrojna 8-bitna velicina sa
+znakom. Ako je operand src pozitivan, pomeranje se vrši ulevo a ako je operand src negativan,
+pomeranje se vrši udesno. Pri pomeranju udesno, u razred AL7 se upisuje 0. Pri pomeranju
+ulevo, u razred AL0 se upisuje 0. Format instrukcije dat je u odeljku Error! Reference source
+not found..
+Instrukcija ROT src rotira sadržaj nižih 8 razreda akumulatora AL ulevo ili udesno za
+onoliko mesta koliko je specificirano operandom src, koji je celobrojna 8-bitna velicina sa
+znakom. Ako je operand src pozitivan, rotiranje se vrši ulevo, a ako je operand src negativan,
+rotiranje se vrši udesno. Pri rotiranju udesno, u razred AL7 se upisuje sadržaj razreda AL0. Pri
+rotiranju ulevo, u razred AL0 se upisuje sadržaj razreda AL7. Format instrukcije dat je u
+odeljku Error! Reference source not found..
+Instrukcija ROTC src rotira sadržaj nižih 8 razreda akumulatora AL ulevo ili udesno za
+onoliko mesta koliko je specificirano operandom src, koji je celobrojna 8-bitna velicina sa
+znakom. Ako je operand src pozitivan, rotiranje se vrši ulevo, a ako je operand src negativan,
+rotiranje se vrši udesno. Pri rotiranju udesno, u razred AL7 se upisuje sadržaj flip-flopa CF, a u
+flip-flop CF se upisuje sadržaj razreda AL0. Pri rotiranju ulevo, u razred AL0 se upisuje
+sadržaj flip-flopa CF, a u flip-flop CF se upisuje sadržaj razreda AL7. Format instrukcije dat je
+u odeljku Error! Reference source not found..
+1.1.5.1.5 INSTRUKCIJE SKOKA
+Instrukcije skoka se svrstavaju u sledece grupe: instrukcije uslovnog skoka, instrukcije
+bezuslovnog skoka, instrukcije skoka na potprogram i povratka iz potprograma, instrukcija
+prekida i instrukcija povratka iz prekidne rutine.
+Instrukcije uslovnog skoka
+23
+Instrukcije uslovnog skoka BEQL disp, BNEQ disp, BGRT disp, BGRE disp, BLSS disp,
+BLEQ disp, BGRTU disp, BGREU disp, BLSSU disp, BLEQU disp, BNEG disp, BNNG
+disp, BOVF disp, BNVF disp, BIN disp, BNIN disp, BNN disp, BNNN disp, BIV disp,
+BNIV disp, BU disp i BNU disp realizuju relativni skok sa pomerajem disp u odnosu na
+registar PC ukoliko je uslov specificiran kodom operacije ispunjen. Format ovih instrukcija je
+dat u odeljku Error! Reference source not found..
+Tabela 1 Instrukcije uslovnog skoka
+instrukcija znacenje uslov
+BEQL skok na jednako Z = 1
+BNEQ skok na nejednako Z = 0
+BGRT skok na vece nego (sa znakom) (N ? V) ?
+Z = 0
+BGRE skok na vece nego ili jednako (sa
+znakom)
+N ? V = 0
+BLSS skok na manje nego (sa znakom) (N ? V) = 1
+BLEQ skok na manje nego ili jednako (sa
+znakom)
+(N ? V) ?
+Z = 1
+BGRTU skok na vece nego (bez znaka) C ? Z = 0
+BGREU skok na vece nego ili jednako (bez
+znaka)
+C = 0
+BLSSU skok na manje nego (bez znaka) C = 1
+BLEQU skok na manje nego ili jednako (bez
+znaka)
+C ? Z = 1
+BNEG skok na N = 1 N = 1
+BNNG skok na N = 0 N = 0
+BOVF skok na V = 1 V = 1
+BNVF skok na V = 0 V = 0
+BIN skok na IN = 1 IN = 1
+BNIN skok na IN = 0 IN = 0
+BNN skok na NN = 1 NN = 1
+BNNN skok na NN = 0 NN = 0
+BIV skok na IV = 1 IV = 1
+BNIV skok na IV = 0 IV = 0
+BU skok na U = 1 U = 1
+BNU skok na U = 0 U = 0
+Instrukcija bezuslovnog skoka
+Instrukcija bezuslovnog skoka JMP realizuje skok na adresu koja se izracunava na osnovu
+nacina adresiranja koji je zadat u samoj instrukciji. Format ove instrukcije je dat u odeljku
+Error! Reference source not found..
+Instrukcije skoka na potprogram i povratka iz potprograma
+Instrukcija JSR realizuje skok na potprogram cija se adresa izracunava na osnovu nacina
+adresiranja koji je zadat u samoj instrukciji uz cuvanje vrednosti registra PC na steku. Format
+ove instrukcije je dat u odeljku Error! Reference source not found..
+Instrukcija RTS realizuje povratak iz potprograma uz restauraciju vrednosti registra PC sa
+steka. Format ove instrukcije je dat u odeljku Error! Reference source not found..
+24
+Instrukcija prekida
+Instrukcija INT pre programskim putem realizuje prekid i skok na odgovarajucu prekidnu
+rutinu. Format ove instrukcije je dat u odeljku Error! Reference source not found.. Poljem
+DISP se predstavlja broj ulaza u tabelu adresa prekidnih rutina pre kao celobrojna velicina bez
+znaka.
+Instrukcija povratka iz prekidne rutine
+Instrukcijom RTI se realizuje povratak iz prekidne rutine uz restauraciju vrednosti
+registara PSW i PC sa steka. Format ove instrukcije je dat u odeljku Error! Reference source
+not found..
+1.1.5.1.6 MEŠOVITE INSTRUKCIJE
+Instrukcije postavljanja indikatora u PSW
+Instrukcija INTD postavlja nulu u razred I registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija INTE postavlja jedinicu u razred I registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija TRPD postavlja nulu u razred T registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija TRPE postavlja jedinicu u razred T registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija VARD postavlja nulu u razred P registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija VARE postavlja jedinicu u razred P registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija EDGD postavlja nulu u razred E registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija EDGE postavlja jedinicu u razred E registra PSW. Format instrukcije je dat u
+odeljku Error! Reference source not found..
+Instrukcija bez dejstva
+Instrukcija NOP ne proizvodi nikakvo dejstvo. Format ove instrukcije je dat u odeljku
+Error! Reference source not found..
+1.1.5.2 NESTANDARDNE INSTRUKCIJE
+Nestandardne instrukcije ukljucuje operacije kojima se omogucuje jednostavnije
+preslikavanje konstrukcija iz programskih jezika i operativnih sistema u instrukcije procesora,
+nego ukoliko se to cini standardnim instrukcijama. Nestandardne instrukcije se javljaju u
+nekom vidu kod procesora CISC tipa dok se kod procesora RISC tipa ne javljaju. Skup
+nestandardnih instrukcija cine instrukcije nad celobrojnim velicinama promenljive dužine,
+string instrukcije, decimalne instrukcije, instrukcije kontrole petlji itd.
+Instrukcije nad celobrojnim velicinama promenljive dužine
+25
+String instrukcije
+MOVC srclen, srcaddr, fill, dstlen, dstaddr
+Instrukcija MOVC realizuje kopiranje karaktera izvorišnog stringa u karaktere odredišnog
+stringa. pocetna adresa izvorišnog stringa je specificirana operandom srcaddr, dužina
+izvorišnog stringa je je specificirana operandom srclen, pocetna adresa odredišnog stringa je
+je specificirana operandom dstaddr, dužina odredišnog stringa je je specificirana operandom
+dstlen i karakter FILL je specificiran operandom fill. Izvorišni i odredišni string mogu biti
+razlicitih dužina. Kopiranje karaktera izvorišnog stringa u karaktere odredišnog stringa se
+realizuje uvek na dužini odredišnog stringa. Karakter FILL se koristi samo u slucaju da je
+izvorišni string kraci od odredišnog stringa. Pocetne adrese i dužine izvorišnog i odredišnog
+stringa mogu tako da budu zadate da doñe do njihovog delimicnog ili potpunog preklapanja.
+Rezultat izvršavanja instrukcije MOVC je, pored kopiranja sadržaja jednog dela memorije
+u drugi deo memorije, i postavljanje indikatora Z i C. Indikator Z ukazuje da li su dužine
+izvorišnog i odredišnog stringa jednake ili ne, dok indikator C, u slucaju da dužine izvorišnog
+i odredišnog stringa nisu jednake, ukazuje da li je odredišni string duži od izvorišnog ili ne.
+Ako su izvorišni i odredišni string jednake dužine (srclen = dstlen) karakteri izvorišnog
+stringa ce u celosti biti kopirani u karaktere odredišnog stringa (slika 2). Indikator Z ce biti
+postavljen na jedan (Z=1), a indikator C na nulu (C=0).
+srcaddr
+dstaddr
+dstlen
+srclen
+Slika 2 Instrukcija MOVC za srclen = dstlen
+Ako je izvorišni string duži od odredišnog stringa (srclen > dstlen) bice preneto samo prvih
+dstlen karaktera izvorišnog stringa u odredišni string, a preostali karakteri izvorišnog stringa
+nece biti preneti (slika 3). U ovom slucaju indikatori Z i C ce biti postavljeni na nulu (Z=0,
+C=0).
+Ako je izvorišni string kraci od odredišnog stringa (srclen < dstlen) svi karakteri izvorišnog
+stringa ce biti preneti u prvih srclen karaktera odredišnog stringa, a preostali karakteri
+odredišnog stringa do dužine odredišnog stringa ce biti popunjeni karakterom FILL (slika4).
+Indikator Z ce biti postavljen na nulu (Z=0), a indikator C na jedan (C=1).
+Tokom izvršavanja instrukcije MOVC, i to nakon kopiranja jednog karaktera izvorišnog
+stringa u element odredišnog stringa, sadržaji lokacija srcaddr i dstaddr se inkrementiraju, a
+sadržaji lokacija srclen i dstlen dekrementiraju. Tada sadržaj lokacije srcaddr predstavlja
+adresu sledeceg karaktera izvorišnog koji treba da bude kopiran, sadržaj lokacije dstaddr
+adresu sledeceg karaktera odredišnog stringa koji treba da bude popunjen, lokacije srclen broj
+karaktera izvorišnog stringa koji još uvek nisu kopirani, a lokacije dstlen broj nepopunjenih
+karaktera odredišnog stringa.
+26
+ds taddr
+dstlen
+srcaddr
+srclen
+dstlen
+Slika 3 Instrukcija MOVC za srclen > dstlen
+dstlen
+dstaddr
+FILL
+srcaddr
+srclen
+srclen
+Slika 4 Instrukcija MOVC za srclen < dstlen
+MOVTC srclen, srcaddr, fill, tbladdr, dstlen, dstaddr
+Instrukcija MOVTC realizuju prevoñenje karaktera izvorišnog stringa i njihovo smeštanje
+u odgovarajuce karaktere odredišnog stringa. Za prevoñenje se koristi translaciona tabela koja
+ima 256 ulaza. Element odredišnog stringa popunjava se karakterom koji se nalazi unutar
+translacione tabele na adresi koja je odreñena vrednošcu karaktera izvorišnog stringa koji se
+prevodi. Pocetna adresa izvorišnog stringa je srcaddr, dužina izvorišnog stringa je srclen,
+pocetna adresa odredišnog stringa je dstaddr, dužina odredišnog stringa je dstlen, adresa
+translacione tabele je tbladdr i karakter FILL je specificiran operandom fill. Izvorišni i
+odredišni string mogu biti razlicitih dužina. Prevoñenje karaktera izvorišnog stringa u
+karaktere odredišnog stringa se realizuje uvek na dužini odredišnog stringa. Karakter FILL se
+koristi samo u slucaju da je izvorišni string kraci od odredišnog stringa. Pocetne adrese i
+dužine izvorišnog i odredišnog stringa i pocetna adresa translacione tabele mogu tako da budu
+zadate da doñe do njihovog delimicnog ili potpunog preklapanja.
+Rezultat izvršavanja instrukcije MOVTC je, pored prevoñenja sadržaja jednog dela
+memorije i popunjavanja prevedenim vrednostima drugog dela memorije, i postavljanje
+indikatora Z i C. Indikator Z ukazuje da li su dužine izvorišnog i odredišnog stringa jednake
+ili ne, dok indikator C, u slucaju da dužine izvorišnog i odredišnog stringa nisu jednake,
+ukazuje da li je odredišni string duži od izvorišnog ili ne.
+Ako su izvorišni i odredišni string jednake dužine (srclen = dstlen) svaki karakter
+izvorišnog stringa ce biti preveden i smešten na odgovarajuce mesto unutar odredišnog stringa
+(slika 5). Indikator Z ce biti postavljen na jedan (Z=1), a indikator C na nulu (C=0).
+27
+srcaddr
+srclen
+tbladdr 0
+i
+255
+dstlen
+ds taddr
+Slika 5 Instrukcija MOVTC za srclen = dstlen
+Ako je izvorišni string duži od odredišnog stringa (srclen > dstlen) bice prevedeno samo
+prvih dstlen karaktera izvorišnog stringa i smešteno na odgovarajuce mesto unutat odredišnog
+stringa, a preostali karakteri izvorišnog stringa nece biti prevedeni (slika 6). U ovom slucaju
+indikatori Z i C ce biti postavljeni na nulu (Z=0, C=0).
+tbladdr 0
+i
+255
+srcaddr
+srclen
+dstlen
+dstlen
+ds taddr
+Slika 6 Instrukcija MOVTC za srclen > dstlen
+Ako je izvorišni string kraci od odredišnog stringa (srclen < dstlen) svi karakteri izvorišnog
+stringa ce biti prevedeni i prevedene vrednosti smeštene u prvih srclen karaktera odredišnog
+stringa, a preostali karakteri odredišnog stringa do dužine odredišnog stringa ce biti popunjeni
+karakterom FILL (slika 7). Indikator Z ce biti postavljen na nulu (Z=0), a indikator C na jedan
+(C=1).
+tbladdr 0
+i
+255
+srcaddr
+srclen
+FILL
+dstlen
+ds taddr
+srclen
+Slika 7 Instrukcija MOVTC za srclen < dstlen
+Tokom izvršavanja instrukcije MOVTC, i to nakon prevoñenja jednog karaktera izvorišnog
+stringa i smeštanja prevedene vrednosti u karakter odredišnog stringa, sadržaji lokacija
+srcaddr i dstaddr se inkrementiraju, a sadržaji lokacija srclen i dstlen dekrementiraju. Tada
+sadržaj lokacija srcaddr predstavlja adresu sledeceg karaktera izvorišnog koji treba da bude
+28
+preveden, sadržaj lokacija dstaddr adresu sledeceg karaktera odredišnog stringa na kojoj
+prevedeni karakter treba da bude smešten, lokacije srclen broj karaktera izvorišnog stringa
+koji još uvek nisu prevedeni, a lokacije dstlen broj nepopunjenih karaktera odredišnog stringa.
+CMPC src1len, src1addr, fill, src2len, src2addr
+Instrukcija CMPC (COMPARE CHARACTERS) uporeñuje karaktere dva izvorišna stringa
+radi utvrñivanja da li su dva stringa identicna ili ne (slike 8, 9 i 10). Uporeñivanje karaktera
+dva izvorišna stringa se realizuje na dužini dužeg izvorišnog stringa ukoliko postoji jednakost
+karaktera koji se uporeñuju ili se završava ranije i to kada se prvi put otkrije nejednakost
+karaktera koji se uporeñuju. Pocetna adresa prvog izvorišnog stringa je src1addr, dužina
+prvog izvorišnog stringa je src1len, pocetna adresa drugog izvorišnog stringa je src2addr,
+dužina drugog izvorišnog stringa je dst2len i karakter FILL je specificiran operandom fill.
+Izvorišni stringovi mogu da budu razlicitih dužina. Karakter FILL se koristi samo u slucaju da
+izvorišni stringovi nisu istih dužina. U slucaju razlicitih dužina izvorišnih stringova kada se
+iscrpe karakteri kraceg izvorišnog stringa karakter FILL se koristi za poreñenje sa preostalim
+karakterima dužeg izvorišnog stringa. Pocetne adrese i dužine izvorišnih stringova mogu tako
+da budu zadate da doñe do njihovog delimicnog ili potpunog preklapanja.
+s rc2addr
+src2len
+src1addr
+src1len
+CMP
+eql
+Slika 8 Instrukcija CMPC za srclen = dstlen
+CMP
+eql
+src1len
+src1addr
+src1len
+src2addr
+src2len
+FILL
+Slika 9 Instrukcija CMPC za src1len > src2len
+CMP
+eql
+src2addr
+src2len
+src1addr
+src1len
+FILL
+src2len
+Slika 10 Instrukcija CMPC za src1len < src2len
+Rezultat izvršavanja instrukcije CMPC je utvrñivanje da li su dva izvorišna stringa
+identicna ili ne. Stringovi su identicni ukoliko se uporeñivanje karaktera dva izvorišna stringa
+29
+realizuje na dužini dužeg izvorišnog stringa i pri tome postoji jednakost karaktera koji se
+uporeñuju. Stringovi nisu identicni ukoliko se uporeñivanje karaktera dva izvorišna stringa
+završava ranije i to kada se prvi put otkrije nejednakost karaktera koji se uporeñuju. Rezultat
+izvršavanja instrukcije CMPC se daje postavljanjem indikatora Z i C. Indikator Z ukazuje da
+li su dva izvorišna stringa identicna ili ne, dok indikator C, u slucaju da se otkrije da neki par
+karaktera dva izvorišna stringa nije identican, ukazuje koji od ta dva karaktera ima vecu
+vrednost. Ukoliko su stringovi identicni indikator Z bit ce biti postavljen na vrednost jedan
+(Z=1), a indikator C na vrednost nula (C=0). Ukoliko stringovi nisu identicni indikator Z ce
+biti postavljen na vrednost nula (Z=0), a vrednost indikatora C zavisice od vrednosti karaktera
+stringova za koje je utvrñeno da nisu jednaki. Ako su vrednosti takve da je vrednost karaktera
+prvog izvorišnog stringa manja od vrednosti karaktera drugog izvorišnog stringa indikator C
+ce biti postavljen na vrednost 1 (C=1). Ako su vrednosti takve da je vrednost karaktera prvog
+izvorišnog stringa veca od vrednosti karaktera drugog izvorišnog stringa indikator C ce biti
+postavljen na vrednost 0 (C=0).
+Tokom izvršavanja instrukcije CMPC, i to nakon poreñenja jednog karaktera prvog
+izvorišnog stringa i jednog karaktera drugog izvorišnog stringa, sadržaji lokacija src1addr i
+src2addr se inkrementiraju, a sadržaji lokacija src1len i src2len dekrementiraju. Tada sadržaj
+lokacije src1addr predstavlja adresu sledeceg karaktera prvog izvorišnog koji treba da se
+uporeñuje, lokacije src2addr adresu sledeceg karaktera drugog izvorišnog stringa koji treba da
+se uporeñuje, lokacije src1len broj karaktera prvog izvorišnog stringa koji još uvek nisu
+uporeñivani, a lokacije src2len broj karaktera drugog izvorišnog stringa koji još uvek nisu
+uporeñivani.
+LOCC len, addr, char
+Instrukcija LOCC (LOCATE CHARACTER) izvršava operaciju poreñenja izmeñu svakog
+karaktera izvorišnog stringa i karaktera poreñenja (slika 11). Operacija se realizuje ili na
+dužini izvorišnog stringa ukoliko je rezultat operacije nejednakost za svaki karakter
+izvorišnog stringa ili se završava ranije i to kada se prvi put otkrije da je rezultat operacije
+jednakost. Pocetna adresa s izvorišnog tringa je srcaddr, dužina izvorišnog stringa je srclen i
+karakter poreñenja je specificiran operandom char.
+Rezultat izvršavanja instrukcije LOCC je utvrñivanje da li su svi karakteri izvorišnog
+stringa razliciti od karaktera poreñenja ili ne. Rezultat izvršavanja instrukcije LOCC se daje
+postavljanjem indikatora Z na vrednost jedan ili nula, dok se indikator C uvek postavlja na
+vrednost nula (C=0). Ukoliko su svi karakteri izvorišnog stringa razliciti od karaktera
+poreñenja indikator Z bit ce biti postavljen na vrednost jedan (Z=1). Ukoliko se pojavi
+karakter izvorišnog stringa identican karakteru poreñenja indikator Z bit ce biti postavljen na
+vrednost jedan (Z=0).
+Tokom izvršavanja instrukcije LOCC, i to nakon poreñenja svakog karaktera izvorišnog
+stringa i karaktera poreñenja, sadržaj lokacije srcaddr se inkrementira, a lokacije srclen se
+dekrementira. Tada sadržaj lokacije srcaddr predstavlja adresu sledeceg karaktera izvorišnog
+stringa za koji poreñenje treba da se izvrši, a lokacije srclen broj karaktera izvorišnog stringa
+za koje poreñenje treba da se izvrši.
+SKPC len, addr, char
+Instrukcija SKPC (SKIP CHARACTERS) izvršava operaciju poreñenja izmeñu svakog
+karaktera izvorišnog stringa i karaktera poreñenja (slika 11). Operacija se realizuje ili na
+dužini izvorišnog stringa ukoliko je rezultat operacije jednakost za svaki karakter izvorišnog
+stringa ili se završava ranije i to kada se prvi put otkrije da je rezultat operacije nejednakost.
+30
+Pocetna adresa izvorišnog stringa je addr, dužina izvorišnog stringa je len i karakter poreñenja
+je specificiran operandom char.
+Rezultat izvršavanja instrukcije SKPC je utvrñivanje da li su svi karakteri izvorišnog
+stringa identicni karakteru poreñenja ili ne. Rezultat izvršavanja instrukcije SKPC se daje
+postavljanjem indikatora Z na vrednost jedan ili nula, dok se indikator C uvek postavlja na
+vrednost nula (C=0). Ukoliko su svi karakteri izvorišnog stringa identicni karakteru poreñenja
+indikator Z bit ce biti postavljen na vrednost jedan (Z=1). Ukoliko se pojavi karakter
+izvorišnog stringa razlicit od karaktera poreñenja indikator Z bit ce biti postavljen na vrednost
+jedan (Z=0).
+srcaddr
+srclen
+karakter
+poreñenja
+eql
+CMP
+noteql
+Slika 11 Instrukcije SKPC i LOCC
+Tokom izvršavanja instrukcije SKPC, i to nakon poreñenja svakog karaktera izvorišnog
+stringa i karaktera poreñenja, sadržaj lokacije addr se inkrementira, a lokacije len
+dekrementira. Tada sadržaj lokacije addr predstavlja adresu sledeceg karaktera izvorišnog
+stringa za koji poreñenje treba da se izvrši, a lokacije len broj karaktera izvorišnog stringa za
+koje poreñenje treba da se izvrši.
+MATCHC src1len, src1addr, src2len, src2addr
+Instrukcija MATCHC (MATCH CHARACTERS) izvršava operaciju poreñenja izmeñu
+karaktera izvorišnog stringa i karaktera podstringa (slika 12 ). Operacija se realizuje ili na
+dužini izvorišnog stringa ukoliko je rezultat operacije nejednakost ili se završava ranije i to
+kada se prvi put otkrije da je rezultat operacije jednakost. Pocetna adresa izvorišnog stringa je
+src1addr, dužina izvorišnog stringa je src1len, pocetna adresa podstringa je src2addr i dužina
+podstringa je src2len.
+Rezultat izvršavanja instrukcije MATCHC je utvrñivanje da li se u nekom delu izvorišnog
+stringa nalazi niz karaktera identican sa karakterima podstringa. Rezultat izvršavanja
+instrukcije MATCHC se daje postavljanjem indikatora Z na vrednost jedan ili nula, dok se
+indikator C uvek postavlja na vrednost nula (C=0). Ukoliko podstring nije pronañen u
+izvorišnom stringu indikator Z bit ce biti postavljen na vrednost jedan (Z=1). Ukoliko je
+podstring pronañen u izvorišnom indikator Z bit ce biti postavljen na vrednost nula (Z=0).
+CMP
+eql
+src2len
+src2addr
+src2len
+src1addr
+src1len
+Slika 12 Instrukcija MATCHC
+31
+Tokom izvršavanja instrukcije MATCHC, i to nakon svakog neuspešnog poreñenja
+karaktera podstringa i karaktera izvorišnog stringa na nekoj od mogucih pozicija podstringa u
+izvorišnom stringu, sadržaj lokacije src1addr se inkrementira, a lokacije src1len dekrementira.
+Tada sadržaj lokacije src1addr predstavlja adresu sledeceg karaktera izvorišnog stringa od
+kojeg pocinje sledeca moguca pozicija podstringa u izvorišnom stringu, a lokacije src1len broj
+preostalih karaktera prvog izvorišnog stringa od kojih još uvek nije pokušano pronalaženje
+podstringa u izvorišnom stringu. U izvorišnom stringu ima smisla pretraživati podstring
+jedino ukoliko je broj preostalih karaktera izvorišnog stringa veci od ili jednak dužini
+podstringa.
+Decimalne instrukcije
+Instrukcije kontrole petlji
+ACB limit, step, index, displ
+Instrukcija ACB (Add Compare and Branch) realizuje relativni skok sa pomerajem displ u
+odnosu na tekucu vrednost programskog brojaca PC pod uslovom da je suma vrednosti
+parametara index i step manja ili jednaka vrednosti parametra limit. Ukoliko je uslov za skok
+ispunjen ažurira se vrednost parametra index sumom vrednosti parametara index i step.
+Izvršavanje instrukcije ACB se može predstaviti na sledeci nacin:
+if ((index + step) leq limit) then (PC <= PC + displ),
+index <= index + step
+AOB limit, index, displ
+Instrukcija AOB (Add One and Branch) realizuje relativni skok sa pomerajem displ u
+odnosu na tekucu vrednost programskog brojaca PC pod uslovom da je suma vrednosti
+parametara index i 1 manja ili jednaka vrednosti parametra limit. Ukoliko je uslov za skok
+ispunjen ažurira se vrednost parametra index sumom vrednosti parametara index i 1.
+Izvršavanje instrukcije ACB se može predstaviti na sledeci nacin:
+if ((index + 1) leq limit) then (PC <= PC + displ),
+index <= index + 1
+SOB index, displ
+Instrukcija SOB (Subtract One and Branch) realizuje relativni skok sa pomerajem displ u
+odnosu na tekucu vrednost programskog brojaca PC pod uslovom da je vrednosti parametara
+index umanjena za 1 veca ili jednaka 0. Ukoliko je uslov za skok ispunjen ažurira se vrednost
+parametra index vrednošcu parametara index umanjenom za 1. Izvršavanje instrukcije SOB se
+može predstaviti na sledeci nacin:
+if ((index - 1) geq 0) then (PC <= PC + displ),
+index <= index - 1
+CASE selector, base, limit, displ[0], displ[1],... displ[limit-base]
+32
+Instrukcija CASE realizuje relativni skok sa pomerajem displ[selector-base] u odnosu na
+tekucu vrednost programskog brojaca PC pod uslovom da je vrednosti parametara selector
+veca ili jednaka vrednosti parametra base i manja ili jednaka vrednosti parametra limit. U
+suprotno slucaju se prelazi na sledecu instrukciju. Izvršavanje instrukcije CASE se može
+predstaviti na sledeci nacin:
+if ((selector geq base ) and (selector leq limit ))
+then PC <= PC + displ[selector-base]
+else PC <= PC + (limit-base+1)
+BBS base, pos, displ
+Instrukcija BBS (Branch on Bit Set) realizuje relativni skok sa pomerajem displ u odnosu
+na tekucu vrednost programskog brojaca PC pod uslovom da je vrednost jednobitnog polja na
+poziciji odreñenoj vrednošcu parametra pos u bajtu ocitanom sa memorijske adrese date
+vrednošcu parametra base 1. Izvršavanje instrukcije BBS se može predstaviti na sledeci nacin:
+if (POLJE(pos, 1, base) eql 1) then (PC <= PC + displ)
+BBS base, pos, displ
+Instrukcija BBC (Branch on Bit Clear) realizuje relativni skok sa pomerajem displ u
+odnosu na tekucu vrednost programskog brojaca PC pod uslovom da je vrednost jednobitnog
+polja na poziciji odreñenoj vrednošcu parametra pos u bajtu ocitanom sa memorijske adrese
+date vrednošcu parametra base 0. Izvršavanje instrukcije BBS se može predstaviti na sledeci
+nacin:
+if (POLJE(pos, 1, base) eql 0) then (PC <= PC + displ)
+33
+1.1.6 MEHANIZAM PREKIDA
+Mehanizam prekida kod procesora omogucuje prekid u izvršavanju tekuceg programa, koji
+ce se nazivati glavni program, i skok na novi program, koji ce se nazivati prekidna rutina.
+Poslednja instrukcija u prekidnoj rutini je instrukcija RTI. Ona omogucuje povratak u glavni
+program. Izvršavanje glavnog programa se produžava sa onog mesta gde je bilo prekinuto.
+Može se uzeti da zahtev za prekid stiže u toku izvršavanja neke od instrukcija. Zbog toga se
+mehanizam prekida obicno tako realizuje da se instrukcija u toku cijeg je izvršavanja stigao
+zahtev za prekid, najpre, izvrši do kraja, pa se tek onda prihvata zahtev za prekid i skace na
+prvu instrukciju prekidne rutine. Izuzetak od ovoga predstavljaju instrukcija nad nizovima
+alfanumerickih znakova. Kod ovih instrukcija se zahtev za prekid prihvata u prvom
+pogodnom trenutku, koji može da nastupi i pre trenutka u kom je instrukcija izvršena do kraja.
+Efekti mehanizma prekida i instrukcije RTI na izvršavanje glavnog programa i prekidne
+rutine su prikazani na slici 13. Uzeto je da u toku izvršavanja instrukcije glavnog programa sa
+adrese 1237 stiže zahtev za prekid. Ova instrukcija se se najpre izvrši do kraja. Potom
+procesor produžava sa izvršavanjem instrukcija sa adrese 2100 na kojoj se nalazi prva
+instrukcija prekidne rutine umesto sa adrese 1238 na kojoj se nalazi prva sledeca instrukcija
+glavnog programa. Instrukcijom RTI sa adrese 2122 se obezbeñuje da procesor kao sledecu
+izvršava instrukciju glavnog programa sa adrese 1238. To je instrukcija glavnog programa
+koja bi se normalno i izvršavala posle instrukcije sa adrese 1237 da u toku njenog izvršavanja
+nije stigao zahtev za prekid.
+glavni program prekidna rutina
+M
+1234 — 2100 —
+1235 — 2101 —
+1236 — 2102 —
+1237 — M —
+1238 — 2121 —
+1239 — 2122 RTI
+1240 —
+1241 —
+1242 —
+M
+Slika 13 Prekid i povratak iz prekidne rutine
+Aktivnosti u procesoru kojima se prekida izvršavanje glavnog programa i skace na
+prekidnu rutinu nazivaju se opsluživanje zahteva za prekid, a aktivnosti kojima se obezbeñuje
+povratak iz prekidne rutine u glavni program i produžavanje izvršavanja glavnog programa sa
+mesta i pod uslovima koji su bili pre skoka na prekidnu rutinu nazivaju se povratak iz
+prekidne rutine.
+Zahteve za prekid mogu da generišu:
+ kontroleri periferija da bi procesoru signalizirali spremnost za prenos podataka
+(maskirajuci prekidi),
+ ureñaji racunara koji kontrolišu ispravnost napona napajanja, transfera na magistrali,
+rada memorije itd. (nemaskirajuci prekidi),
+ procesor, kao rezultat otkrivene nekorektnosti u izvršavanju tekuce instrukcije
+(nelegalan kod operacije, nelegalno adresiranje, greška prilikom deljenja, itd.),
+ procesor, ako je zadat takav režim rada procesora, kroz postavljanje bita prekid posle
+svake instrukcije u programskoj statusnoj reci PSW, da se posle svake instrukcije skace
+na odreñenu prekidnu rutinu i
+34
+ procesor kao rezultat izvršavanja instrukcije prekida INT.
+Prekidi pod  i  se nazivaju spoljašnji, a pod ,  i  unutrašnji.
+1.1.6.1 Opsluživanje zahteva za prekid i povratak iz prekidne rutine
+Opsluživanje zahteva za prekid se realizuje delom hardverski i delom softverski, a
+povratak iz prekidne rutine softverski. Hardverska realizacija dela opsluživanja zahteva za
+prekid znaci da se izvršavanje instrukcije u kojoj se javlja neki zahtev za prekid produžava za
+onoliko koraka koliko je potrebno da se taj deo realizuje. Softverska realizacija dela
+opsluživanja zahteva za prekid i povratka iz prekidne rutine se realizuju izvršavanjem
+odgovarajucih instrukcija procesora.
+1.1.6.1.1 Opsluživanje zahteva za prekid
+Opsluživanje zahteva za prekid se sastoji iz:
+• cuvanja konteksta procesora i
+• utvrñivanja adrese prekidne rutine
+Kontekst procesora cine programski brojac PC, programska statusna rec PSW i preostali
+programski dostupni registri, kao, na primer, registri podataka, adresni registri, indeksni
+registri, bazni registri, registri opšte namene itd. Kontekst procesora se cuva najcešce na steku
+i to:
+• programski brojac PC da bi se po povratku iz prekidne rutine u glavni program
+omogucilo procesoru izvršavanje glavnog programa od instrukcije na kojoj se stalo i
+• programska statusna rec PSW i preostali programski dostupni registri da bi se u
+procesoru obezbedilo isto stanje koje bi bilo da nije bilo prekida i skoka na prekidnu
+rutinu.
+Programski brojac PC i programska statusna rec PSW se cuvaju hardverski. Preostali
+programski dostupni registri se cuvaju hardverski kod onih procesora kod kojih broj ovih
+registara nije veliki i softverski sa nekoliko instrukcija na pocetku prekidne rutine kod onih
+procesora kod kojih je broj ovih registara veliki.
+Utvrñivanje adrese prekidne rutine se realizuje na osnovu sadržaja tabele adresa prekidnih
+rutina (IV tabela) i broja ulaza u IV tabelu. Stoga se u memoriji, pocev od adrese na koju
+ukazuje sadržaj registra procesora IVTP (Interrupt Vector Table Pointer), nalazi IV tabela sa
+adresama prekidnih rutina za sve vrste prekida. Brojevi ulaza u IV tabelu se dobijaju na više
+nacina i to:
+• procesoru ih šalju kontroleri periferija za prekide iz tacke , ako ulazi u IV tabelu za
+maskirajuce prekide nisu fiksni, što je odreñeno odgovarajucom vrednošcu bita ulazi u IV
+tabelu promenljivi u programskoj statusnoj reci procesora PSW,
+• procesor generiše fiksne vrednosti za prekide iz tacke , ako su ulazi u IV tabelu za
+maskirajuce prekide fiksni, što je odreñeno odgovarajucom vrednošcu bita ulazi u IV
+tabelu promenljivi u programskoj statusnoj reci procesora PSW,
+• procesor generiše fiksne vrednosti za prekide iz tacaka ,  i  i
+• procesor generiše vrednosti na osnovu adresnog dela instrukcije INT za prekid iz tacke
+.
+Memorijska adresa na kojoj se nalazi adresa prekidne rutine dobija se sabiranjem broja ulaza
+u IV tabelu sa sadržajem registra IVTP. Sa ove adrese se cita sadržaj i upisuje u registar PC.
+Utvrñivanje adrese prekidne rutine se realizuje hardverski.
+U okviru opsluživanja zahteva za prekid hardverski se još:
+35
+• brišu biti maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u
+programskoj statusnoj reci procesora PSW kod prekida svih vrsta i
+• upisuje u bite tekuci nivo prioriteta u statusnoj reci procesora PSW nivo prioriteta
+prekidne rutine na koju se skace u slucaju maskirajuceg prekida.
+Brisanjem bita maskiranje svih maskirajucih prekida u programskoj statusnoj reci
+procesora PSW se obezbeñuje da procesor po ulasku u prekidnu rutinu ne reaguje na
+maskirajuce prekide, a brisanjem bita prekid posle svake instrukcije u programskoj statusnoj
+reci procesora PSW se obezbeñuje da procesor po ulasku u prekidnu rutinu ne izvršava
+prekidnu rutinu u režimu prekid posle svake instrukcije. Time se omogucava obavljanje
+odreñenih aktivnosti na pocetku svake prekidne rutine. Posle toga moguce je u samoj
+prekidnoj rutini posebnim instrukcijama postaviti bit maskiranje svih maskirajucih prekida u
+programskoj statusnoj reci procesora PSW i time dozvoliti maskirajuce prekide i postaviti bit
+prekid posle svake instrukcije u programskoj statusnoj reci procesora PSW i time zadati režim
+rada procesora prekid posle svake instrukcije.
+Upisivanjem u bite tekuci nivo prioriteta u statusnoj reci procesora PSW nivoa prioriteta
+prekidne rutine na koju se skace u slucaju maskirajuceg prekida obezbeñuje se da se u slucaju
+maskirajucih zahteva za prekid pristiglih u toku izvršavanja prekidne rutine prihvate samo oni
+koji su višeg nivoa prioriteta od nivoa prioriteta prekidne rutine.
+Opsluživanje zahteva za prekid pocinje na kraju izvršavanja svake instrukcije ispitivanjem
+da li je u toku njenog izvršavanja stigao zahtev za prekid. U slucaju da jeste izvršavanje
+tekuce instrukcije se produžava za odreñeni broj koraka u okviru kojih se:
+• stavljaju na stek programski brojac PC i programska statusna rec PSW, a ukoliko se radi
+o procesorima kod kojih se hardverski cuvaju preostali programski dostupni registri, i
+preostali programski dostupni registri,
+• brišu biti maskiranje svih maskirajucih prekida i prekid posle svake instrukcije u
+programskoj statusnoj reci procesora PSW kod prekida svih vrsta,
+• upisuje u bite tekuci nivo prioriteta u programskoj statusnoj reci procesora PSW nivo
+prioriteta prekidne rutine na koju se skace za slucaj maskirajucih prekida i
+• upisuje u programski brojac PC pocetna adresa prekidne rutine.
+Na pocetku prekidne rutine se samo oni preostali programski dostupni registri cije se
+vrednosti menjaju u prekidnoj rutini posebnim instrukcijama stavljaju na stek, ukoliko se radi
+o procesorima kod kojih se softverski cuvaju preostali programski dostupni registri.
+1.1.6.1.2 Povratak iz prekidne rutine
+Povratak iz prekidne rutine se realizuje tako što se, najpre, posebnim instrukcijama pri
+kraju prekidne rutine restauriraju vrednostima sa steka sadržaji onih preostalih programski
+dostupnih registara cije su vrednosti posebnim instrukcijama sacuvane na steku na pocetku
+prekidne rutine, ukoliko se radi o procesorima kod kojih se softverski cuvaju preostali
+programski dostupni registri, a potom izvrši instrukcija RTI. Ovom instrukcijom se sa steka
+restauriraju sadržaji programske statusne reci procesora PSW i programskog brojaca PC. Od
+tog trenutka nastavlja se izvršavanje prekinutog glavnog programa od instrukcije koja bi se
+izvršavala i sa kontekstom procesora koji bi bio, da nije bilo skoka na prekidnu rutinu.
+1.1.6.2 Prioriteti prekida
+U slucajevima kada se generiše više prekida istovremeno, prekidi se opslužuju po
+redosledu opadajucih prioriteta. Tako, na primer, za ranije pobrojane prekide taj redosled je
+sledeci: najviši je , zatim , ,  i na kraju .
+36
+Prekidi pod  koji dolaze od kontrolera periferija (spoljašnji maskirajuci prekidi) mogu se
+javiti istovremeno pa se i oni opslužuju po redosledu opadajucih prioriteta. Ukoliko svaka
+periferija ima posebnu liniju u procesoru za slanje svog zahteva za prekid prekida, na osnovu
+pozicije linije se odreñuje prioritet datog zahteva za prekid.
+1.1.6.3 Selektivno maskiranje maskirajucih prekida
+Za maskirajuce prekide postoji u procesoru poseban programski dostupan registar IMR koji
+se naziva registar maske. Svakoj liniji po kojoj mogu da se šalju zahtevi za prekid od
+periferija pridružen je poseban razred registra maske. Zahtev za prekid koji stiže po odreñenoj
+liniji u procesoru ce biti opslužen jedino ukoliko se u odgovarajucem razredu registra maske
+nalazi vrednost 1. Posebnom instrukcijom se u registar maske IMR upisuje odgovarajuca
+vrednost. Time se programskim putem selektivno dozvoljava ili zabranjuje opsluživanje
+maskirajucih prekida.
+1.1.6.4 Maskiranje svih maskirajucih prekida
+Maskirajuci zahtevi za prekid, bez obzira na to da li su selektivno maskirani sadržajem
+registra maske ili ne, mogu se svi maskirati bitom maskiranje svih maskirajucih prekida u
+programskoj statusnoj reci procesora PSW. Posebnim instrukcijama u ovaj razred registra
+PSW upisuju se vrednosti 1 ili 0. Time se programski putem dozvoljava ili zabranjuje
+opsluživanje maskirajucih prekida koji nisu selektivno maskirani sadržajem registra maske
+IMR.
+1.1.6.5 Prekid posle svake instrukcije
+Postoji mogucnost da se zada takav režim rada procesora da se posle svake izvršene
+instrukcije skace na odreñenu prekidnu rutinu. Ovakav režim rada procesora se naziva prekid
+posle svake instrukcije. U njemu se procesor nalazi ukoliko bit prekid posle svake instrukcije
+u programskoj statusnoj reci procesora PSW ima vrednost 1. Posebnim instrukcijama u ovaj
+bit programske statusne reci procesora PSW upisuju se vrednosti 1 ili 0. Time se programskim
+putem dozvoljava ili ne dozvoljava režim rada procesora prekid posle svake instrukcije.
+1.1.6.6 Instrukcija prekida
+U skupu instrukcija postoji instrukcija INT kojom se može programskim putem izazvati
+prekid i skok na željenu prekidnu rutinu. Prekidna rutina na koju treba skociti odreñuje se
+adresnim delom ove instrukcije koji sadrži broj ulaza u tabelu adresa prekidnih rutina.
+Izvršavanje ove instrukcije realizuje sve ono što je nabrojano u okviru hardverskog dela
+opsluživanja zahteva za prekid, s tim što je broj ulaza u tabeli adresa prekidnih rutina dat
+adresnim poljem same instrukcije.
+1.1.6.7 Gneždenje prekida
+Kada procesor izvršava prekidnu rutinu može stici novi zahtev za prekid. Na ovaj zahtev za
+prekid može se reagovati na sledece nacine:
+• prekida se izvršavanje tekuce prekidne rutine i skace na novu prekidnu rutinu ili
+• ne prekida se izvršavanje prekidne rutine, vec se zahtev za prekid prihvata tek po
+povratku u glavni program.
+Procesor reaguje na oba nacina u zavisnosti od situacije u kojoj se nalazi. Ta situacija zavisi
+od citavog niza elemenata kao što su:
+• ima više tipova zahteva za prekid,
+37
+• kod ulaska u prekidnu rutinu brišu se biti maskiranje svih maskirajucih prekida i prekid
+posle svake instrukcije u programskoj statusnoj reci procesora PSW kod prekida svih
+vrsta,
+• programskim putem se može, upisivanjem vrednosti 0 ili 1 u bite maskiranje svih
+maskirajucih prekida i prekid posle svake instrukcije u programskoj statusnoj reci
+procesora PSW, odrediti kada ce se reagovati na maskirajuce prekide ili prekidati program
+posle svake instrukcije, a kada ne i
+• maskirajuci prekidi su ureñeni po prioritetima.
+Kao ilustracija tih situacija može se uzeti pojednostavljen primer da u procesor stižu samo
+maskirajuci zahtevi za prekid koji nisu ni selektivno maskirani registrom maske IMR, ni svi
+zajedno bitom maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora
+PSW. Maskirajuci zahtevi za prekid imaju prioritete. Pored toga, kada se uñe u prekidnu
+rutinu po nekom maskirajucem prekidu, u procesoru se u bitima tekuci nivo prioriteta u
+programskoj statusnoj reci procesora PSW cuva nivo prioriteta te prekidne rutine. Kada stigne
+neki novi zahtev za prekid, a procesor se vec nalazi u prekidnoj rutini, procesor ce:
+• prihvatiti novi zahtev za prekid, ako je on višeg prioriteta nego nivo prioriteta tekuce
+prekidne rutine ili
+• ignorisati novi zahtev za prekid, ako je on nižeg ili istog nivoa prioriteta kao i nivo
+prioriteta tekuce prekidne rutine.
+Prekidanje izvršavanja tekuce prekidne rutine i skok na novu prekidnu rutinu naziva se
+gneždenje prekida.
+1.1.6.8 Prihvatanje zahteva za prekid
+Zahtev za prekid može da bude opslužen i time skok na prekidnu rutinu realizovan ili na
+kraju instrukcije u toku cijeg izvršavanja je generisan ili kasnije, na kraju neke od sledecih
+instrukcija. Kada ce odreñeni zahtev za prekid biti opslužen zavisi od više faktora, kao što su:
+da li je rec o spoljašnjem ili unutrašnjem prekidu, da li su maskirajuci prekidi maskirani, i to
+ili selektivno ili svi, da li je stigao samo jedan ili više zahteva za prekid, itd. Stoga za svaku
+vrstu zahteva za prekid odreñeni uslovi treba da budu ispunjeni da bi se prešlo na njegovo
+opsluživanje. Prelazak na opsluživanje odreñenog zahteva za prekid naziva se prihvatanje
+zahteva za prekid.
+U slucaju da u toku izvršavanja neke instrukcije stigne više zahteva za prekid redosled
+njihovog prihvatanja definisan je meñusobnim prioritetima razlicitih vrsta prekida. Najviši
+prioritet ima prekid izazvan izvršavanjem instrukcije prekida INT (), pa redom slede
+unutrašnji procesorski prekidi (), spoljašnji nemaskirajuci prekid (), spoljašnji maskirajuci
+prekidi () i prekid posle svake instrukcije () koji ima najniži prioritet. Detaljnije
+objašnjenje prihvatanja pojedinih tipova zahteva za prekid je dato u daljem tekstu.
+Unutrašnji procesorski kao rezultat izvršavanja instrukcije prekida INT: Ovaj zahtev
+za prekid se bezuslovno prihvata na kraju faze izvršenja instrukcije INT. Broj ulaza u IV
+tabelu je dat adresnim delom instrukcije INT i ima takve vrednosti da može da se uñe u bilo
+koji ulaz tabele sa adresama prekidnih rutina.
+Unutrašnji procesorski prekidi pri korišcenju nelegalnog adresiranja, citanju
+instrukcije sa nepostojecim kodom operacije, greške prilikom adresiranja itd.: Zahtevi za
+ove prekide prihvataju se ako ne postoji zahtev višeg prioriteta. Brojevi ulaza u IV tabelu za
+ove prekide su fiksirani.
+38
+Spoljašnji nemaskirajuci prekid: Ureñaj racunara koji kontroliše ispravnost rada delova
+racunara postavlja zahtev za nemaskirajuci prekid preko posebne linije. Zahtev ce biti
+prihvacen ako ne postoji zahtev višeg prioriteta. Broj ulaza u IV tabelu za nemaskirajuci
+prekid je fiksiran.
+Spoljašnji maskirajuci prekidi: Zahteve za maskirajucim prekidima postavljaju periferije
+preko posebnih linija. Najveci prioritet, u slucaju simultanog pristizanja više od jednog
+zahteva, ima prekid sa najvecim rednim brojem linije. Da bi zahtev za maskirajuci prekid bio
+prihvacen potrebno je da bude ispunjen svaki od sledecih uslova:
+• da je odgovarajuci bit u registru maske IMR postavljen,
+• da je bit maskiranje svih maskirajucih prekida u programskoj statusnoj reci procesora
+PSW postavljen,
+• da je nivo prioriteta periferije koja je uputila zahtev za prekid veci od nivoa prioriteta
+tekuceg programa i
+• da ne postoje zahtevi za prekid druge vrste višeg prioriteta.
+Ako je bit ulazi u IV tabelu promenljivi u programskoj statusnoj reci procesora PSW jednak
+jedan pa ulazi u IV tabelu nisu fiksni, tada procesor dobija broj ulaza u IV tabelu od periferije.
+Procesor o prihvatanju zahteva za prekid obaveštava periferiju aktiviranjem odgovarajuce
+linije potvrde. Periferija tada šalje broj ulaza u IV tabelu koji procesor koristi za odreñivanje
+adrese prekidne rutine. Ako je bit ulazi u IV tabelu promenljivi u programskoj statusnoj reci
+procesora PSW jednak nula, pa su ulazi u IV tabelu fiksni, brojeve ulaza generiše sam
+procesor. Po cuvanju sadržaja programske statusne reci procesora PSW na steku, procesor u
+bite tekuci nivo prioriteta u programskoj statusnoj reci procesora PSW upisuje nivo prioriteta
+prekidne rutine na koju se skace.
+Unutrašnji procesorski prekid posle svake instrukcije: Zahtev za ovaj prekid se javlja
+posle izvršenja svake pojedine procesorske instrukcije pod uslovom da je postavljen bit prekid
+posle svake instrukcije u programskoj statusnoj reci procesora PSW. Zahtev se prihvata
+ukoliko ne postoje zahtevi višeg prioriteta. Broj ulaza u IV tabelu je fiksan.

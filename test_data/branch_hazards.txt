@@ -1,0 +1,136 @@
+Control hazards can cause a greater performance loss for our MIPS pipeline than
+do data hazards. When a branch is executed, it may or may not change the PC to
+something other than its current value plus 4. Recall that if a branch changes the
+PC to its target address, it is a taken branch; if it falls through, it is not taken, or
+untaken. If instruction i is a taken branch, then the PC is normally not changed
+until the end of ID, after the completion of the address calculation and comparison.
+Figure A.11 shows that the simplest method of dealing with branches is to
+redo the fetch of the instruction following a branch, once we detect the branch
+during ID (when instructions are decoded). The first IF cycle is essentially a stall,
+because it never performs useful work. You may have noticed that if the branch is
+untaken, then the repetition of the IF stage is unnecessary since the correct instruction
+was indeed fetched. We will develop several schemes to take advantage of this
+fact shortly.
+One stall cycle for every branch will yield a performance loss of 10% to 30%
+depending on the branch frequency, so we will examine some techniques to deal
+with this loss.
+
+Reducing Pipeline Branch Penalties
+There are many methods for dealing with the pipeline stalls caused by branch
+delay; we discuss four simple compile time schemes in this subsection. In these
+four schemes the actions for a branch are static—they are fixed for each branch
+during the entire execution. The software can try to minimize the branch penalty
+using knowledge of the hardware scheme and of branch behavior. Chapters 2 and
+3 look at more powerful hardware and software techniques for both static and
+dynamic branch prediction.
+The simplest scheme to handle branches is to freeze or flush the pipeline,
+holding or deleting any instructions after the branch until the branch destination
+is known. The attractiveness of this solution lies primarily in its simplicity both
+for hardware and software. It is the solution used earlier in the pipeline shown in
+Figure A.11. In this case the branch penalty is fixed and cannot be reduced by
+software.
+A higher-performance, and only slightly more complex, scheme is to treat
+every branch as not taken, simply allowing the hardware to continue as if the
+branch were not executed. Here, care must be taken not to change the processor
+state until the branch outcome is definitely known. The complexity of this
+scheme arises from having to know when the state might be changed by an
+instruction and how to “back out” such a change.
+In the simple five-stage pipeline, this predicted-not-taken or predicteduntaken
+scheme is implemented by continuing to fetch instructions as if the
+branch were a normal instruction. The pipeline looks as if nothing out of the ordinary
+is happening. If the branch is taken, however, we need to turn the fetched
+instruction into a no-op and restart the fetch at the target address. Figure A.12
+shows both situations.
+
+An alternative scheme is to treat every branch as taken. As soon as the branch
+is decoded and the target address is computed, we assume the branch to be taken
+and begin fetching and executing at the target. Because in our five-stage pipeline
+we don’t know the target address any earlier than we know the branch outcome,
+there is no advantage in this approach for this pipeline. In some processors—
+especially those with implicitly set condition codes or more powerful (and hence
+slower) branch conditions—the branch target is known before the branch outcome,
+and a predicted-taken scheme might make sense. In either a predictedtaken
+or predicted-not-taken scheme, the compiler can improve performance by
+organizing the code so that the most frequent path matches the hardware’s
+choice. Our fourth scheme provides more opportunities for the compiler to
+improve performance.
+A fourth scheme in use in some processors is called delayed branch. This
+technique was heavily used in early RISC processors and works reasonably well
+in the five-stage pipeline. In a delayed branch, the execution cycle with a branch
+delay of one is
+branch instruction
+sequential successor1
+branch target if taken
+The sequential successor is in the branch delay slot. This instruction is executed
+whether or not the branch is taken. The pipeline behavior of the five-stage pipeline
+with a branch delay is shown in Figure A.13. Although it is possible to have
+a branch delay longer than one, in practice, almost all processors with delayed
+branch have a single instruction delay; other techniques are used if the pipeline
+has a longer potential branch penalty.
+
+The job of the compiler is to make the successor instructions valid and useful.
+A number of optimizations are used. Figure A.14 shows the three ways in which
+the branch delay can be scheduled.
+The limitations on delayed-branch scheduling arise from (1) the restrictions on
+the instructions that are scheduled into the delay slots and (2) our ability to predict
+at compile time whether a branch is likely to be taken or not. To improve the ability
+of the compiler to fill branch delay slots, most processors with conditional branches
+have introduced a canceling or nullifying branch. In a canceling branch, the instruction
+includes the direction that the branch was predicted. When the branch behaves
+as predicted, the instruction in the branch delay slot is simply executed as it would
+
+normally be with a delayed branch. When the branch is incorrectly predicted, the
+instruction in the branch delay slot is simply turned into a no-op.
+Performance of Branch Schemes
+What is the effective performance of each of these schemes? The effective pipeline
+speedup with branch penalties, assuming an ideal CPI of 1, is
+Because of the following:
+Pipeline stall cycles from branches = Branch frequency × Branch penalty
+we obtain
+The branch frequency and branch penalty can have a component from both
+unconditional and conditional branches. However, the latter dominate since they
+are more frequent.
+Example For a deeper pipeline, such as that in a MIPS R4000, it takes at least three pipeline
+stages before the branch-target address is known and an additional cycle
+before the branch condition is evaluated, assuming no stalls on the registers in the
+conditional comparison. A three-stage delay leads to the branch penalties for the
+three simplest prediction schemes listed in Figure A.15.
+Find the effective addition to the CPI arising from branches for this pipeline,
+assuming the following frequencies:
+Unconditional branch 4%
+Conditional branch, untaken 6%
+Conditional branch, taken 10%
+Branch scheme Penalty unconditional Penalty untaken Penalty taken
+Flush pipeline 2 3 3
+Predicted taken 2 3 2
+Predicted untaken 2 0 3
+Figure A.15 Branch penalties for the three simplest prediction schemes for a deeper pipeline.
+Pipeline speedup Pipeline depth
+1 + Pipeline stall cycles from branches
+= --------------------------------------------------------------------------------------------
+Pipeline speedup Pipeline depth
+1 + Branch frequency × Branch penalty
+= -------------------------------------------------------------------------------------------
+
+The branch frequency and branch penalty can have a component from both
+unconditional and conditional branches. However, the latter dominate since they
+are more frequent.
+Example For a deeper pipeline, such as that in a MIPS R4000, it takes at least three pipeline
+stages before the branch-target address is known and an additional cycle
+before the branch condition is evaluated, assuming no stalls on the registers in the
+conditional comparison. A three-stage delay leads to the branch penalties for the
+three simplest prediction schemes listed in Figure A.15.
+Find the effective addition to the CPI arising from branches for this pipeline,
+assuming the following frequencies:
+Unconditional branch 4%
+Conditional branch, untaken 6%
+Conditional branch, taken 10%
+
+Answer We find the CPIs by multiplying the relative frequency of unconditional, conditional
+untaken, and conditional taken branches by the respective penalties. The
+results are shown in Figure A.16.
+The differences among the schemes are substantially increased with this
+longer delay. If the base CPI were 1 and branches were the only source of stalls,
+the ideal pipeline would be 1.56 times faster than a pipeline that used the stallpipeline
+scheme. The predicted-untaken scheme would be 1.13 times better than
+the stall-pipeline scheme under the same assumptions.
