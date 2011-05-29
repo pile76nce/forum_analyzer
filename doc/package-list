@@ -1,1 +1,14 @@
 rs.etf.analyzer.config
+rs.etf.analyzer.gui
+rs.etf.analyzer.main
+rs.etf.analyzer.ontology
+rs.etf.analyzer.parser
+rs.etf.analyzer.parser.tokenizer
+rs.etf.analyzer.parser.tokens
+rs.etf.analyzer.post
+rs.etf.analyzer.test
+rs.etf.analyzer.test.config
+rs.etf.analyzer.test.parser
+rs.etf.analyzer.test.parser.tokenizer
+rs.etf.analyzer.test.post
+rs.etf.analyzer.util
