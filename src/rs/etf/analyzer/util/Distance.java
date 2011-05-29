@@ -1,4 +1,4 @@
-package rs.etf.util.config;
+package rs.etf.analyzer.util;
 
 /**
  * <p>Title: SubjectAnalyzer</p>
@@ -12,7 +12,7 @@ package rs.etf.util.config;
  * @author Dejan Prodanovi?
  * @version 1.0
  */
-public interface Config
+public interface Distance<E>
 {
-  public void open();
+  public double distance(E e1, E e2);
 }
